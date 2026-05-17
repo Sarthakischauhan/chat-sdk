@@ -4,12 +4,14 @@ import { useChat as useAiChat } from "@ai-sdk/react";
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
   useReducer,
   useState,
 } from "react";
+import { ChatTooltip } from "./chat.tooltip";
 
 export enum ProviderId{
     OPENAI = "openai", 
@@ -31,13 +33,27 @@ type ChatAction = {
 } | {
     type : "setProvider";
     data : { provider : ProviderId}    
+} | {
+    type : "addReference";
+    data : { text : string}
+} | {
+    type : "removeReference";
+    data : { id : string}
+} | {
+    type : "clearReferences";
 }
 
 type ChatState = {
   input: string;
   provider: ProviderId;
+  references: ChatReference[];
   disabled: boolean;
   sendDisabled: boolean;
+};
+
+export type ChatReference = {
+  id: string;
+  text: string;
 };
 
 type ChatContextType = {
@@ -55,12 +71,16 @@ type ChatContextType = {
   deleteThread: (threadId: string) => Promise<void>;
 };
 
-type ChatReducerState = Pick<ChatState, "input" | "provider">;
+type ChatReducerState = Pick<ChatState, "input" | "provider" | "references">;
 
 const intialState: ChatReducerState = {
   input: "",
   provider: ProviderId.OLLAMA,
+  references: [],
 };
+
+const normalizeReferenceText = (text: string) =>
+  text.replace(/\s+/g, " ").trim().slice(0, 4000);
 
 const reducer = (state: ChatReducerState, action: ChatAction) => {
   switch (action.type) {
@@ -68,6 +88,32 @@ const reducer = (state: ChatReducerState, action: ChatAction) => {
       return { ...state, input: action.data?.input };
     case "setProvider":
       return { ...state, provider: action.data?.provider };
+    case "addReference": {
+      const text = normalizeReferenceText(action.data.text);
+      
+      // don't update if the text is same or selected text is none
+      if (!text || state.references.some((reference) => reference.text === text)) {
+        return state;
+      }
+
+      return {
+        ...state,
+        references: [
+          ...state.references,
+          {
+            id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${state.references.length}`,
+            text,
+          },
+        ],
+      };
+    }
+    case "removeReference":
+      return {
+        ...state,
+        references: state.references.filter((reference) => reference.id !== action.data.id),
+      };
+    case "clearReferences":
+      return { ...state, references: [] };
     default:
       return state;
   }
@@ -84,6 +130,9 @@ export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [threads, setThreads] = useState<{ id: string; title: string }[]>([]);
   const [isLoadingThread, setIsLoadingThread] = useState(true);
+  const addReference = useCallback((text: string) => {
+    dispatch({ type: "addReference", data: { text } });
+  }, []);
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -260,7 +309,17 @@ export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
 
     const provider = chatState.provider;
     const nextTitle = text.slice(0, 60);
+    const referenceText = chatState.references
+      .map((reference, index) => `<reference ${index + 1}>\n${reference.text}\n</reference ${index + 1}>`)
+      .join("\n\n");
+    
+    // combine the user selected reference + the message sent by the user.
+    const messageText = referenceText
+      ? `Use the following selected references as context:\n\n${referenceText}\n\nUser message:\n${text}`
+      : text;
+
     dispatch({ type: "setInput", data: { input: "" } });
+    dispatch({ type: "clearReferences" });
     setThreads((current) => {
       const next = current.map((thread) =>
         thread.id === activeThreadId && thread.title === "New chat"
@@ -273,9 +332,12 @@ export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
     });
 
     try {
-      await sendMessage({ text }, { body: { provider } });
+      await sendMessage({ text: messageText }, { body: { provider } });
     } catch (error) {
       dispatch({ type: "setInput", data: { input: text } });
+      chatState.references.forEach((reference) => {
+        dispatch({ type: "addReference", data: { text: reference.text } });
+      });
       throw error;
     }
   };
@@ -296,7 +358,10 @@ export const ChatContextProvider = ({ children }: ChatContextProviderProps) => {
   };
 
   return (
-    <ChatContext.Provider value={defaultValue}>{children}</ChatContext.Provider>
+    <>
+      <ChatContext.Provider value={defaultValue}>{children}</ChatContext.Provider>
+      <ChatTooltip onAddReference={addReference} />
+    </>
   );
 };
 

@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useEffect } from "react";
 import { useChat } from "../Chat/chat.context";
 import { MessageItem } from "../Message/message.item";
 
 export const Message = () => {
-  const { messages, isLoadingThread, status } = useChat();
+  const { messages, isLoadingThread } = useChat();
 
   if (isLoadingThread) {
     return <div className="min-h-0 flex-1 overflow-y-auto p-4 text-sm text-zinc-500">Loading chat...</div>;

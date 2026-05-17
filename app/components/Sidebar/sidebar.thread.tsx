@@ -20,6 +20,7 @@ export function SidebarThread() {
             isActive={thread.id === activeThreadId}
             onClick={() => void selectThread(thread.id)}
             tooltip={thread.title}
+            className="cursor-pointer"
           >
             <span>{thread.title}</span>
           </SidebarMenuButton>

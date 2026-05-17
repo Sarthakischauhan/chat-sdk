@@ -1,4 +1,24 @@
 
+@keyframes thinking-stream {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: 0% 0;
+  }
+}
+
+@keyframes thinking-dots {
+  0% {
+    width: 0;
+  }
+
+  100% {
+    width: 1.5em;
+  }
+}
+
 @layer components {
   .md-content {
     @apply text-base leading-7 break-words;
@@ -76,11 +96,11 @@
   }
 
   .md-thinking {
-    @apply my-3 overflow-hidden rounded-2xl border border-border/70 bg-muted/35;
+    @apply my-3;
   }
 
   .md-thinking > summary {
-    @apply flex items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-muted-foreground;
+    @apply inline-flex items-center gap-2 py-1 text-sm font-medium text-muted-foreground transition-colors;
     list-style: none;
   }
 
@@ -88,16 +108,30 @@
     display: none;
   }
 
+  .md-thinking > summary::before {
+    @apply inline-block h-[0.8rem] w-[0.8rem] shrink-0 text-muted-foreground/70 transition-transform duration-200;
+    content: "";
+    background-color: currentColor;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M4.5 2.5L8 6l-3.5 3.5' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M4.5 2.5L8 6l-3.5 3.5' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+  }
+
   .md-thinking-label {
     @apply tracking-tight;
   }
 
   .md-thinking-indicator {
-    @apply h-2 w-2 shrink-0 rounded-full bg-border;
+    @apply hidden;
   }
 
   .md-thinking-indicator-pending {
-    @apply animate-pulse bg-foreground/40;
+    @apply hidden;
   }
 
   .md-thinking-complete > summary {
@@ -109,15 +143,56 @@
   }
 
   .md-thinking[open] > summary {
-    @apply border-b border-border;
+    @apply text-foreground/80;
   }
 
-  .md-thinking-pending[open] > summary {
-    @apply border-b border-border/70 bg-background/40;
+  .md-thinking[open] > summary::before {
+    transform: rotate(90deg);
   }
 
   .md-thinking-body {
-    @apply px-4 py-3 text-sm leading-6;
+    @apply mt-2 border-l border-border/70 pl-4 text-sm leading-6 text-muted-foreground;
+  }
+
+  .md-thinking-body > :first-child {
+    @apply mt-0;
+  }
+
+  .md-thinking-body > :last-child {
+    @apply mb-0;
+  }
+
+  .md-thinking-pending > summary {
+    color: color-mix(in oklab, var(--foreground) 58%, var(--muted-foreground));
+  }
+
+  .md-thinking-pending > summary .md-thinking-label {
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--muted-foreground) 92%, transparent) 0%,
+      color-mix(in oklab, var(--foreground) 55%, transparent) 45%,
+      color-mix(in oklab, var(--muted-foreground) 92%, transparent) 100%
+    );
+    background-size: 200% 100%;
+    background-position: 200% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: thinking-stream 1.8s linear infinite;
+  }
+
+  .md-thinking-pending > summary .md-thinking-label::after {
+    display: inline-block;
+    width: 0;
+    overflow: hidden;
+    vertical-align: bottom;
+    content: "...";
+    animation: thinking-dots 1.2s steps(4, end) infinite;
+  }
+
+  .md-thinking-pending .md-thinking-body {
+    border-color: color-mix(in oklab, var(--border) 78%, var(--foreground) 22%);
+    color: color-mix(in oklab, var(--muted-foreground) 88%, var(--foreground) 12%);
   }
 
   .md-content th,

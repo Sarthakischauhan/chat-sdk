@@ -29,7 +29,7 @@ export function ChatShell({ children, composer }: ChatShellProps) {
 
     container.scrollTo({
       top: container.scrollHeight,
-      behavior: "smooth",
+      behavior: "instant",
     });
   };
 

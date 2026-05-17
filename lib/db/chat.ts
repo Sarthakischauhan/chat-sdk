@@ -1,4 +1,5 @@
 import type { UIMessage } from "ai";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
 export type ChatThread = {
@@ -9,7 +10,8 @@ export type ChatThread = {
 };
 
 const DEFAULT_THREAD_TITLE = "New chat";
-const toJsonValue = <T,>(value: T) => JSON.parse(JSON.stringify(value)) as T;
+const toJsonValue = <T,>(value: T) =>
+  JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 
 const deriveThreadTitle = (messages: UIMessage[]) => {
   const firstUserText = messages
@@ -71,7 +73,7 @@ export const archiveThread = async (threadId: string) => {
   });
 };
 
-export const getThreadMessages = async (threadId: string): Promise<unknown>=> {
+export const getThreadMessages = async (threadId: string): Promise<UIMessage[]> => {
   const messages = await prisma.message.findMany({
     where: {
       threadId,
@@ -81,7 +83,7 @@ export const getThreadMessages = async (threadId: string): Promise<unknown>=> {
     },
   });
 
-  return messages.map((message) => message.payload as unknown);
+  return messages.map((message) => message.payload as unknown as UIMessage);
 };
 
 export const saveThreadMessages = async ({

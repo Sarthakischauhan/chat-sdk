@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import type { PluggableList } from "unified";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { splitThinkingSegments } from "@/lib/message/segment";
@@ -13,16 +14,87 @@ type MessageContentProps = {
   isUser?: boolean;
 };
 
+type UserReferenceMessage = {
+  references: string[];
+  message: string;
+};
+
+const REFERENCE_PREFIX = "Use the following selected references as context:\n\n";
+const USER_MESSAGE_MARKER = "\n\nUser message:\n";
+const REFERENCE_PATTERN = /<reference \d+>\n([\s\S]*?)\n<\/reference \d+>/g;
+const markdownPlugins: { remark: PluggableList; rehype: PluggableList } = {
+  remark: [remarkGfm],
+  rehype: [[rehypeHighlight, { detect: true, ignoreMissing: true }]],
+};
+const markdownComponents = {
+  a: ({ ...props }) => <a {...props} target="_blank" rel="noreferrer noopener" />,
+};
+
+const parseUserReferenceMessage = (content: string): UserReferenceMessage | null => {
+  if (!content.startsWith(REFERENCE_PREFIX)) {
+    return null;
+  }
+
+  const markerIndex = content.indexOf(USER_MESSAGE_MARKER);
+
+  if (markerIndex === -1) {
+    return null;
+  }
+
+  const references = [...content.slice(REFERENCE_PREFIX.length, markerIndex).matchAll(REFERENCE_PATTERN)]
+    .map((match) => match[1].trim())
+    .filter(Boolean);
+
+  return references.length
+    ? { references, message: content.slice(markerIndex + USER_MESSAGE_MARKER.length) }
+    : null;
+};
+
+const MarkdownContent = ({ children }: { children: string }) => {
+  return (
+    <ReactMarkdown
+      remarkPlugins={markdownPlugins.remark}
+      rehypePlugins={markdownPlugins.rehype}
+      components={markdownComponents}
+    >
+      {children}
+    </ReactMarkdown>
+  );
+};
+
+const UserReferences = ({ references }: { references: string[] }) => {
+  return (
+    <div className="mb-3 flex flex-col gap-2">
+      {references.map((reference, index) => (
+        <div
+          key={`${index}-${reference.slice(0, 16)}`}
+          className="rounded-md border border-zinc-300/80 bg-white/70 px-3 py-2 text-left text-sm dark:border-zinc-700 dark:bg-zinc-900/45"
+        >
+          <div className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            Reference {index + 1}
+          </div>
+          <div className="line-clamp-3 break-words text-zinc-700 dark:text-zinc-200">
+            {reference}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 export const MessageContent = ({ parts, isUser = false }: MessageContentProps) => {
   const textContent = parts
     .filter((part): part is TextPart => part.type === "text")
     .map((part) => part.text)
     .join("\n");
 
-  const segments = splitThinkingSegments(textContent);
+  const userReferenceMessage = isUser ? parseUserReferenceMessage(textContent) : null;
+  const content = userReferenceMessage?.message ?? textContent;
+  const segments = splitThinkingSegments(content);
 
   return (
     <div className={`md-content ${isUser ? "md-content-user" : "md-content-assistant"}`}>
+      {userReferenceMessage && <UserReferences references={userReferenceMessage.references} />}
       {segments.map((segment, index) => {
         if (!segment.content.trim() && segment.type !== "thinking") {
           return null;
@@ -43,15 +115,7 @@ export const MessageContent = ({ parts, isUser = false }: MessageContentProps) =
               </summary>
               {!!segment.content.trim() && (
                 <div className="md-thinking-body">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[[rehypeHighlight, { detect: true, ignoreMissing: true }]]}
-                    components={{
-                      a: ({ ...props }) => <a {...props} target="_blank" rel="noreferrer noopener" />,
-                    }}
-                  >
-                    {segment.content}
-                  </ReactMarkdown>
+                  <MarkdownContent>{segment.content}</MarkdownContent>
                 </div>
               )}
             </details>
@@ -59,16 +123,7 @@ export const MessageContent = ({ parts, isUser = false }: MessageContentProps) =
         }
 
         return (
-          <ReactMarkdown
-            key={`md-${index}`}
-            remarkPlugins={[remarkGfm]}
-            rehypePlugins={[[rehypeHighlight, { detect: true, ignoreMissing: true }]]}
-            components={{
-              a: ({ ...props }) => <a {...props} target="_blank" rel="noreferrer noopener" />,
-            }}
-          >
-            {segment.content}
-          </ReactMarkdown>
+          <MarkdownContent key={`md-${index}`}>{segment.content}</MarkdownContent>
         );
       })}
     </div>
