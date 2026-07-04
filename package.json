@@ -2,9 +2,13 @@
   "name": "model-council",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/chat"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:chat": "npm run build -w @your-scope/chat",
     "start": "next start",
     "lint": "eslint",
     "prisma:generate": "prisma generate",

@@ -1,14 +1,9 @@
-import { ChatContextProvider } from './components/Chat/chat.context';
-import { ChatShell } from './components/Chat/chat.shell';
-import { Chat } from './components/Chat/chat';
-import { Message } from './components/Message/message';
+import { ChatKit } from "@your-scope/chat";
 
 export default function Page() {
   return (
-    <ChatContextProvider>
-      <ChatShell composer={<Chat />}>
-        <Message />
-      </ChatShell>
-    </ChatContextProvider>
+    <main className="flex min-h-svh items-center justify-center bg-background p-4">
+      <ChatKit className="h-[min(760px,calc(100svh-2rem))] w-full max-w-3xl" />
+    </main>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import type { UIMessage } from "ai";
 import { Check, Pencil, X } from "lucide-react";
 import { useState } from "react";
+import type { ChatMessage } from "../../types";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
 import { getUserDisplayText } from "../../lib/message/user";
@@ -11,7 +11,7 @@ import { MessageContent } from "../Message/message.content";
 
 const getMessageTargetId = (messageId: string) => `chatkit-message-${messageId}`;
 
-export const MessageItem = ({ message }: { message: UIMessage }) => {
+export const MessageItem = ({ message }: { message: ChatMessage }) => {
   const { editAndResendMessage, status } = useChat();
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(() => getUserDisplayText(message));

@@ -188,6 +188,19 @@ export const editThreadMessage = async ({
     throw new Error("Message not found");
   }
 
+  const messageRecord = await prisma.message.findUnique({
+    where: {
+      id: messageId,
+    },
+    select: {
+      sequence: true,
+    },
+  });
+
+  if (!messageRecord) {
+    throw new Error("Message not found");
+  }
+
   // rebuild the message array with the updated message from the user.
   const updatedMessages = messages
     .slice(0, messageIndex + 1)
@@ -212,7 +225,7 @@ export const editThreadMessage = async ({
       where: {
         threadId,
         sequence: {
-          gt: message?.sequence,
+          gt: messageRecord.sequence,
         },
       },
     });

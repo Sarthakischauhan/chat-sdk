@@ -1,4 +1,4 @@
-import type { UIMessage } from "ai";
+import type { ChatMessage } from "../../types";
 
 export type UserReferenceMessage = {
   references: string[];
@@ -9,7 +9,7 @@ export const REFERENCE_PREFIX = "Use the following selected references as contex
 export const USER_MESSAGE_MARKER = "\n\nUser message:\n";
 const REFERENCE_PATTERN = /<reference \d+>\n([\s\S]*?)\n<\/reference \d+>/g;
 
-export const getMessageTextContent = (message: UIMessage) =>
+export const getMessageTextContent = (message: ChatMessage) =>
   message.parts
     .filter((part): part is { type: "text"; text: string } => part.type === "text")
     .map((part) => part.text)
@@ -35,7 +35,7 @@ export const parseUserReferenceMessage = (content: string): UserReferenceMessage
     : null;
 };
 
-export const getUserDisplayText = (message: UIMessage) => {
+export const getUserDisplayText = (message: ChatMessage) => {
   const text = getMessageTextContent(message);
   return parseUserReferenceMessage(text)?.message ?? text;
 };
