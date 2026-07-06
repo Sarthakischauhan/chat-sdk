@@ -1,6 +1,6 @@
 import { DefaultChatTransport, readUIMessageStream } from "ai";
 import type { UIMessage } from "ai";
-import type { ChatAdapter, ChatMessage, ChatThread } from "../types";
+import type { ChatAdapter, ChatMessage, ChatThread } from "@your-scope/chat";
 
 type FetchAdapterOptions = {
   chatUrl?: string;
@@ -107,4 +107,3 @@ export function createDefaultFetchAdapter({
     },
   };
 }
-

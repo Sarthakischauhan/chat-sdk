@@ -11,7 +11,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { createDefaultFetchAdapter } from "../../adapters/fetch";
 import type { ChatAdapter, ChatMessage, ChatStatus, ChatThread } from "../../types";
 import { getUserDisplayText } from "../../lib/message/user";
 import { ChatTooltip } from "./chat.tooltip";
@@ -82,8 +81,6 @@ type ChatContextType = {
 };
 
 type ChatReducerState = Pick<ChatState, "input" | "provider" | "references">;
-
-const defaultFetchAdapter = createDefaultFetchAdapter();
 
 const initialState: ChatReducerState = {
   input: "",
@@ -157,14 +154,14 @@ const reducer = (state: ChatReducerState, action: ChatAction) => {
 const ChatContext = createContext<ChatContextType | null>(null);
 
 type ChatContextProviderProps = {
-  adapter?: ChatAdapter;
+  adapter: ChatAdapter;
   children: ReactNode;
   defaultProvider?: ProviderId;
   defaultThreadId?: string;
 };
 
 export const ChatContextProvider = ({
-  adapter = defaultFetchAdapter,
+  adapter,
   children,
   defaultProvider = ProviderId.OLLAMA,
   defaultThreadId,

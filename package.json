@@ -6,13 +6,13 @@
     "packages/chat"
   ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev examples/next",
+    "build": "next build examples/next",
     "build:chat": "npm run build -w @your-scope/chat",
-    "start": "next start",
+    "start": "next start examples/next",
     "lint": "eslint",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push"
+    "prisma:generate": "prisma generate --schema examples/next/prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema examples/next/prisma/schema.prisma"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.44",

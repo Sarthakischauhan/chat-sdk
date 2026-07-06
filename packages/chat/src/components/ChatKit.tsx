@@ -7,7 +7,7 @@ import { ChatContextProvider } from "./Chat/chat.context";
 import { Message } from "./Message/message";
 
 type ChatKitProps = {
-  adapter?: ChatAdapter;
+  adapter: ChatAdapter;
   className?: string;
   defaultThreadId?: string;
   style?: CSSProperties;

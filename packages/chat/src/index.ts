@@ -1,4 +1,3 @@
-export { createDefaultFetchAdapter } from "./adapters/fetch";
 export { ChatKit } from "./components/ChatKit";
 export { Chat } from "./components/Chat/chat";
 export {
