@@ -1,0 +1,24 @@
+.chatkit-root {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border, rgb(229 231 235));
+  border-radius: var(--chatkit-radius, 0.75rem);
+  background: var(--background, #fff);
+  color: var(--foreground, #111827);
+}
+
+.chatkit-messages {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.chatkit-composer {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--border, rgb(229 231 235));
+  background: var(--background, #fff);
+  padding: 1rem;
+}

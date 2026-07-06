@@ -2,13 +2,17 @@
   "name": "model-council",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/chat"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "next dev examples/next",
+    "build": "next build examples/next",
+    "build:chat": "npm run build -w @your-scope/chat",
+    "start": "next start examples/next",
     "lint": "eslint",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push"
+    "prisma:generate": "prisma generate --schema examples/next/prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema examples/next/prisma/schema.prisma"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.44",
