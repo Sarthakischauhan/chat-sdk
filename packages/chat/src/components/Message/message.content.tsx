@@ -1,9 +1,7 @@
-import ReactMarkdown from "react-markdown";
-import type { PluggableList } from "unified";
-import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
 import { splitThinkingSegments } from "../../lib/message/segment";
 import { parseUserReferenceMessage } from "../../lib/message/user";
+import { cn } from "../../lib/utils";
+import { MarkdownContent } from "./message.markdown";
 
 type TextPart = {
   type: "text";
@@ -13,26 +11,6 @@ type TextPart = {
 type MessageContentProps = {
   parts: Array<TextPart | { type: string; [key: string]: unknown }>;
   isUser?: boolean;
-};
-
-const markdownPlugins: { remark: PluggableList; rehype: PluggableList } = {
-  remark: [remarkGfm],
-  rehype: [[rehypeHighlight, { detect: true, ignoreMissing: true }]],
-};
-const markdownComponents = {
-  a: ({ ...props }) => <a {...props} target="_blank" rel="noreferrer noopener" />,
-};
-
-const MarkdownContent = ({ children }: { children: string }) => {
-  return (
-    <ReactMarkdown
-      remarkPlugins={markdownPlugins.remark}
-      rehypePlugins={markdownPlugins.rehype}
-      components={markdownComponents}
-    >
-      {children}
-    </ReactMarkdown>
-  );
 };
 
 const UserReferences = ({ references }: { references: string[] }) => {
@@ -66,7 +44,12 @@ export const MessageContent = ({ parts, isUser = false }: MessageContentProps) =
   const segments = splitThinkingSegments(content);
 
   return (
-    <div className={`md-content ${isUser ? "md-content-user" : "md-content-assistant"}`}>
+    <div
+      className={cn(
+        "space-y-4 break-words text-[15px] leading-8 text-inherit",
+        isUser ? "md-content-user" : "md-content-assistant",
+      )}
+    >
       {userReferenceMessage && <UserReferences references={userReferenceMessage.references} />}
       {segments.map((segment, index) => {
         if (!segment.content.trim() && segment.type !== "thinking") {
