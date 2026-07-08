@@ -22,6 +22,7 @@ export function createDefaultFetchAdapter({
           id,
           message: messages[messages.length - 1],
           provider: body?.provider,
+          model: body?.model,
         },
       };
     },
@@ -71,14 +72,14 @@ export function createDefaultFetchAdapter({
       return data.messages.map(asChatMessage);
     },
 
-    async *sendMessage({ threadId, messages, provider, signal }) {
+    async *sendMessage({ threadId, messages, provider, model, signal }) {
       const stream = await transport.sendMessages({
         trigger: "submit-message",
         chatId: threadId,
         messageId: undefined,
         messages: messages.map(asUIMessage),
         abortSignal: signal,
-        body: { provider },
+        body: { provider, model },
       });
 
       for await (const message of readUIMessageStream<UIMessage>({

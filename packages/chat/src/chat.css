@@ -1,5 +1,6 @@
 .chatkit-root {
   display: flex;
+  position: relative;
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
@@ -13,10 +14,24 @@
   min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 1rem 1rem calc(var(--chatkit-composer-space, 10rem) + 1rem);
 }
 
 .chatkit-composer {
-  flex: 0 0 auto;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
   padding: 1rem;
+  pointer-events: none;
+}
+
+.chatkit-composer > * {
+  pointer-events: auto;
+}
+
+.chatkit-composer-shell {
+  border-radius: calc(var(--chatkit-radius, 0.75rem) - 0.125rem);
+  background-color: white;
 }

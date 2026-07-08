@@ -6,7 +6,7 @@ import { ChatSelect } from "./chat.select";
 
 export const Chat = () => {
   return (
-    <div className="w-full px-1 py-6 flex flex-col gap-3 shadow-sm rounded-md">
+    <div className="chatkit-composer-shell flex w-full flex-col gap-3 rounded-md px-1 py-6 shadow-sm">
       <ChatReferences />
       <ChatInput />
       <div className="mt-auto flex justify-between px-4">

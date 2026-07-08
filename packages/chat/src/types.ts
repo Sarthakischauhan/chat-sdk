@@ -25,6 +25,7 @@ export type SendMessageInput = {
   message: ChatMessage;
   messages: ChatMessage[];
   provider?: string;
+  model?: string;
   signal?: AbortSignal;
 };
 
@@ -42,4 +43,3 @@ export type ChatAdapter = {
   sendMessage: (input: SendMessageInput) => AsyncIterable<ChatMessage>;
   editMessage?: (input: EditMessageInput) => Promise<ChatMessage[]>;
 };
-

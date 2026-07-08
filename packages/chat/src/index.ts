@@ -7,6 +7,11 @@ export {
   type ChatReference,
   type SendMessage,
 } from "./components/Chat/chat.context";
+export type {
+  RegistryConfig,
+  RegistryModel,
+  RegistryProvider,
+} from "./components/Chat/chat.context";
 export { Message } from "./components/Message/message";
 export type {
   ChatAdapter,
