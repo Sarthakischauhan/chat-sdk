@@ -34,7 +34,8 @@
     "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
-    "tailwind-merge": "^3.4.1"
+    "tailwind-merge": "^3.4.1",
+    "tsup": "^8.5.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
