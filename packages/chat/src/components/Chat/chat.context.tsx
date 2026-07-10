@@ -22,11 +22,30 @@ export enum ProviderId {
   OLLAMA = "ollama",
 }
 
+export type RegistryModel = {
+  id: string;
+  label: string;
+};
+
+export type RegistryProvider = {
+  id: ProviderId;
+  name?: string;
+  label: string;
+  logo?: string;
+  defaultModel: string;
+  models: RegistryModel[];
+};
+
+export type RegistryConfig = {
+  defaultProviderId: ProviderId;
+  providers: RegistryProvider[];
+};
+
 export type { ChatAdapter, ChatMessage, ChatStatus, ChatThread };
 
 export type SendMessage = (
   message: { text: string },
-  options?: { body?: { provider?: string } },
+  options?: { body?: { provider?: string; model?: string } },
 ) => Promise<void>;
 
 type ChatAction =
@@ -36,7 +55,11 @@ type ChatAction =
     }
   | {
       type: "setProvider";
-      data: { provider: ProviderId };
+      data: { provider: ProviderId; model?: string };
+    }
+  | {
+      type: "setModel";
+      data: { model: string };
     }
   | {
       type: "addReference";
@@ -53,6 +76,7 @@ type ChatAction =
 type ChatState = {
   input: string;
   provider: ProviderId;
+  model: string;
   references: ChatReference[];
   disabled: boolean;
   sendDisabled: boolean;
@@ -71,6 +95,7 @@ type ChatContextType = {
   activeThreadId: string | null;
   threads: ChatThread[];
   isLoadingThread: boolean;
+  registry: RegistryConfig;
   sendMessage: SendMessage;
   submitInput: () => Promise<void>;
   editAndResendMessage: (messageId: string, text: string) => Promise<void>;
@@ -80,11 +105,44 @@ type ChatContextType = {
   deleteThread: (threadId: string) => Promise<void>;
 };
 
-type ChatReducerState = Pick<ChatState, "input" | "provider" | "references">;
+type ChatReducerState = Pick<ChatState, "input" | "provider" | "model" | "references">;
+
+const defaultRegistry: RegistryConfig = {
+  defaultProviderId: ProviderId.OLLAMA,
+  providers: [
+    {
+      id: ProviderId.OPENAI,
+      label: "OpenAI",
+      defaultModel: "gpt-4.1",
+      models: [{ id: "gpt-4.1", label: "GPT-4.1" }],
+    },
+    {
+      id: ProviderId.CLAUDE,
+      label: "Anthropic",
+      defaultModel: "claude-3-7-sonnet-20250219",
+      models: [{ id: "claude-3-7-sonnet-20250219", label: "Claude 3.7 Sonnet" }],
+    },
+    {
+      id: ProviderId.GOOGLE,
+      label: "Google",
+      defaultModel: "gemini-2.5-flash",
+      models: [{ id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" }],
+    },
+    {
+      id: ProviderId.OLLAMA,
+      label: "Ollama",
+      defaultModel: "smallthinker:latest",
+      models: [{ id: "smallthinker:latest", label: "smallthinker:latest" }],
+    },
+  ],
+};
 
 const initialState: ChatReducerState = {
   input: "",
-  provider: ProviderId.OLLAMA,
+  provider: defaultRegistry.defaultProviderId,
+  model:
+    defaultRegistry.providers.find((provider) => provider.id === defaultRegistry.defaultProviderId)
+      ?.defaultModel ?? "",
   references: [],
 };
 
@@ -120,7 +178,13 @@ const reducer = (state: ChatReducerState, action: ChatAction) => {
     case "setInput":
       return { ...state, input: action.data.input };
     case "setProvider":
-      return { ...state, provider: action.data.provider };
+      return {
+        ...state,
+        provider: action.data.provider,
+        model: action.data.model ?? state.model,
+      };
+    case "setModel":
+      return { ...state, model: action.data.model };
     case "addReference": {
       const text = normalizeReferenceText(action.data.text);
 
@@ -158,6 +222,7 @@ type ChatContextProviderProps = {
   children: ReactNode;
   defaultProvider?: ProviderId;
   defaultThreadId?: string;
+  registryUrl?: string;
 };
 
 export const ChatContextProvider = ({
@@ -165,21 +230,81 @@ export const ChatContextProvider = ({
   children,
   defaultProvider = ProviderId.OLLAMA,
   defaultThreadId,
+  registryUrl = "/api/ai/registry",
 }: ChatContextProviderProps) => {
   const [chatState, dispatch] = useReducer(reducer, {
     ...initialState,
     provider: defaultProvider,
+    model:
+      defaultRegistry.providers.find((provider) => provider.id === defaultProvider)?.defaultModel ??
+      initialState.model,
   });
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ChatStatus>("ready");
   const [activeThreadId, setActiveThreadId] = useState<string | null>(defaultThreadId ?? null);
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [isLoadingThread, setIsLoadingThread] = useState(true);
+  const [registry, setRegistry] = useState<RegistryConfig>(defaultRegistry);
   const abortRef = useRef<AbortController | null>(null);
 
   const addReference = useCallback((text: string) => {
     dispatch({ type: "addReference", data: { text } });
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadRegistry = async () => {
+      try {
+        const response = await fetch(registryUrl, { cache: "no-store" });
+
+        if (!response.ok) {
+          throw new Error("Failed to load registry");
+        }
+
+        const data = (await response.json()) as RegistryConfig;
+
+        if (cancelled || !Array.isArray(data.providers) || data.providers.length === 0) {
+          return;
+        }
+
+        setRegistry(data);
+      } catch {
+        if (!cancelled) {
+          setRegistry(defaultRegistry);
+        }
+      }
+    };
+
+    loadRegistry();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [registryUrl]);
+
+  useEffect(() => {
+    const nextProvider =
+      registry.providers.find((provider) => provider.id === chatState.provider) ??
+      registry.providers.find((provider) => provider.id === registry.defaultProviderId) ??
+      registry.providers[0];
+
+    if (!nextProvider) {
+      return;
+    }
+
+    const hasModel = nextProvider.models.some((entry) => entry.id === chatState.model);
+
+    if (!hasModel) {
+      dispatch({
+        type: "setProvider",
+        data: {
+          provider: nextProvider.id,
+          model: nextProvider.defaultModel,
+        },
+      });
+    }
+  }, [chatState.model, chatState.provider, registry]);
 
   const isSending = status === "submitted" || status === "streaming";
   const state = useMemo<ChatState>(() => {
@@ -297,10 +422,12 @@ export const ChatContextProvider = ({
       message,
       nextMessages,
       provider,
+      model,
     }: {
       message: ChatMessage;
       nextMessages: ChatMessage[];
       provider?: string;
+      model?: string;
     }) => {
       if (!activeThreadId) {
         return;
@@ -317,6 +444,7 @@ export const ChatContextProvider = ({
           message,
           messages: nextMessages,
           provider,
+          model,
           signal: abortController.signal,
         })) {
           setStatus("streaming");
@@ -358,6 +486,7 @@ export const ChatContextProvider = ({
         message: userMessage,
         nextMessages,
         provider: options?.body?.provider,
+        model: options?.body?.model,
       });
     },
     [activeThreadId, messages, streamMessage],
@@ -407,6 +536,7 @@ export const ChatContextProvider = ({
     }
 
     const provider = chatState.provider;
+    const model = chatState.model;
     const nextTitle = text.slice(0, 60);
     const referencesSnapshot = chatState.references;
     const referenceText = referencesSnapshot
@@ -431,7 +561,7 @@ export const ChatContextProvider = ({
     });
 
     try {
-      await sendMessage({ text: messageText }, { body: { provider } });
+      await sendMessage({ text: messageText }, { body: { provider, model } });
     } catch (error) {
       dispatch({ type: "setInput", data: { input: text } });
       referencesSnapshot.forEach((reference) => {
@@ -455,6 +585,7 @@ export const ChatContextProvider = ({
     }
 
     const provider = chatState.provider;
+    const model = chatState.model;
     const previousMessages = messages;
     let editedMessages = previousMessages
       .slice(0, messageIndex + 1)
@@ -496,6 +627,7 @@ export const ChatContextProvider = ({
         message: editedMessage,
         nextMessages: editedMessages,
         provider,
+        model,
       });
     } catch (error) {
       setMessages(previousMessages);
@@ -518,6 +650,7 @@ export const ChatContextProvider = ({
     activeThreadId,
     threads,
     isLoadingThread,
+    registry,
     sendMessage,
     submitInput,
     editAndResendMessage,

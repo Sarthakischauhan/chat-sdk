@@ -20,87 +20,12 @@
 }
 
 @layer components {
-  .md-content {
-    @apply text-base leading-7 break-words;
-  }
-
-  .md-content > * + * {
-    @apply mt-3;
-  }
-
-  .md-content p {
-    @apply m-0;
-  }
-
-  .md-content h1,
-  .md-content h2,
-  .md-content h3,
-  .md-content h4 {
-    @apply font-semibold leading-6;
-  }
-
-  .md-content ul,
-  .md-content ol {
-    @apply pl-6 my-2;
-  }
-
-  .md-content ul {
-    @apply list-disc;
-  }
-
-  .md-content ol {
-    @apply list-decimal;
-  }
-
-  .md-content li {
-    @apply pl-1;
-  }
-
-  .md-content li + li {
-    @apply mt-1;
-  }
-
-  .md-content li::marker {
-    color: color-mix(in oklab, var(--foreground) 55%, transparent);
-  }
-
-  .md-content a {
-    @apply underline underline-offset-2;
-  }
-
-  .md-content hr {
-    @apply my-4 border-border;
-  }
-
-  .md-content blockquote {
-    @apply border-l-2 border-border pl-3 italic;
-  }
-
-  .md-content pre {
-    @apply overflow-x-auto rounded-xl px-4 py-3;
-    background-color: oklch(0.16 0 0);
-  }
-
-  .md-content pre code {
-    @apply bg-transparent text-[13px] leading-6;
-    font-weight: bold;
-  }
-
-  .md-content :not(pre) > code {
-    @apply rounded px-1.5 py-0.5 font-mono text-[0.85em];
-    background-color: color-mix(in oklab, var(--muted) 80%, transparent);
-  }
-
-  .md-content table {
-    @apply w-full border-collapse text-left text-xs;
-  }
-
   .md-thinking {
-    @apply my-3;
+    @reference my-3;
   }
 
   .md-thinking > summary {
-    @apply inline-flex items-center gap-2 py-1 text-sm font-medium text-muted-foreground transition-colors;
+    @reference inline-flex items-center gap-2 py-1 text-sm font-medium text-muted-foreground transition-colors;
     list-style: none;
   }
 
@@ -109,7 +34,7 @@
   }
 
   .md-thinking > summary::before {
-    @apply inline-block h-[0.8rem] w-[0.8rem] shrink-0 text-muted-foreground/70 transition-transform duration-200;
+    @reference inline-block h-[0.8rem] w-[0.8rem] shrink-0 text-muted-foreground/70 transition-transform duration-200;
     content: "";
     background-color: currentColor;
     -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M4.5 2.5L8 6l-3.5 3.5' stroke='black' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -123,27 +48,27 @@
   }
 
   .md-thinking-label {
-    @apply tracking-tight;
+    @reference tracking-tight;
   }
 
   .md-thinking-indicator {
-    @apply hidden;
+    @reference hidden;
   }
 
   .md-thinking-indicator-pending {
-    @apply hidden;
+    @reference hidden;
   }
 
   .md-thinking-complete > summary {
-    @apply cursor-pointer;
+    @reference cursor-pointer;
   }
 
   .md-thinking-pending > summary {
-    @apply cursor-default;
+    @reference cursor-default;
   }
 
   .md-thinking[open] > summary {
-    @apply text-foreground/80;
+    @reference text-foreground/80;
   }
 
   .md-thinking[open] > summary::before {
@@ -151,15 +76,15 @@
   }
 
   .md-thinking-body {
-    @apply mt-2 border-l border-border/70 pl-4 text-sm leading-6 text-muted-foreground;
+    @reference mt-2 border-l border-border/70 pl-4 text-sm leading-6 text-muted-foreground;
   }
 
   .md-thinking-body > :first-child {
-    @apply mt-0;
+    @reference mt-0;
   }
 
   .md-thinking-body > :last-child {
-    @apply mb-0;
+    @reference mb-0;
   }
 
   .md-thinking-pending > summary {
@@ -195,21 +120,12 @@
     color: color-mix(in oklab, var(--muted-foreground) 88%, var(--foreground) 12%);
   }
 
-  .md-content th,
-  .md-content td {
-    @apply border border-border px-2 py-1.5 align-top;
-  }
-
-  .md-content th {
-    @apply font-semibold;
-  }
-
   .md-content-assistant {
-    @apply text-zinc-900 dark:text-zinc-100;
+    @reference text-zinc-900 dark:text-zinc-100;
   }
 
   .md-content-user {
-    @apply text-zinc-900 dark:text-zinc-100;
+    @reference text-zinc-900 dark:text-zinc-100;
   }
 
   .md-content pre code.hljs {

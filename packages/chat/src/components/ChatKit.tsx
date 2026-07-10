@@ -10,12 +10,13 @@ type ChatKitProps = {
   adapter: ChatAdapter;
   className?: string;
   defaultThreadId?: string;
+  registryUrl?: string;
   style?: CSSProperties;
 };
 
-export function ChatKit({ adapter, className, defaultThreadId, style }: ChatKitProps) {
+export function ChatKit({ adapter, className, defaultThreadId, registryUrl, style }: ChatKitProps) {
   return (
-    <ChatContextProvider adapter={adapter} defaultThreadId={defaultThreadId}>
+    <ChatContextProvider adapter={adapter} defaultThreadId={defaultThreadId} registryUrl={registryUrl}>
       <div className={["chatkit-root", className].filter(Boolean).join(" ")} style={style}>
         <div className="chatkit-messages">
           <Message />
