@@ -5,29 +5,21 @@ import {
   consumeStream,
   type UIMessage,
 } from "ai";
-import { registry } from "@/lib/ai/registry";
+import {
+  aiRegistryConfig,
+  getProviderConfig,
+  registry,
+  type ProviderId,
+} from "@/lib/ai/registry";
 import { ensureThread, getThreadMessages, saveThreadMessages } from "@/lib/db/chat";
 
-type ProviderId = "openai" | "anthropic" | "google" | "ollama";
-const Providers: ProviderId[] = [
-  "anthropic",
-  "ollama",
-  "openai",
-  "google"
-];
-
-const DEFAULT_MODELS: Record<ProviderId, string> = {
-  openai: "gpt-4.1",
-  anthropic: "claude-3-7-sonnet-20250219",
-  google: "gemini-2.5-flash",
-  ollama: "smallthinker:latest",
-};
+const Providers = aiRegistryConfig.providers.map((provider) => provider.id);
 
 export async function POST(req: Request) {
   const {
     id,
     message,
-    provider = "openai",
+    provider = aiRegistryConfig.defaultProviderId,
     model,
   }: {
     id?: string;
@@ -46,7 +38,14 @@ export async function POST(req: Request) {
 
   await ensureThread(id);
   const messages = [...(await getThreadMessages(id)), message];
-  const modelId = model ?? DEFAULT_MODELS[provider];
+  const providerConfig = getProviderConfig(provider);
+
+  if (!providerConfig) {
+    return new Response("Unsupported provider", { status: 400 });
+  }
+
+  const modelId =
+    providerConfig.models.find((entry) => entry.id === model)?.id ?? providerConfig.defaultModel;
   const result = streamText({
     model: registry.languageModel(`${provider}:${modelId}`),
     messages: await convertToModelMessages(messages),
