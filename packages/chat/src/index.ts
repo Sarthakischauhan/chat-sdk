@@ -23,3 +23,16 @@ export type {
   EditMessageInput,
   SendMessageInput,
 } from "./types";
+export type {
+  AgentEvent,
+  AgentMessage,
+  AgentPart,
+  AgentToolPart,
+} from "@your-scope/protocol";
+export {
+  applyAgentEvent,
+  createAgentMessageState,
+  normalizeAgentMessage,
+  normalizeAgentParts,
+  reduceAgentEvents,
+} from "@your-scope/protocol";

@@ -1,14 +1,14 @@
-export type ChatRole = "user" | "assistant" | "system";
+import type { AgentPart, AgentRole } from "@your-scope/protocol";
 
-export type ChatMessagePart =
-  | { type: "text"; text: string }
-  | { type: "reasoning"; text: string; status?: "streaming" | "done" }
-  | { type: string; [key: string]: unknown };
+export type ChatRole = AgentRole;
+
+/** @deprecated Prefer AgentPart from @your-scope/protocol */
+export type ChatMessagePart = AgentPart | { type: string; [key: string]: unknown };
 
 export type ChatMessage = {
   id: string;
   role: ChatRole;
-  parts: ChatMessagePart[];
+  parts: Array<AgentPart | { type: string; [key: string]: unknown }>;
   createdAt?: string;
   metadata?: Record<string, unknown>;
 };
