@@ -10,9 +10,10 @@ Event names and payloads match the Vercel AI SDK **UI message stream** protocol
 This package does not replace the AI SDK. It gives you:
 
 - shared TypeScript types for those events
-- normalized `AgentPart` values for UI rendering
+- normalized `AgentPart` values for UI rendering (including `widget`)
 - `normalizeAgentParts` for `UIMessage.parts`
 - `reduceAgentEvents` / `applyAgentEvent` for raw event streams
+- `createWidgetData` helpers for generative UI widgets over `data-widget`
 
 ## Install
 
@@ -59,4 +60,23 @@ const state = reduceAgentEvents([
 ]);
 
 console.log(state.message.parts);
+```
+
+## Widgets
+
+Widgets are AI SDK `data-widget` payloads normalized to `AgentWidgetPart`:
+
+```ts
+import { createWidgetData, normalizeAgentParts } from "@sarchauhan/protocol";
+
+const event = createWidgetData(
+  "map",
+  { lat: 37.77, lng: -122.42, label: "San Francisco" },
+  { id: "sf" },
+);
+
+const [part] = normalizeAgentParts([
+  { type: event.type, id: event.id, data: event.data },
+]);
+// part.type === "widget"
 ```

@@ -44,7 +44,11 @@ export type {
   AgentToolPart,
   AgentToolState,
   AgentUnknownPart,
+  AgentWidgetPart,
+  AgentWidgetProps,
 } from "./parts";
+
+export type { AgentWidgetData } from "./widgets";
 
 export {
   isAgentEvent,
@@ -57,6 +61,7 @@ export {
   isStepStartPart,
   isTextPart,
   isToolPart,
+  isWidgetPart,
 } from "./guards";
 
 export {
@@ -72,3 +77,9 @@ export {
   reduceAgentEvents,
   type AgentMessageState,
 } from "./reduce";
+
+export {
+  createWidgetData,
+  isAgentWidgetData,
+  toWidgetPart,
+} from "./widgets";

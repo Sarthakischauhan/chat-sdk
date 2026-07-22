@@ -51,6 +51,60 @@ const agentTools = {
       }
     },
   }),
+  question: tool({
+    description:
+      "Ask the user a multiple-choice question in the chat UI. Use when you need the user to pick from options.",
+    inputSchema: jsonSchema<{
+      prompt: string;
+      options: string[];
+    }>({
+      type: "object",
+      properties: {
+        prompt: {
+          type: "string",
+          description: "Question shown to the user.",
+        },
+        options: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 2,
+          description: "Answer choices shown as buttons.",
+        },
+      },
+      required: ["prompt", "options"],
+      additionalProperties: false,
+    }),
+    execute: async ({ prompt, options }) => ({
+      prompt,
+      options,
+      interactive: true,
+    }),
+  }),
+  map: tool({
+    description: "Show a map pin in the chat UI for a latitude/longitude location.",
+    inputSchema: jsonSchema<{
+      lat: number;
+      lng: number;
+      label?: string;
+      zoom?: number;
+    }>({
+      type: "object",
+      properties: {
+        lat: { type: "number", description: "Latitude" },
+        lng: { type: "number", description: "Longitude" },
+        label: { type: "string", description: "Optional place label" },
+        zoom: { type: "number", description: "Optional map zoom level" },
+      },
+      required: ["lat", "lng"],
+      additionalProperties: false,
+    }),
+    execute: async ({ lat, lng, label, zoom }) => ({
+      lat,
+      lng,
+      label: label ?? "Location",
+      zoom: zoom ?? 12,
+    }),
+  }),
 };
 
 export async function POST(req: Request) {
@@ -86,6 +140,8 @@ export async function POST(req: Request) {
     providerConfig.models.find((entry) => entry.id === model)?.id ?? providerConfig.defaultModel;
   const result = streamText({
     model: registry.languageModel(`${provider}:${modelId}`),
+    system:
+      "You can call tools to help the user. Use the question tool to ask multiple-choice questions in the UI. Use the map tool to show locations. Keep answers concise.",
     messages: await convertToModelMessages(messages),
     tools: agentTools,
     stopWhen: stepCountIs(5),

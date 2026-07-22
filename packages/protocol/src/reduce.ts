@@ -1,5 +1,6 @@
 import type { AgentEvent } from "./events";
 import type { AgentMessage, AgentPart, AgentToolPart } from "./parts";
+import { isAgentWidgetData, toWidgetPart } from "./widgets";
 
 export type AgentMessageState = {
   message: AgentMessage;
@@ -488,23 +489,29 @@ export const applyAgentEvent = (
     default: {
       if (event.type.startsWith("data-")) {
         const dataEvent = event as Extract<AgentEvent, { type: `data-${string}` }>;
+        const name = dataEvent.type.slice("data-".length);
+
+        if (dataEvent.transient) {
+          return { ...state, textIds, reasoningIds };
+        }
+
+        const nextPart =
+          name === "widget" && isAgentWidgetData(dataEvent.data)
+            ? toWidgetPart(dataEvent.data, dataEvent.id)
+            : {
+                type: "data" as const,
+                name,
+                data: dataEvent.data,
+                id: dataEvent.id,
+              };
+
         return {
           ...state,
           textIds,
           reasoningIds,
           message: {
             ...state.message,
-            parts: dataEvent.transient
-              ? state.message.parts
-              : [
-                  ...state.message.parts,
-                  {
-                    type: "data",
-                    name: dataEvent.type.slice("data-".length),
-                    data: dataEvent.data,
-                    id: dataEvent.id,
-                  },
-                ],
+            parts: [...state.message.parts, nextPart],
           },
         };
       }

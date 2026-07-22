@@ -9,6 +9,7 @@ import type {
   AgentStepStartPart,
   AgentTextPart,
   AgentToolPart,
+  AgentWidgetPart,
 } from "./parts";
 
 export const isTextPart = (part: AgentPart): part is AgentTextPart =>
@@ -35,6 +36,9 @@ export const isFilePart = (part: AgentPart): part is AgentFilePart =>
 
 export const isDataPart = (part: AgentPart): part is AgentDataPart =>
   part.type === "data";
+
+export const isWidgetPart = (part: AgentPart): part is AgentWidgetPart =>
+  part.type === "widget";
 
 export const isAgentEvent = (value: unknown): value is AgentEvent => {
   if (!value || typeof value !== "object") {

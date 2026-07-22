@@ -5,6 +5,7 @@ import type {
   AgentMessage,
   AgentRole,
 } from "./parts";
+import { isAgentWidgetData, toWidgetPart } from "./widgets";
 
 type RawPart = {
   type: string;
@@ -134,11 +135,18 @@ export const normalizeAgentPart = (part: RawPart): AgentPart => {
       }
 
       if (part.type.startsWith("data-")) {
+        const name = part.type.slice("data-".length) || "data";
+        const id = typeof part.id === "string" ? part.id : undefined;
+
+        if (name === "widget" && isAgentWidgetData(part.data)) {
+          return toWidgetPart(part.data, id);
+        }
+
         return {
           type: "data",
-          name: part.type.slice("data-".length) || "data",
+          name,
           data: part.data,
-          id: typeof part.id === "string" ? part.id : undefined,
+          id,
         };
       }
 
