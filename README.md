@@ -1,17 +1,17 @@
 # Chat SDK
 
-Chat SDK is a monorepo for building streaming chat UIs on top of the [Vercel AI SDK](https://ai-sdk.dev). It includes a React chat kit, an agent event protocol package, and a Next.js example app.
+Chat SDK is a monorepo for building streaming chat UIs on top of the [Vercel AI SDK](https://ai-sdk.dev). It includes a React chat package, an agent event protocol package, and a Next.js example app.
 
 ## Packages
 
 | Package | Path | Description |
 | --- | --- | --- |
-| `@your-scope/chat` | `packages/chat` | Chat UI kit (`ChatKit`, message list, composer, model select) |
-| `@your-scope/protocol` | `packages/protocol` | Agent stream events + normalized parts for rendering |
+| `@sarchauhan/chat` | `packages/chat` | Chat UI (`Chat`, message list, composer, model select) |
+| `@sarchauhan/protocol` | `packages/protocol` | Agent stream events + normalized parts for rendering |
 
 ## Are protocol events the same as the AI SDK?
 
-Yes. `@your-scope/protocol` event types mirror the AI SDK **UI message stream** chunk types (`text-start`, `text-delta`, `reasoning-*`, `tool-input-*`, `tool-output-*`, `start-step`, `finish`, `data-*`, and so on).
+Yes. `@sarchauhan/protocol` event types mirror the AI SDK **UI message stream** chunk types (`text-start`, `text-delta`, `reasoning-*`, `tool-input-*`, `tool-output-*`, `start-step`, `finish`, `data-*`, and so on).
 
 What this package adds:
 
@@ -71,13 +71,13 @@ Wire any adapter that yields AI SDK `UIMessage`-shaped messages. The UI normaliz
 ```tsx
 "use client";
 
-import { ChatKit } from "@your-scope/chat";
+import { Chat } from "@sarchauhan/chat";
 import { createDefaultFetchAdapter } from "@/lib/adapters/fetch";
 
 export default function Page() {
   return (
     <main>
-      <ChatKit adapter={createDefaultFetchAdapter()} />
+      <Chat adapter={createDefaultFetchAdapter()} />
     </main>
   );
 }
@@ -115,7 +115,7 @@ Ask something like “what time is it?” and the assistant message will show to
 Normalize AI SDK message parts for custom UI:
 
 ```ts
-import { normalizeAgentParts } from "@your-scope/protocol";
+import { normalizeAgentParts } from "@sarchauhan/protocol";
 
 // message.parts comes from AI SDK UIMessage
 const parts = normalizeAgentParts(message.parts);
@@ -146,7 +146,7 @@ import {
   createAgentMessageState,
   applyAgentEvent,
   type AgentEvent,
-} from "@your-scope/protocol";
+} from "@sarchauhan/protocol";
 
 let state = createAgentMessageState("msg_1");
 

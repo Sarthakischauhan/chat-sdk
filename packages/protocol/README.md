@@ -1,4 +1,4 @@
-# `@your-scope/protocol`
+# `@sarchauhan/protocol`
 
 Agent stream protocol used by the chat SDK.
 
@@ -21,7 +21,7 @@ In this monorepo the package is available as a workspace dependency:
 ```json
 {
   "dependencies": {
-    "@your-scope/protocol": "0.1.0"
+    "@sarchauhan/protocol": "0.1.0"
   }
 }
 ```
@@ -32,7 +32,7 @@ In this monorepo the package is available as a workspace dependency:
 import {
   normalizeAgentParts,
   reduceAgentEvents,
-} from "@your-scope/protocol";
+} from "@sarchauhan/protocol";
 
 // From an AI SDK UIMessage
 const parts = normalizeAgentParts(message.parts);

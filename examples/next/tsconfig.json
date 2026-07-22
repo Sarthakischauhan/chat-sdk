@@ -19,8 +19,8 @@
       }
     ],
     "paths": {
-      "@your-scope/chat": ["../../packages/chat/src/index.ts"],
-      "@your-scope/chat/styles.css": ["../../packages/chat/src/styles.css"],
+      "@sarchauhan/chat": ["../../packages/chat/src/index.ts"],
+      "@sarchauhan/chat/styles.css": ["../../packages/chat/src/styles.css"],
       "@/*": ["./*"]
     }
   },

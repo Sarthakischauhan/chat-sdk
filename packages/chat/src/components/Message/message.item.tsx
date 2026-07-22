@@ -9,7 +9,7 @@ import { getUserDisplayText } from "../../lib/message/user";
 import { useChat } from "../Chat/chat.context";
 import { MessageContent } from "../Message/message.content";
 
-const getMessageTargetId = (messageId: string) => `chatkit-message-${messageId}`;
+const getMessageTargetId = (messageId: string) => `chat-message-${messageId}`;
 
 export const MessageItem = ({ message }: { message: ChatMessage }) => {
   const { editAndResendMessage, status } = useChat();
