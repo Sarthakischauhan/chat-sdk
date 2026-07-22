@@ -9,7 +9,7 @@ import {
   type AgentSourceDocumentPart,
   type AgentSourceUrlPart,
   type AgentToolPart,
-} from "@your-scope/protocol";
+} from "@sarchauhan/protocol";
 import { splitThinkingSegments } from "../../lib/message/segment";
 import { parseUserReferenceMessage } from "../../lib/message/user";
 import { cn } from "../../lib/utils";

@@ -1,5 +1,5 @@
-export { ChatKit } from "./components/ChatKit";
-export { Chat } from "./components/Chat/chat";
+export { Chat } from "./components/Chat";
+export { ChatComposer } from "./components/Chat/chat";
 export {
   ChatContextProvider,
   ProviderId,
@@ -28,11 +28,11 @@ export type {
   AgentMessage,
   AgentPart,
   AgentToolPart,
-} from "@your-scope/protocol";
+} from "@sarchauhan/protocol";
 export {
   applyAgentEvent,
   createAgentMessageState,
   normalizeAgentMessage,
   normalizeAgentParts,
   reduceAgentEvents,
-} from "@your-scope/protocol";
+} from "@sarchauhan/protocol";

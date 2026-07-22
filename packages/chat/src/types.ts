@@ -1,8 +1,8 @@
-import type { AgentPart, AgentRole } from "@your-scope/protocol";
+import type { AgentPart, AgentRole } from "@sarchauhan/protocol";
 
 export type ChatRole = AgentRole;
 
-/** @deprecated Prefer AgentPart from @your-scope/protocol */
+/** @deprecated Prefer AgentPart from @sarchauhan/protocol */
 export type ChatMessagePart = AgentPart | { type: string; [key: string]: unknown };
 
 export type ChatMessage = {

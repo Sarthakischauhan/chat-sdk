@@ -1,5 +1,5 @@
 {
-  "name": "@your-scope/chat",
+  "name": "@sarchauhan/chat",
   "version": "0.1.0",
   "private": false,
   "main": "./dist/index.cjs",
@@ -24,7 +24,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@your-scope/protocol": "0.1.0",
+    "@sarchauhan/protocol": "0.1.0",
     "@ai-sdk/react": "^3.0.88",
     "ai": "^6.0.88",
     "class-variance-authority": "^0.7.1",

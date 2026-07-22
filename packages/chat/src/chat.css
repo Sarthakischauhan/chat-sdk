@@ -1,23 +1,23 @@
-.chatkit-root {
+.chat-root {
   display: flex;
   position: relative;
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--border, rgb(229 231 235));
-  border-radius: var(--chatkit-radius, 0.75rem);
+  border-radius: var(--chat-radius, 0.75rem);
   background: var(--background, #fff);
   color: var(--foreground, #111827);
 }
 
-.chatkit-messages {
+.chat-messages {
   min-height: 0;
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 1rem 1rem calc(var(--chatkit-composer-space, 10rem) + 1rem);
+  padding: 1rem 1rem calc(var(--chat-composer-space, 10rem) + 1rem);
 }
 
-.chatkit-composer {
+.chat-composer {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -27,12 +27,12 @@
   pointer-events: none;
 }
 
-.chatkit-composer > * {
+.chat-composer > * {
   pointer-events: auto;
 }
 
-.chatkit-composer-shell {
-  border-radius: calc(var(--chatkit-radius, 0.75rem) - 0.125rem);
+.chat-composer-shell {
+  border-radius: calc(var(--chat-radius, 0.75rem) - 0.125rem);
   background-color: white;
 }
 
