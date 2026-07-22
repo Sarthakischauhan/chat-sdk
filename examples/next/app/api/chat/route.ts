@@ -3,6 +3,9 @@ import {
   createIdGenerator,
   streamText,
   consumeStream,
+  tool,
+  stepCountIs,
+  jsonSchema,
   type UIMessage,
 } from "ai";
 import {
@@ -14,6 +17,41 @@ import {
 import { ensureThread, getThreadMessages, saveThreadMessages } from "@/lib/db/chat";
 
 const Providers = aiRegistryConfig.providers.map((provider) => provider.id);
+
+const agentTools = {
+  getCurrentTime: tool({
+    description: "Get the current date and time in ISO format.",
+    inputSchema: jsonSchema<{ timezone?: string }>({
+      type: "object",
+      properties: {
+        timezone: {
+          type: "string",
+          description: "Optional IANA timezone, for example America/New_York.",
+        },
+      },
+      additionalProperties: false,
+    }),
+    execute: async ({ timezone }) => {
+      const now = new Date();
+      try {
+        return {
+          iso: now.toISOString(),
+          local: timezone
+            ? now.toLocaleString("en-US", { timeZone: timezone })
+            : now.toLocaleString(),
+          timezone: timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+      } catch {
+        return {
+          iso: now.toISOString(),
+          local: now.toLocaleString(),
+          timezone: "UTC",
+          warning: `Unknown timezone: ${timezone}`,
+        };
+      }
+    },
+  }),
+};
 
 export async function POST(req: Request) {
   const {
@@ -49,6 +87,8 @@ export async function POST(req: Request) {
   const result = streamText({
     model: registry.languageModel(`${provider}:${modelId}`),
     messages: await convertToModelMessages(messages),
+    tools: agentTools,
+    stopWhen: stepCountIs(5),
     providerOptions: {
       ollama: {
         think: false,
