@@ -1,3 +1,5 @@
+@import "@sarchauhan/code-markdown/styles.css";
 @import "./markdown.css";
 @import "./chat.css";
-
+@import "./blocks.css";
+@import "./widgets.css";

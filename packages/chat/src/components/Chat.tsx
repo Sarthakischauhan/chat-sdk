@@ -6,10 +6,10 @@ import type { ChatAdapter } from "../types";
 import { ChatComposer } from "./Chat/chat";
 import { ChatContextProvider, useChat } from "./Chat/chat.context";
 import { Message } from "./Message/message";
-import { defaultWidgets } from "./Widget/default.widgets";
 import {
+  createWidgetRegistry,
   WidgetProvider,
-  type ChatWidgetRegistry,
+  type ChatWidgetInput,
   type WidgetResponse,
 } from "./Widget/widget.context";
 
@@ -19,8 +19,8 @@ type ChatProps = {
   defaultThreadId?: string;
   registryUrl?: string;
   style?: CSSProperties;
-  /** Map widget names to React components. Merged with built-in question/map widgets. */
-  widgets?: ChatWidgetRegistry;
+  /** Widget map or defineWidget(...) array. */
+  widgets?: ChatWidgetInput;
 };
 
 function ChatShell({
@@ -30,16 +30,10 @@ function ChatShell({
 }: {
   className?: string;
   style?: CSSProperties;
-  widgets?: ChatWidgetRegistry;
+  widgets?: ChatWidgetInput;
 }) {
   const { sendMessage, status } = useChat();
-  const registry = useMemo(
-    () => ({
-      ...defaultWidgets,
-      ...widgets,
-    }),
-    [widgets],
-  );
+  const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
 
   const respondToWidget = useCallback(
     async (response: WidgetResponse) => {

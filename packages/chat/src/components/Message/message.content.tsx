@@ -173,12 +173,12 @@ const TextWithLegacyThinking = ({ text, isUser }: { text: string; isUser: boolea
           {userReferenceMessage.references.map((reference, index) => (
             <div
               key={`${index}-${reference.slice(0, 16)}`}
-              className="rounded-md border border-zinc-300/80 bg-white/70 px-3 py-2 text-left text-sm dark:border-zinc-700 dark:bg-zinc-900/45"
+              className="agent-reference"
             >
-              <div className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              <div className="agent-source-label">
                 Reference {index + 1}
               </div>
-              <div className="line-clamp-3 break-words text-zinc-700 dark:text-zinc-200">
+              <div className="agent-reference-body line-clamp-3 break-words">
                 {reference}
               </div>
             </div>

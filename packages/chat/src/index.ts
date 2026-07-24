@@ -13,15 +13,21 @@ export type {
   RegistryProvider,
 } from "./components/Chat/chat.context";
 export { Message } from "./components/Message/message";
-export { defaultWidgets } from "./components/Widget/default.widgets";
-export { MapWidget } from "./components/Widget/map.widget";
-export { QuestionWidget } from "./components/Widget/question.widget";
+export { BaseWidget, type BaseWidgetProps } from "./components/Widget/base.widget";
 export {
   useWidgets,
   WidgetProvider,
+  createWidgetRegistry,
+  defineWidget,
+  type ChatWidgetDefinition,
   type ChatWidgetComponent,
+  type ChatWidgetEntry,
+  type ChatWidgetInput,
   type ChatWidgetProps,
   type ChatWidgetRegistry,
+  type DefineWidgetOptions,
+  type WidgetComponentProps,
+  type WidgetControls,
   type WidgetResponse,
 } from "./components/Widget/widget.context";
 export { WidgetRenderer } from "./components/Widget/widget.renderer";
