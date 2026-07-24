@@ -76,7 +76,8 @@
   }
 
   .md-thinking-body {
-    @reference mt-2 border-l border-border/70 pl-4 text-sm leading-6 text-muted-foreground;
+    @reference mt-2 pl-4 text-sm leading-6 text-muted-foreground;
+    opacity: 0.72;
   }
 
   .md-thinking-body > :first-child {
@@ -116,7 +117,6 @@
   }
 
   .md-thinking-pending .md-thinking-body {
-    border-color: color-mix(in oklab, var(--border) 78%, var(--foreground) 22%);
     color: color-mix(in oklab, var(--muted-foreground) 88%, var(--foreground) 12%);
   }
 

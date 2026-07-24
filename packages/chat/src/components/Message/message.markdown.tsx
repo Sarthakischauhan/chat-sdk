@@ -1,14 +1,57 @@
-import type { ComponentPropsWithoutRef } from "react";
+import { Children, isValidElement, type ComponentPropsWithoutRef } from "react";
+import { CodeMarkdown, type SupportedLanguage } from "@sarchauhan/code-markdown";
 import ReactMarkdown from "react-markdown";
 import type { PluggableList } from "unified";
 import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
 
 import { cn } from "../../lib/utils";
 
 const markdownPlugins: { remark: PluggableList; rehype: PluggableList } = {
   remark: [remarkGfm],
-  rehype: [[rehypeHighlight, { detect: true, ignoreMissing: true }]],
+  rehype: [],
+};
+
+const supportedCodeLanguages = new Set([
+  "c",
+  "h",
+  "cpp",
+  "cxx",
+  "cc",
+  "hpp",
+  "hxx",
+  "go",
+  "javascript",
+  "js",
+  "jsx",
+  "mjs",
+  "python",
+  "py",
+  "rust",
+  "rs",
+  "typescript",
+  "ts",
+  "tsx",
+]);
+
+const getCodeLanguage = (className?: string): SupportedLanguage => {
+  const match = className?.match(/language-([\w-]+)/);
+  const language = match?.[1]?.toLowerCase();
+
+  return language && supportedCodeLanguages.has(language)
+    ? (language as SupportedLanguage)
+    : "typescript";
+};
+
+const getTextContent = (value: unknown): string => {
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(getTextContent).join("");
+  }
+
+  return "";
 };
 
 const markdownComponents = {
@@ -50,49 +93,71 @@ const markdownComponents = {
   blockquote: ({ className, ...props }: ComponentPropsWithoutRef<"blockquote">) => (
     <blockquote
       className={cn(
-        "my-5 border-l-2 border-border/80 pl-4 italic text-muted-foreground",
+        "my-5 pl-4 italic text-muted-foreground/75",
         className,
       )}
       {...props}
     />
   ),
   hr: ({ className, ...props }: ComponentPropsWithoutRef<"hr">) => (
-    <hr className={cn("my-6 border-border/80", className)} {...props} />
+    <hr className={cn("my-6 h-px border-0 bg-current opacity-10", className)} {...props} />
   ),
   table: ({ className, ...props }: ComponentPropsWithoutRef<"table">) => (
     <table
       className={cn(
-        "my-5 w-full border-collapse overflow-hidden rounded-xl border border-border/70 text-left text-sm",
+        "my-5 w-full border-collapse text-left text-sm",
         className,
       )}
       {...props}
     />
   ),
   thead: ({ className, ...props }: ComponentPropsWithoutRef<"thead">) => (
-    <thead className={cn("bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground", className)} {...props} />
+    <thead className={cn("text-xs uppercase tracking-wide text-muted-foreground/70", className)} {...props} />
   ),
   tbody: ({ className, ...props }: ComponentPropsWithoutRef<"tbody">) => (
-    <tbody className={cn("divide-y divide-border/70", className)} {...props} />
+    <tbody className={cn("[&_tr+tr]:opacity-80", className)} {...props} />
   ),
   tr: ({ className, ...props }: ComponentPropsWithoutRef<"tr">) => (
-    <tr className={cn("border-b border-border/60", className)} {...props} />
+    <tr className={cn("", className)} {...props} />
   ),
   th: ({ className, ...props }: ComponentPropsWithoutRef<"th">) => (
-    <th className={cn("border border-border/60 px-3 py-2 font-medium", className)} {...props} />
+    <th className={cn("px-0 py-2 pr-5 font-medium", className)} {...props} />
   ),
   td: ({ className, ...props }: ComponentPropsWithoutRef<"td">) => (
-    <td className={cn("border border-border/60 px-3 py-2 align-top", className)} {...props} />
+    <td className={cn("px-0 py-2 pr-5 align-top opacity-80", className)} {...props } />
   ),
   pre: ({ className, children, ...props }: ComponentPropsWithoutRef<"pre">) => (
-    <pre
-      className={cn(
-        "my-5 overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950 px-4 py-4 text-[13px] leading-6 text-zinc-100 shadow-sm shadow-black/10",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-    </pre>
+    (() => {
+      const child = Children.toArray(children)[0];
+
+      if (isValidElement<{ className?: string; children?: unknown }>(child)) {
+        return (
+          <div className={cn("my-5", className)} {...props as React.ComponentPropsWithoutRef<"div">}>
+            <CodeMarkdown
+              language={getCodeLanguage(child.props.className)}
+              theme="anysphere"
+              showCopyButton
+              showLineNumbers
+              showLanguage
+            >
+              {getTextContent(child.props.children).replace(/\n$/, "")}
+            </CodeMarkdown>
+          </div>
+        );
+      }
+
+      return (
+        <pre
+          className={cn(
+            "my-5 overflow-x-auto px-0 py-2 text-[13px] leading-6 text-inherit opacity-80",
+            className,
+          )}
+          {...props}
+        >
+          {children}
+        </pre>
+      );
+    })()
   ),
   code: ({
     inline,
@@ -104,7 +169,7 @@ const markdownComponents = {
       return (
         <code
           className={cn(
-            "rounded-md border border-border/60 bg-muted/70 px-1.5 py-0.5 font-mono text-[0.85em] text-foreground",
+            "px-1 py-0.5 font-mono text-[0.85em] text-inherit opacity-80",
             className,
           )}
           {...props}

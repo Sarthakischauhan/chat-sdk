@@ -26,7 +26,7 @@ So if your backend returns `toUIMessageStreamResponse()` / `createAgentUIStreamR
 - Chat interface built with React
 - OpenAI, Anthropic, Google, and Ollama model selection
 - Streaming responses via the AI SDK UI message stream
-- Agent event rendering: reasoning, tools, steps, sources, files, and data parts
+- Agent event rendering: reasoning, tools, steps, sources, files, data parts, and widgets
 - Example Next.js app under `examples/next`
 
 ## Getting Started
@@ -110,6 +110,50 @@ export async function POST(req: Request) {
 
 Ask something like “what time is it?” and the assistant message will show tool call + result blocks, then the final text.
 
+### Widgets (generative UI)
+
+Widgets are not a separate event bus. They reuse AI SDK stream parts:
+
+1. `data-widget` parts with `{ name, props, interactive? }`
+2. Tool parts whose tool name is registered in the chat widget map
+3. Other `data-*` parts whose name matches a registered widget
+
+Register components on `Chat`:
+
+```tsx
+import { Chat, QuestionWidget, MapWidget } from "@sarchauhan/chat";
+
+<Chat
+  adapter={createDefaultFetchAdapter()}
+  widgets={{
+    question: QuestionWidget,
+    map: MapWidget,
+    // weather: WeatherWidget,
+  }}
+/>
+```
+
+Built-in `question` and `map` widgets are included by default.
+
+Server-side, emit a widget with AI SDK data parts:
+
+```ts
+import { createWidgetData } from "@sarchauhan/protocol";
+
+writer.write(
+  createWidgetData(
+    "question",
+    {
+      prompt: "Where should we meet?",
+      options: ["Cafe", "Park", "Office"],
+    },
+    { interactive: true, id: "meet-1" },
+  ),
+);
+```
+
+Or return props from a tool named `question` / `map` — the UI maps those tool results to the same widgets. Interactive widgets call back into `sendMessage` with the user's choice.
+
 ### Use protocol helpers directly
 
 Normalize AI SDK message parts for custom UI:
@@ -130,6 +174,9 @@ for (const part of parts) {
       break;
     case "tool":
       renderTool(part.toolName, part.state, part.input, part.output);
+      break;
+    case "widget":
+      renderWidget(part.name, part.props, part.interactive);
       break;
     case "step-start":
       renderStepDivider();
