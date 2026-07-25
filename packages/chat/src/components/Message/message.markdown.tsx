@@ -11,35 +11,9 @@ const markdownPlugins: { remark: PluggableList; rehype: PluggableList } = {
   rehype: [],
 };
 
-const supportedCodeLanguages = new Set([
-  "c",
-  "h",
-  "cpp",
-  "cxx",
-  "cc",
-  "hpp",
-  "hxx",
-  "go",
-  "javascript",
-  "js",
-  "jsx",
-  "mjs",
-  "python",
-  "py",
-  "rust",
-  "rs",
-  "typescript",
-  "ts",
-  "tsx",
-]);
-
 const getCodeLanguage = (className?: string): SupportedLanguage => {
   const match = className?.match(/language-([\w-]+)/);
-  const language = match?.[1]?.toLowerCase();
-
-  return language && supportedCodeLanguages.has(language)
-    ? (language as SupportedLanguage)
-    : "typescript";
+  return (match?.[1]?.toLowerCase() ?? "typescript") as SupportedLanguage;
 };
 
 const getTextContent = (value: unknown): string => {
@@ -126,36 +100,28 @@ const markdownComponents = {
   td: ({ className, ...props }: ComponentPropsWithoutRef<"td">) => (
     <td className={cn("px-0 py-2 pr-5 align-top opacity-80", className)} {...props } />
   ),
-  pre: ({ className, children, ...props }: ComponentPropsWithoutRef<"pre">) => (
+  pre: ({ className, children }: ComponentPropsWithoutRef<"pre">) => (
     (() => {
       const child = Children.toArray(children)[0];
-
-      if (isValidElement<{ className?: string; children?: unknown }>(child)) {
-        return (
-          <div className={cn("my-5", className)} {...props as React.ComponentPropsWithoutRef<"div">}>
-            <CodeMarkdown
-              language={getCodeLanguage(child.props.className)}
-              theme="anysphere"
-              showCopyButton
-              showLineNumbers
-              showLanguage
-            >
-              {getTextContent(child.props.children).replace(/\n$/, "")}
-            </CodeMarkdown>
-          </div>
-        );
-      }
+      const code = isValidElement<{ className?: string; children?: unknown }>(child)
+        ? getTextContent(child.props.children)
+        : getTextContent(children);
+      const codeClassName = isValidElement<{ className?: string }>(child)
+        ? child.props.className
+        : undefined;
 
       return (
-        <pre
-          className={cn(
-            "my-5 overflow-x-auto px-0 py-2 text-[13px] leading-6 text-inherit opacity-80",
-            className,
-          )}
-          {...props}
-        >
-          {children}
-        </pre>
+        <div className={cn("my-5", className)}>
+          <CodeMarkdown
+            language={getCodeLanguage(codeClassName)}
+            theme="anysphere"
+            showCopyButton
+            showLineNumbers
+            showLanguage
+          >
+            {code.replace(/\n$/, "")}
+          </CodeMarkdown>
+        </div>
       );
     })()
   ),
@@ -169,7 +135,7 @@ const markdownComponents = {
       return (
         <code
           className={cn(
-            "px-1 py-0.5 font-mono text-[0.85em] text-inherit opacity-80",
+            "rounded-md border border-border/60 bg-muted/70 px-1.5 py-0.5 font-mono text-[0.85em] text-foreground",
             className,
           )}
           {...props}

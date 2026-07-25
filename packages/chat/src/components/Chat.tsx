@@ -38,6 +38,7 @@ function ChatShell({
   const respondToWidget = useCallback(
     async (response: WidgetResponse) => {
       const text =
+        response.actionId ??
         response.label ??
         (typeof response.value === "string" ? response.value : JSON.stringify(response.value));
 

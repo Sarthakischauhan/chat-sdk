@@ -8,6 +8,7 @@ import type { BaseWidgetProps } from "./base.widget";
 export type WidgetResponse = {
   widgetId?: string;
   name: string;
+  actionId?: string;
   value: unknown;
   label?: string;
 };
@@ -17,7 +18,7 @@ export type WidgetControls = {
   widgetName: string;
   interactive: boolean;
   disabled: boolean;
-  respond: (value: unknown, label?: string) => Promise<void>;
+  respond: (value: unknown, label?: string, actionId?: string) => Promise<void>;
   respondWith: (response: Omit<WidgetResponse, "widgetId" | "name">) => Promise<void>;
 };
 

@@ -118,22 +118,50 @@ Widgets are not a separate event bus. They reuse AI SDK stream parts:
 2. Tool parts whose tool name is registered in the chat widget map
 3. Other `data-*` parts whose name matches a registered widget
 
-Register components on `Chat`:
+Register a widget by pairing a stream `name` with a React component. The component receives
+the streamed props directly, plus a `widget` helper for interactive responses:
 
 ```tsx
-import { Chat, QuestionWidget, MapWidget } from "@sarchauhan/chat";
+import { Chat, defineWidget, type WidgetComponentProps } from "@sarchauhan/chat";
+
+type WeatherProps = {
+  city: string;
+  temperature: number;
+  conditions: string;
+};
+
+function WeatherWidget({
+  city,
+  temperature,
+  conditions,
+  widget,
+}: WidgetComponentProps<WeatherProps>) {
+  return (
+    <div>
+      <strong>{temperature}°</strong>
+      <span>{conditions}</span>
+      {widget.interactive ? (
+        <button onClick={() => widget.respond("refresh", "Refresh weather")}>
+          Refresh
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+const widgets = [
+  defineWidget<WeatherProps>("weather", WeatherWidget, {
+    label: "Weather",
+    title: (props) => props.city,
+    status: (_props, widget) => (widget.disabled ? "Locked" : "Live"),
+  }),
+];
 
 <Chat
   adapter={createDefaultFetchAdapter()}
-  widgets={{
-    question: QuestionWidget,
-    map: MapWidget,
-    // weather: WeatherWidget,
-  }}
+  widgets={widgets}
 />
 ```
-
-Built-in `question` and `map` widgets are included by default.
 
 Server-side, emit a widget with AI SDK data parts:
 
@@ -152,7 +180,8 @@ writer.write(
 );
 ```
 
-Or return props from a tool named `question` / `map` — the UI maps those tool results to the same widgets. Interactive widgets call back into `sendMessage` with the user's choice.
+Or return props from any tool whose name is registered in `widgets` — the UI maps those tool
+results to the same widget. Interactive widgets call back into `sendMessage` with the user's choice.
 
 ### Use protocol helpers directly
 

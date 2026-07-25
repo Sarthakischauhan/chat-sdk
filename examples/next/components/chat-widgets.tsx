@@ -44,7 +44,7 @@ function QuestionWidget({ options: rawOptions, widget }: WidgetComponentProps<Qu
               disabled={!widget.interactive || widget.disabled}
               onClick={async () => {
                 setSelected(option.value);
-                await widget.respond(option.value, option.label);
+                await widget.respond(option.value, option.label, option.value);
               }}
             >
               <span className="chat-widget-option-text">{option.label}</span>

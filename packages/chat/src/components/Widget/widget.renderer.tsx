@@ -17,7 +17,7 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
   const [submitted, setSubmitted] = useState(false);
   const widgetDisabled = disabled || submitted;
 
-  const respond = async (value: unknown, label?: string) => {
+  const respond = async (value: unknown, label?: string, actionId?: string) => {
     if (!part.interactive || disabled || submitted) {
       return;
     }
@@ -26,6 +26,7 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
     await respondToWidget({
       widgetId: part.id,
       name: part.name,
+      actionId,
       value,
       label,
     });
@@ -38,7 +39,7 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
     disabled: widgetDisabled,
     respond,
     respondWith: async (response) => {
-      await respond(response.value, response.label);
+      await respond(response.value, response.label, response.actionId);
     },
   };
 
