@@ -13,6 +13,24 @@ export type {
   RegistryProvider,
 } from "./components/Chat/chat.context";
 export { Message } from "./components/Message/message";
+export { BaseWidget, type BaseWidgetProps } from "./components/Widget/base.widget";
+export {
+  useWidgets,
+  WidgetProvider,
+  createWidgetRegistry,
+  defineWidget,
+  type ChatWidgetDefinition,
+  type ChatWidgetComponent,
+  type ChatWidgetEntry,
+  type ChatWidgetInput,
+  type ChatWidgetProps,
+  type ChatWidgetRegistry,
+  type DefineWidgetOptions,
+  type WidgetComponentProps,
+  type WidgetControls,
+  type WidgetResponse,
+} from "./components/Widget/widget.context";
+export { WidgetRenderer } from "./components/Widget/widget.renderer";
 export type {
   ChatAdapter,
   ChatMessage,
@@ -28,10 +46,12 @@ export type {
   AgentMessage,
   AgentPart,
   AgentToolPart,
+  AgentWidgetPart,
 } from "@sarchauhan/protocol";
 export {
   applyAgentEvent,
   createAgentMessageState,
+  createWidgetData,
   normalizeAgentMessage,
   normalizeAgentParts,
   reduceAgentEvents,

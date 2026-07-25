@@ -17,15 +17,16 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup && cp src/styles.css dist/styles.css && cp src/markdown.css dist/markdown.css && cp src/chat.css dist/chat.css"
+    "build": "tsup && cp src/styles.css dist/styles.css && cp src/markdown.css dist/markdown.css && cp src/chat.css dist/chat.css && cp src/blocks.css dist/blocks.css && cp src/widgets.css dist/widgets.css"
   },
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@sarchauhan/protocol": "0.1.0",
     "@ai-sdk/react": "^3.0.88",
+    "@sarchauhan/code-markdown": "^0.0.3",
+    "@sarchauhan/protocol": "0.1.0",
     "ai": "^6.0.88",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

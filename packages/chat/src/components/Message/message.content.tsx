@@ -9,16 +9,23 @@ import {
   type AgentSourceDocumentPart,
   type AgentSourceUrlPart,
   type AgentToolPart,
+  type AgentWidgetPart,
+  type AgentWidgetProps,
 } from "@sarchauhan/protocol";
 import { splitThinkingSegments } from "../../lib/message/segment";
 import { parseUserReferenceMessage } from "../../lib/message/user";
 import { cn } from "../../lib/utils";
+import { useWidgets } from "../Widget/widget.context";
+import { WidgetRenderer } from "../Widget/widget.renderer";
 import { MarkdownContent } from "./message.markdown";
 
 type MessageContentProps = {
   parts: Array<{ type: string; [key: string]: unknown }>;
   isUser?: boolean;
 };
+
+const isPropsRecord = (value: unknown): value is AgentWidgetProps =>
+  !!value && typeof value === "object" && !Array.isArray(value);
 
 const formatJson = (value: unknown) => {
   if (typeof value === "string") {
@@ -166,12 +173,12 @@ const TextWithLegacyThinking = ({ text, isUser }: { text: string; isUser: boolea
           {userReferenceMessage.references.map((reference, index) => (
             <div
               key={`${index}-${reference.slice(0, 16)}`}
-              className="rounded-md border border-zinc-300/80 bg-white/70 px-3 py-2 text-left text-sm dark:border-zinc-700 dark:bg-zinc-900/45"
+              className="agent-reference"
             >
-              <div className="mb-1 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              <div className="agent-source-label">
                 Reference {index + 1}
               </div>
-              <div className="line-clamp-3 break-words text-zinc-700 dark:text-zinc-200">
+              <div className="agent-reference-body line-clamp-3 break-words">
                 {reference}
               </div>
             </div>
@@ -213,7 +220,56 @@ const TextWithLegacyThinking = ({ text, isUser }: { text: string; isUser: boolea
   );
 };
 
-const renderPart = (part: AgentPart, index: number, isUser: boolean) => {
+const asWidgetFromTool = (part: AgentToolPart): AgentWidgetPart | null => {
+  const source =
+    part.state === "output-available" && part.output !== undefined
+      ? part.output
+      : part.input;
+
+  if (!isPropsRecord(source)) {
+    return null;
+  }
+
+  return {
+    type: "widget",
+    name: part.toolName,
+    id: part.toolCallId,
+    props: source,
+    interactive: part.toolName === "question" || source.interactive === true,
+  };
+};
+
+const asWidgetFromData = (part: AgentDataPart): AgentWidgetPart => ({
+  type: "widget",
+  name: part.name,
+  id: part.id,
+  props: isPropsRecord(part.data) ? part.data : { value: part.data },
+  interactive: isPropsRecord(part.data) ? part.data.interactive === true : false,
+});
+
+const PartView = ({ part, index, isUser }: { part: AgentPart; index: number; isUser: boolean }) => {
+  const { widgets } = useWidgets();
+
+  if (part.type === "widget") {
+    return isUser ? null : <WidgetRenderer key={`widget-${part.id || index}`} part={part} />;
+  }
+
+  if (part.type === "tool" && !isUser && widgets[part.toolName]) {
+    const widgetPart = asWidgetFromTool(part);
+    if (widgetPart) {
+      return <WidgetRenderer key={`tool-widget-${part.toolCallId || index}`} part={widgetPart} />;
+    }
+  }
+
+  if (part.type === "data" && !isUser && widgets[part.name]) {
+    return (
+      <WidgetRenderer
+        key={`data-widget-${part.name}-${part.id || index}`}
+        part={asWidgetFromData(part)}
+      />
+    );
+  }
+
   switch (part.type) {
     case "text":
       return <TextWithLegacyThinking key={`text-${index}`} text={part.text} isUser={isUser} />;
@@ -259,7 +315,9 @@ export const MessageContent = ({ parts, isUser = false }: MessageContentProps) =
         isUser ? "md-content-user" : "md-content-assistant",
       )}
     >
-      {agentParts.map((part, index) => renderPart(part, index, isUser))}
+      {agentParts.map((part, index) => (
+        <PartView key={`${part.type}-${index}`} part={part} index={index} isUser={isUser} />
+      ))}
     </div>
   );
 };

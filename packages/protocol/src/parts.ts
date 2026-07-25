@@ -2,6 +2,10 @@
  * Normalized message parts used by the chat UI when rendering agent output.
  */
 
+import type { AgentWidgetPart } from "./widgets";
+
+export type { AgentWidgetPart, AgentWidgetProps } from "./widgets";
+
 export type AgentStreamState = "streaming" | "done";
 
 export type AgentToolState =
@@ -91,6 +95,7 @@ export type AgentPart =
   | AgentSourceDocumentPart
   | AgentFilePart
   | AgentDataPart
+  | AgentWidgetPart
   | AgentUnknownPart;
 
 export type AgentRole = "system" | "user" | "assistant";
