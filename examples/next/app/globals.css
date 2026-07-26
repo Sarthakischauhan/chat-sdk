@@ -127,3 +127,34 @@
     @reference bg-background text-foreground;
   }
 }
+
+.chat-app-shell {
+  display: flex;
+  min-height: 100svh;
+  align-items: stretch;
+  justify-content: center;
+  background:
+    radial-gradient(circle at top, rgba(16, 163, 127, 0.08), transparent 34%),
+    var(--background);
+  padding: 0;
+}
+
+.chat-app-frame {
+  width: min(100%, 56rem);
+  height: 100svh;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+@media (min-width: 900px) {
+  .chat-app-shell {
+    padding: 1.25rem;
+  }
+
+  .chat-app-frame {
+    height: min(860px, calc(100svh - 2.5rem));
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent) !important;
+    border-radius: 1.25rem !important;
+    overflow: hidden;
+  }
+}

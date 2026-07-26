@@ -1,5 +1,6 @@
 "use client";
-import { Fragment } from "react";
+
+import { Fragment, useCallback, useState } from "react";
 import { ProviderId, useChat } from "./chat.context";
 import {
   Select,
@@ -13,11 +14,18 @@ import {
 
 const ProviderBadge = ({ logo, name }: { logo?: string; name: string }) => {
   if (logo) {
-    return <img src={logo} alt="" aria-hidden="true" className="h-4 w-4 rounded-sm object-contain" />;
+    return (
+      <img
+        className="chat-model-provider-logo"
+        src={logo}
+        alt=""
+        aria-hidden="true"
+      />
+    );
   }
 
   return (
-    <span className="bg-muted text-muted-foreground inline-flex h-4 w-4 items-center justify-center rounded-sm text-[9px] font-semibold uppercase">
+    <span className="chat-model-provider-logo chat-model-provider-fallback" aria-hidden="true">
       {name.slice(0, 1)}
     </span>
   );
@@ -25,12 +33,16 @@ const ProviderBadge = ({ logo, name }: { logo?: string; name: string }) => {
 
 export const ChatSelect = () => {
   const { state, dispatch, status, registry } = useChat();
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
   const { provider, model } = state;
   const isSending = status === "submitted" || status === "streaming";
   const selectedValue = `${provider}::${model}`;
+  const setRootElement = useCallback((node: HTMLDivElement | null) => {
+    setPortalContainer(node?.closest(".chat-root") as HTMLElement | null);
+  }, []);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div ref={setRootElement}>
       <Select
         value={selectedValue}
         onValueChange={(value) => {
@@ -46,17 +58,21 @@ export const ChatSelect = () => {
         }}
         disabled={isSending}
       >
-        <SelectTrigger className="h-8 min-w-56 rounded-lg border-0 px-4 text-sm  cursor-pointer">
+        <SelectTrigger className="chat-model-trigger">
           <SelectValue placeholder="Select model" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          align="start"
+          className="chat-model-content"
+          portalContainer={portalContainer}
+        >
           {registry.providers.map((entry) => {
             const providerName = entry.name ?? entry.label;
 
             return (
-              <Fragment key={entry.id} >
-                <SelectGroup>
-                  <SelectLabel className="text-foreground mb-1 mt-1 flex items-center gap-2 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.08em]">
+              <Fragment key={entry.id}>
+                <SelectGroup className="chat-model-group">
+                  <SelectLabel className="chat-model-label">
                     <ProviderBadge logo={entry.logo} name={providerName} />
                     <span>{providerName}</span>
                   </SelectLabel>
@@ -64,7 +80,7 @@ export const ChatSelect = () => {
                     <SelectItem
                       key={`${entry.id}::${item.id}`}
                       value={`${entry.id}::${item.id}`}
-                      className="pl-5 text-sm  cursor-pointer"
+                      className="chat-model-item"
                     >
                       {item.label}
                     </SelectItem>

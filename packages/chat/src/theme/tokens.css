@@ -1,0 +1,125 @@
+/**
+ * Chat design tokens.
+ *
+ * Inspired by ChatGPT-style conversation psychology:
+ * calm neutrals, clear turn-taking, soft elevation, and
+ * a reading-width column that keeps focus on the dialogue.
+ */
+
+.chat-root,
+.chat-root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --chat-bg: #f7f7f8;
+  --chat-bg-elevated: #ffffff;
+  --chat-fg: #0d0d0d;
+  --chat-fg-muted: #6e6e80;
+  --chat-fg-subtle: #8e8ea0;
+
+  /* Conversation roles */
+  --chat-user-bg: #ececf1;
+  --chat-user-fg: #0d0d0d;
+  --chat-assistant-fg: #0d0d0d;
+
+  /* Chrome */
+  --chat-border: rgba(0, 0, 0, 0.08);
+  --chat-border-strong: rgba(0, 0, 0, 0.12);
+  --chat-ring: rgba(0, 0, 0, 0.18);
+  --chat-overlay: rgba(247, 247, 248, 0.92);
+  --chat-composer-bg: #ffffff;
+  --chat-composer-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+  --chat-control-bg: rgba(0, 0, 0, 0.04);
+  --chat-control-hover: rgba(0, 0, 0, 0.07);
+  --chat-primary: #0d0d0d;
+  --chat-primary-fg: #ffffff;
+  --chat-danger: #b42318;
+  --chat-accent: #10a37f;
+
+  /* Type + space */
+  --chat-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --chat-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --chat-text: 0.975rem;
+  --chat-text-sm: 0.875rem;
+  --chat-text-xs: 0.75rem;
+  --chat-leading: 1.7;
+  --chat-leading-tight: 1.35;
+  --chat-radius-sm: 0.5rem;
+  --chat-radius-md: 0.875rem;
+  --chat-radius-lg: 1.25rem;
+  --chat-radius-pill: 999px;
+  --chat-space-1: 0.25rem;
+  --chat-space-2: 0.5rem;
+  --chat-space-3: 0.75rem;
+  --chat-space-4: 1rem;
+  --chat-space-5: 1.25rem;
+  --chat-space-6: 1.5rem;
+  --chat-space-8: 2rem;
+  --chat-column: 48rem;
+  --chat-composer-space: 9.5rem;
+  --chat-composer-fade: .5rem;
+  --chat-transition: 160ms ease;
+}
+
+.chat-root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --chat-bg: #212121;
+  --chat-bg-elevated: #2f2f2f;
+  --chat-fg: #ececec;
+  --chat-fg-muted: #b4b4b4;
+  --chat-fg-subtle: #8f8f8f;
+
+  --chat-user-bg: #303030;
+  --chat-user-fg: #ececec;
+  --chat-assistant-fg: #ececec;
+
+  --chat-border: rgba(255, 255, 255, 0.08);
+  --chat-border-strong: rgba(255, 255, 255, 0.14);
+  --chat-ring: rgba(255, 255, 255, 0.22);
+  --chat-overlay: rgba(33, 33, 33, 0.92);
+  --chat-composer-bg: #2f2f2f;
+  --chat-composer-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.35);
+  --chat-control-bg: rgba(255, 255, 255, 0.06);
+  --chat-control-hover: rgba(255, 255, 255, 0.1);
+  --chat-primary: #ececec;
+  --chat-primary-fg: #212121;
+  --chat-danger: #f97066;
+  --chat-accent: #1a7f64;
+}
+
+@media (prefers-color-scheme: dark) {
+  .chat-root[data-theme="system"] {
+    color-scheme: dark;
+
+    --chat-bg: #212121;
+    --chat-bg-elevated: #2f2f2f;
+    --chat-fg: #ececec;
+    --chat-fg-muted: #b4b4b4;
+    --chat-fg-subtle: #8f8f8f;
+
+    --chat-user-bg: #303030;
+    --chat-user-fg: #ececec;
+    --chat-assistant-fg: #ececec;
+
+    --chat-border: rgba(255, 255, 255, 0.08);
+    --chat-border-strong: rgba(255, 255, 255, 0.14);
+    --chat-ring: rgba(255, 255, 255, 0.22);
+    --chat-overlay: rgba(33, 33, 33, 0.92);
+    --chat-composer-bg: #2f2f2f;
+    --chat-composer-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 12px 32px rgba(0, 0, 0, 0.35);
+    --chat-control-bg: rgba(255, 255, 255, 0.06);
+    --chat-control-hover: rgba(255, 255, 255, 0.1);
+    --chat-primary: #ececec;
+    --chat-primary-fg: #212121;
+    --chat-danger: #f97066;
+    --chat-accent: #1a7f64;
+  }
+}

@@ -117,15 +117,12 @@
   }
 
   .md-thinking-pending .md-thinking-body {
-    color: color-mix(in oklab, var(--muted-foreground) 88%, var(--foreground) 12%);
+    color: color-mix(in oklab, var(--chat-fg-muted, var(--muted-foreground)) 88%, var(--chat-fg, var(--foreground)) 12%);
   }
 
-  .md-content-assistant {
-    @reference text-zinc-900 dark:text-zinc-100;
-  }
-
+  .md-content-assistant,
   .md-content-user {
-    @reference text-zinc-900 dark:text-zinc-100;
+    color: inherit;
   }
 
   .md-content pre code.hljs {

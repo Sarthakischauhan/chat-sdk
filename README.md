@@ -24,6 +24,7 @@ So if your backend returns `toUIMessageStreamResponse()` / `createAgentUIStreamR
 ## Features
 
 - Chat interface built with React
+- Design system with light / dark / system themes
 - OpenAI, Anthropic, Google, and Ollama model selection
 - Streaming responses via the AI SDK UI message stream
 - Agent event rendering: reasoning, tools, steps, sources, files, data parts, and widgets
@@ -61,6 +62,27 @@ bun run dev
 ```
 
 Open `http://localhost:3000` in your browser.
+
+## Design system
+
+The chat window uses a ChatGPT-inspired visual language focused on calm reading and clear turn-taking:
+
+- Soft neutral canvas, not dashboard chrome
+- User messages as soft bubbles; assistant messages stay plain and content-first
+- Centered reading column with a floating composer
+- Shared CSS tokens for light and dark themes
+
+```tsx
+import { Chat } from "@sarchauhan/chat";
+
+<Chat
+  adapter={adapter}
+  defaultTheme="system" // or "light" | "dark"
+  showThemeToggle
+/>
+```
+
+Tokens live under `.chat-root` as `--chat-*` variables (`--chat-bg`, `--chat-user-bg`, `--chat-composer-bg`, …). Theme preference is stored locally and can be controlled via `theme` / `onThemeChange`.
 
 ## End-user usage
 

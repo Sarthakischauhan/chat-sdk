@@ -3,6 +3,8 @@
 import type { CSSProperties } from "react";
 import { useCallback, useMemo } from "react";
 import type { ChatAdapter } from "../types";
+import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context";
+import { ThemeToggle } from "../theme/theme.toggle";
 import { ChatComposer } from "./Chat/chat";
 import { ChatContextProvider, useChat } from "./Chat/chat.context";
 import { Message } from "./Message/message";
@@ -21,18 +23,26 @@ type ChatProps = {
   style?: CSSProperties;
   /** Widget map or defineWidget(...) array. */
   widgets?: ChatWidgetInput;
+  /** Controlled theme. Omit to manage theme internally. */
+  theme?: ChatTheme;
+  defaultTheme?: ChatTheme;
+  onThemeChange?: (theme: ChatTheme) => void;
+  showThemeToggle?: boolean;
 };
 
 function ChatShell({
   className,
   style,
   widgets,
+  showThemeToggle = true,
 }: {
   className?: string;
   style?: CSSProperties;
   widgets?: ChatWidgetInput;
+  showThemeToggle?: boolean;
 }) {
   const { sendMessage, status } = useChat();
+  const { resolvedTheme } = useTheme();
   const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
 
   const respondToWidget = useCallback(
@@ -57,7 +67,16 @@ function ChatShell({
       respondToWidget={respondToWidget}
       disabled={status === "submitted" || status === "streaming"}
     >
-      <div className={["chat-root", className].filter(Boolean).join(" ")} style={style}>
+      <div
+        className={["chat-root", className].filter(Boolean).join(" ")}
+        style={style}
+        data-theme={resolvedTheme}
+      >
+        {showThemeToggle && (
+          <div className="chat-toolbar">
+            <ThemeToggle />
+          </div>
+        )}
         <div className="chat-messages">
           <Message />
         </div>
@@ -76,10 +95,25 @@ export function Chat({
   registryUrl,
   style,
   widgets,
+  theme,
+  defaultTheme = "system",
+  onThemeChange,
+  showThemeToggle = true,
 }: ChatProps) {
   return (
-    <ChatContextProvider adapter={adapter} defaultThreadId={defaultThreadId} registryUrl={registryUrl}>
-      <ChatShell className={className} style={style} widgets={widgets} />
-    </ChatContextProvider>
+    <ThemeProvider
+      theme={theme}
+      defaultTheme={defaultTheme}
+      onThemeChange={onThemeChange}
+    >
+      <ChatContextProvider adapter={adapter} defaultThreadId={defaultThreadId} registryUrl={registryUrl}>
+        <ChatShell
+          className={className}
+          style={style}
+          widgets={widgets}
+          showThemeToggle={showThemeToggle}
+        />
+      </ChatContextProvider>
+    </ThemeProvider>
   );
 }
