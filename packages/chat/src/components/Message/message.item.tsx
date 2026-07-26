@@ -3,8 +3,6 @@
 import { Check, Pencil, X } from "lucide-react";
 import { useState } from "react";
 import type { ChatMessage } from "../../types";
-import { Button } from "../../ui/button";
-import { Textarea } from "../../ui/textarea";
 import { getUserDisplayText } from "../../lib/message/user";
 import { useChat } from "../Chat/chat.context";
 import { MessageContent } from "../Message/message.content";
@@ -40,15 +38,12 @@ export const MessageItem = ({ message }: { message: ChatMessage }) => {
 
   if (isUser) {
     return (
-      <div
-        id={getMessageTargetId(message.id)}
-        className="flex w-full justify-end rounded-2xl"
-      >
-        <div className="group flex max-w-[85%] flex-col items-end gap-1.5 sm:max-w-[72%]">
-          <div className="w-full rounded-3xl bg-muted/55 px-5 py-2.5 text-foreground shadow-xs shadow-black/[0.02] transition-colors dark:bg-muted/45">
+      <div id={getMessageTargetId(message.id)} className="chat-message chat-message-user">
+        <div className="chat-message-user-inner">
+          <div className="chat-message-bubble">
             {isEditing ? (
-              <Textarea
-                className="min-h-28 resize-none rounded-2xl border border-border/25 bg-background/65 text-sm shadow-none focus-visible:border-border/45 focus-visible:ring-2 dark:bg-background/35"
+              <textarea
+                className="chat-edit-area"
                 value={draft}
                 disabled={isSubmittingEdit}
                 autoFocus
@@ -65,35 +60,32 @@ export const MessageItem = ({ message }: { message: ChatMessage }) => {
             )}
           </div>
           {isEditing ? (
-            <div className="flex items-center gap-1">
-              <Button
+            <div className="chat-message-actions">
+              <button
                 type="button"
-                variant="ghost"
-                size="icon-xs"
-                className="cursor-pointer rounded-full text-muted-foreground hover:text-foreground disabled:cursor-not-allowed"
+                className="chat-icon-button"
+                style={{ opacity: 1 }}
                 onClick={cancelEdit}
                 disabled={isSubmittingEdit}
                 aria-label="Cancel edit"
               >
-                <X />
-              </Button>
-              <Button
+                <X size={14} />
+              </button>
+              <button
                 type="button"
-                size="icon-xs"
-                className="cursor-pointer rounded-full disabled:cursor-not-allowed"
+                className="chat-icon-button"
+                style={{ opacity: 1, color: "var(--chat-fg)" }}
                 onClick={submitEdit}
                 disabled={!draft.trim() || isSubmittingEdit || isSending}
                 aria-label="Send edited message"
               >
-                <Check />
-              </Button>
+                <Check size={14} />
+              </button>
             </div>
           ) : (
-            <Button
-              className="cursor-pointer rounded-full text-muted-foreground opacity-0 transition-[opacity,color,background-color] hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:cursor-not-allowed"
+            <button
               type="button"
-              variant="ghost"
-              size="icon-xs"
+              className="chat-icon-button"
               onClick={() => {
                 setDraft(getUserDisplayText(message));
                 setIsEditing(true);
@@ -101,8 +93,8 @@ export const MessageItem = ({ message }: { message: ChatMessage }) => {
               disabled={isSending}
               aria-label="Edit and resend message"
             >
-              <Pencil />
-            </Button>
+              <Pencil size={14} />
+            </button>
           )}
         </div>
       </div>
@@ -110,8 +102,8 @@ export const MessageItem = ({ message }: { message: ChatMessage }) => {
   }
 
   return (
-    <div className="flex w-full justify-start gap-4 text-foreground">
-      <div className="flex-1 overflow-hidden pt-1">
+    <div className="chat-message chat-message-assistant">
+      <div className="chat-message-assistant-inner">
         <MessageContent parts={message.parts} isUser={false} />
       </div>
     </div>

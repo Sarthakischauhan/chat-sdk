@@ -125,7 +125,7 @@
 }
 
 .agent-tool-error {
-  color: color-mix(in oklab, #fb7185 72%, currentColor);
+  color: color-mix(in oklab, var(--chat-danger, #fb7185) 72%, currentColor);
   opacity: 0.92;
 }
 
@@ -143,7 +143,7 @@
 
 .agent-source:hover,
 .agent-file:hover {
-  color: color-mix(in oklab, #818cf8 54%, currentColor);
+  color: color-mix(in oklab, var(--chat-accent, #10a37f) 45%, currentColor);
 }
 
 .agent-source-label {

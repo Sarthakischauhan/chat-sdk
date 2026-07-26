@@ -38,8 +38,8 @@
   height: 0.38rem;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: color-mix(in oklab, #818cf8 58%, currentColor);
-  opacity: 0.68;
+  background: var(--chat-accent, #10a37f);
+  opacity: 0.72;
 }
 
 .chat-widget-label {
@@ -101,12 +101,12 @@
 }
 
 .chat-widget-option:hover:not(:disabled) {
-  color: color-mix(in oklab, #818cf8 54%, currentColor);
+  color: color-mix(in oklab, var(--chat-accent, #10a37f) 45%, currentColor);
   padding-left: 0.18rem;
 }
 
 .chat-widget-option:focus-visible {
-  outline: 2px solid color-mix(in oklab, #818cf8 68%, transparent);
+  outline: 2px solid color-mix(in oklab, var(--chat-accent, #10a37f) 55%, transparent);
   outline-offset: 3px;
 }
 
@@ -116,7 +116,7 @@
 }
 
 .chat-widget-option[data-selected="true"] {
-  color: color-mix(in oklab, #34d399 58%, currentColor);
+  color: color-mix(in oklab, var(--chat-accent, #10a37f) 60%, currentColor);
 }
 
 .chat-widget-option-text {
@@ -169,7 +169,7 @@
 
 .chat-widget-meta a:hover,
 .chat-widget-inline-meta a:hover {
-  color: color-mix(in oklab, #818cf8 54%, currentColor);
+  color: color-mix(in oklab, var(--chat-accent, #10a37f) 45%, currentColor);
   opacity: 1;
 }
 
@@ -203,7 +203,7 @@
   height: 1.8rem;
   place-items: center;
   border-radius: 999px;
-  color: color-mix(in oklab, #818cf8 70%, currentColor);
+  color: var(--chat-accent, #10a37f);
   opacity: 0.84;
   transform: translate(-50%, -50%);
   pointer-events: none;

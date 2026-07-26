@@ -1,7 +1,6 @@
 "use client";
 
 import { X } from "lucide-react";
-import { Button } from "../../ui/button";
 import { useChat } from "./chat.context";
 
 export const ChatReferences = () => {
@@ -12,25 +11,17 @@ export const ChatReferences = () => {
   }
 
   return (
-    <div className="flex flex-col gap-2 px-1">
+    <div className="chat-references">
       {state.references.map((reference, index) => (
-        <div
-          key={reference.id}
-          className="flex min-h-10 items-start gap-2 rounded-md border bg-muted/45 px-3 py-2 text-sm"
-        >
+        <div key={reference.id} className="chat-reference">
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-medium text-muted-foreground">
-              Reference {index + 1}
-            </div>
-            <div className="line-clamp-2 break-words text-foreground/85">
-              {reference.text}
-            </div>
+            <div className="chat-reference-label">Reference {index + 1}</div>
+            <div className="chat-reference-text">{reference.text}</div>
           </div>
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="-mr-1 mt-0.5 shrink-0"
+            className="chat-icon-button"
+            style={{ opacity: 1 }}
             aria-label={`Remove reference ${index + 1}`}
             onClick={() =>
               dispatch({
@@ -39,8 +30,8 @@ export const ChatReferences = () => {
               })
             }
           >
-            <X />
-          </Button>
+            <X size={14} />
+          </button>
         </div>
       ))}
     </div>

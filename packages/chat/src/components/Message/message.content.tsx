@@ -169,18 +169,16 @@ const TextWithLegacyThinking = ({ text, isUser }: { text: string; isUser: boolea
   return (
     <>
       {userReferenceMessage && (
-        <div className="mb-3 flex flex-col gap-2">
+        <div className="chat-user-reference">
           {userReferenceMessage.references.map((reference, index) => (
             <div
               key={`${index}-${reference.slice(0, 16)}`}
-              className="agent-reference"
+              className="chat-user-reference-item"
             >
-              <div className="agent-source-label">
+              <div className="chat-reference-label">
                 Reference {index + 1}
               </div>
-              <div className="agent-reference-body line-clamp-3 break-words">
-                {reference}
-              </div>
+              <div className="chat-reference-text">{reference}</div>
             </div>
           ))}
         </div>
@@ -311,7 +309,7 @@ export const MessageContent = ({ parts, isUser = false }: MessageContentProps) =
   return (
     <div
       className={cn(
-        "space-y-4 break-words text-[15px] leading-8 text-inherit",
+        "chat-message-content break-words",
         isUser ? "md-content-user" : "md-content-assistant",
       )}
     >

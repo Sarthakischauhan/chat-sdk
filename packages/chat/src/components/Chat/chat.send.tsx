@@ -1,6 +1,7 @@
-import { useChat } from "./chat.context";
+"use client";
+
 import { Send, Square } from "lucide-react";
-import { Button } from "../../ui/button";
+import { useChat } from "./chat.context";
 
 export const ChatSend = () => {
   const { state, status, submitInput, stopResponse } = useChat();
@@ -8,14 +9,15 @@ export const ChatSend = () => {
   const isSending = status === "submitted" || status === "streaming";
 
   return (
-    <Button
-      className="relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full shadow-xs transition-[transform,box-shadow,background-color] hover:shadow-sm active:scale-95 disabled:cursor-not-allowed"
+    <button
+      className="chat-send"
       type="button"
+      data-state={isSending ? "stop" : "send"}
       onClick={isSending ? stopResponse : submitInput}
       disabled={isSending ? false : sendDisabled}
       aria-label={isSending ? "Stop response" : "Send message"}
     >
-      {isSending ? <Square size={16} fill="currentColor" /> : <Send size={18} />}
-    </Button>
+      {isSending ? <Square size={14} fill="currentColor" /> : <Send size={16} />}
+    </button>
   );
 };
