@@ -17,7 +17,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup && cp src/styles.css dist/styles.css && cp src/markdown.css dist/markdown.css && cp src/chat.css dist/chat.css && cp src/chat.select.css dist/chat.select.css && cp src/blocks.css dist/blocks.css && cp src/widgets.css dist/widgets.css && mkdir -p dist/theme && cp src/theme/tokens.css dist/theme/tokens.css"
+    "build": "tsup"
   },
   "peerDependencies": {
     "react": ">=18",
