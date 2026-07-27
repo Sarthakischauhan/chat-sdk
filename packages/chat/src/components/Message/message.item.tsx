@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Pencil, X } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { useState } from "react";
 import type { ChatMessage } from "../../types";
 import { getUserDisplayText } from "../../lib/message/user";
@@ -39,7 +39,7 @@ export const MessageItem = ({ message }: { message: ChatMessage }) => {
   if (isUser) {
     return (
       <div id={getMessageTargetId(message.id)} className="chat-message chat-message-user">
-        <div className="chat-message-user-inner">
+        <div className={`chat-message-user-inner${isEditing ? " is-editing" : ""}`}>
           <div className="chat-message-bubble">
             {isEditing ? (
               <textarea
@@ -63,23 +63,19 @@ export const MessageItem = ({ message }: { message: ChatMessage }) => {
             <div className="chat-message-actions">
               <button
                 type="button"
-                className="chat-icon-button"
-                style={{ opacity: 1 }}
+                className="chat-text-button"
                 onClick={cancelEdit}
                 disabled={isSubmittingEdit}
-                aria-label="Cancel edit"
               >
-                <X size={14} />
+                Cancel
               </button>
               <button
                 type="button"
-                className="chat-icon-button"
-                style={{ opacity: 1, color: "var(--chat-fg)" }}
+                className="chat-text-button chat-text-button-done"
                 onClick={submitEdit}
                 disabled={!draft.trim() || isSubmittingEdit || isSending}
-                aria-label="Send edited message"
               >
-                <Check size={14} />
+                Done
               </button>
             </div>
           ) : (
