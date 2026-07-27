@@ -13,15 +13,11 @@ export const ChatReferences = () => {
   return (
     <div className="chat-references">
       {state.references.map((reference, index) => (
-        <div key={reference.id} className="chat-reference">
-          <div className="min-w-0 flex-1">
-            <div className="chat-reference-label">Reference {index + 1}</div>
-            <div className="chat-reference-text">{reference.text}</div>
-          </div>
+        <div key={reference.id} className="chat-reference" title={reference.text}>
+          <span className="chat-reference-text">{reference.text}</span>
           <button
             type="button"
             className="chat-icon-button"
-            style={{ opacity: 1 }}
             aria-label={`Remove reference ${index + 1}`}
             onClick={() =>
               dispatch({
@@ -30,7 +26,7 @@ export const ChatReferences = () => {
               })
             }
           >
-            <X size={14} />
+            <X size={12} />
           </button>
         </div>
       ))}

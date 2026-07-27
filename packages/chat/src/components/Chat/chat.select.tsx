@@ -63,6 +63,7 @@ export const ChatSelect = () => {
         </SelectTrigger>
         <SelectContent
           align="start"
+          position="popper"
           className="chat-model-content"
           portalContainer={portalContainer}
         >

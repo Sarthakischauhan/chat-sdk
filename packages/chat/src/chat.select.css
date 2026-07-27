@@ -16,21 +16,23 @@
   z-index: 10;
   min-width: var(--radix-select-trigger-width, 11rem);
   max-width: min(20rem, calc(100vw - 2rem));
-  max-height: min(22rem, var(--radix-select-content-available-height, 22rem));
-  overflow: hidden;
+  max-height: min(16rem, var(--radix-select-content-available-height, 16rem));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 1px solid var(--chat-border, rgba(0, 0, 0, 0.08));
   border-radius: var(--chat-radius-md, 0.875rem);
   background: var(--chat-composer-bg, #ffffff);
   color: var(--chat-fg, #0d0d0d);
   box-shadow: var(--chat-composer-shadow, 0 8px 24px rgba(0, 0, 0, 0.08));
   padding: var(--chat-space-1, 0.25rem);
+  scrollbar-gutter: stable;
 }
 
 .chat-model-content [data-slot="select-viewport"] {
-  max-height: min(22rem, var(--radix-select-content-available-height, 22rem));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  height: auto !important;
+  max-height: none;
+  overflow: visible;
 }
 
 .chat-model-content [data-slot="select-group"] + [data-slot="select-group"] {
