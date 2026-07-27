@@ -4,6 +4,10 @@ export {
   ChatContextProvider,
   ProviderId,
   useChat,
+  useComposer,
+  useMessages,
+  useModel,
+  useThread,
   type ChatReference,
   type SendMessage,
 } from "./components/Chat/chat.context";

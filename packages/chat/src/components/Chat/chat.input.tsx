@@ -1,18 +1,15 @@
 "use client";
 
-import { useChat } from "./chat.context";
+import { useComposer } from "./context";
 
 export const ChatInput = () => {
-  const { state, dispatch, submitInput } = useChat();
-  const { input, disabled } = state;
+  const { input, setInput, disabled, submitInput } = useComposer();
 
   return (
     <div className="chat-composer-input">
       <textarea
         value={input}
-        onChange={(event) =>
-          dispatch({ type: "setInput", data: { input: event.target.value } })
-        }
+        onChange={(event) => setInput(event.target.value)}
         placeholder="Message..."
         disabled={disabled}
         rows={1}

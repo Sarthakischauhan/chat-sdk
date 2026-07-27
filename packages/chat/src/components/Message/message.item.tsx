@@ -4,18 +4,17 @@ import { Pencil } from "lucide-react";
 import { useState } from "react";
 import type { ChatMessage } from "../../types";
 import { getUserDisplayText } from "../../lib/message/user";
-import { useChat } from "../Chat/chat.context";
+import { useMessages } from "../Chat/context";
 import { MessageContent } from "../Message/message.content";
 
 const getMessageTargetId = (messageId: string) => `chat-message-${messageId}`;
 
 export const MessageItem = ({ message }: { message: ChatMessage }) => {
-  const { editAndResendMessage, status } = useChat();
+  const { editAndResendMessage, isSending } = useMessages();
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(() => getUserDisplayText(message));
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const isUser = message.role === "user";
-  const isSending = status === "submitted" || status === "streaming";
 
   const cancelEdit = () => {
     setDraft(getUserDisplayText(message));

@@ -1,7 +1,6 @@
 "use client";
 
 import { Fragment, useCallback, useState } from "react";
-import { ProviderId, useChat } from "./chat.context";
 import {
   Select,
   SelectContent,
@@ -11,6 +10,7 @@ import {
   SelectTrigger,
   SelectItem,
 } from "../../ui/select";
+import { ProviderId, useMessages, useModel } from "./context";
 
 const ProviderBadge = ({ logo, name }: { logo?: string; name: string }) => {
   if (logo) {
@@ -32,10 +32,9 @@ const ProviderBadge = ({ logo, name }: { logo?: string; name: string }) => {
 };
 
 export const ChatSelect = () => {
-  const { state, dispatch, status, registry } = useChat();
+  const { provider, model, registry, setProvider } = useModel();
+  const { isSending } = useMessages();
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
-  const { provider, model } = state;
-  const isSending = status === "submitted" || status === "streaming";
   const selectedValue = `${provider}::${model}`;
   const setRootElement = useCallback((node: HTMLDivElement | null) => {
     setPortalContainer(node?.closest(".chat-root") as HTMLElement | null);
@@ -47,14 +46,7 @@ export const ChatSelect = () => {
         value={selectedValue}
         onValueChange={(value) => {
           const [nextProvider, nextModel] = value.split("::");
-
-          dispatch({
-            type: "setProvider",
-            data: {
-              provider: nextProvider as ProviderId,
-              model: nextModel,
-            },
-          });
+          setProvider(nextProvider as ProviderId, nextModel);
         }}
         disabled={isSending}
       >

@@ -6,7 +6,7 @@ import type { ChatAdapter } from "../types";
 import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context";
 import { ThemeToggle } from "../theme/theme.toggle";
 import { ChatComposer } from "./Chat/chat";
-import { ChatContextProvider, useChat } from "./Chat/chat.context";
+import { ChatContextProvider, useMessages } from "./Chat/chat.context";
 import { Message } from "./Message/message";
 import {
   createWidgetRegistry,
@@ -41,7 +41,7 @@ function ChatShell({
   widgets?: ChatWidgetInput;
   showThemeToggle?: boolean;
 }) {
-  const { sendMessage, status } = useChat();
+  const { sendMessage, isSending } = useMessages();
   const { resolvedTheme } = useTheme();
   const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
 
@@ -65,7 +65,7 @@ function ChatShell({
     <WidgetProvider
       widgets={registry}
       respondToWidget={respondToWidget}
-      disabled={status === "submitted" || status === "streaming"}
+      disabled={isSending}
     >
       <div
         className={["chat-root", className].filter(Boolean).join(" ")}
