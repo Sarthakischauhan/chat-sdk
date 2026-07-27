@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { ChatAdapter } from "../types";
 import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context";
 import { ThemeToggle } from "../theme/theme.toggle";
@@ -41,9 +41,19 @@ function ChatShell({
   widgets?: ChatWidgetInput;
   showThemeToggle?: boolean;
 }) {
-  const { sendMessage, isSending } = useMessages();
+  const { sendMessage, isSending, messages, status } = useMessages();
   const { resolvedTheme } = useTheme();
   const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
+  const messagesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = messagesRef.current;
+    if (!container) {
+      return;
+    }
+
+    container.scrollTo({ top: container.scrollHeight, behavior: "auto" });
+  }, [messages, status]);
 
   const respondToWidget = useCallback(
     async (response: WidgetResponse) => {
@@ -77,7 +87,7 @@ function ChatShell({
             <ThemeToggle />
           </div>
         )}
-        <div className="chat-messages">
+        <div className="chat-messages" ref={messagesRef}>
           <Message />
         </div>
         <div className="chat-composer">

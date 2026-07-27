@@ -381,6 +381,25 @@
   box-shadow: none;
 }
 
+.chat-reference-action {
+  position: fixed;
+  z-index: 50;
+  height: 2rem;
+  transform: translateX(-50%);
+  cursor: pointer;
+  border-radius: var(--chat-radius-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--chat-text-xs);
+  box-shadow: var(--chat-composer-shadow);
+  pointer-events: auto;
+  user-select: none;
+  transition: none;
+}
+
+.chat-reference-action:hover {
+  cursor: pointer;
+}
+
 .chat-references {
   display: flex;
   flex-wrap: wrap;
