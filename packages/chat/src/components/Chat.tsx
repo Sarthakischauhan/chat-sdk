@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import type { ChatAdapter } from "../types";
 import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context";
 import { ThemeToggle } from "../theme/theme.toggle";
@@ -46,14 +46,36 @@ function ChatShell({
   const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
   const messagesRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const container = messagesRef.current;
     if (!container) {
       return;
     }
 
-    container.scrollTo({ top: container.scrollHeight, behavior: "auto" });
+    container.scrollTop = container.scrollHeight;
   }, [messages, status]);
+
+  useLayoutEffect(() => {
+    const container = messagesRef.current;
+    if (!container || (status !== "submitted" && status !== "streaming")) {
+      return;
+    }
+
+    const scrollToEnd = () => {
+      container.scrollTop = container.scrollHeight;
+    };
+
+    const observer = new ResizeObserver(scrollToEnd);
+    observer.observe(container);
+    const inner = container.firstElementChild;
+    if (inner) {
+      observer.observe(inner);
+    }
+
+    scrollToEnd();
+
+    return () => observer.disconnect();
+  }, [status]);
 
   const respondToWidget = useCallback(
     async (response: WidgetResponse) => {

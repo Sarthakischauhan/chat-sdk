@@ -2,7 +2,6 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Button } from "../../ui/button";
 
 type SelectionAction = {
   text: string;
@@ -10,7 +9,35 @@ type SelectionAction = {
   left: number;
 };
 
-const getSelectionAction = (): SelectionAction | null => {
+const isEditableSelection = (selection: Selection) => {
+  const anchorElement = selection.anchorNode?.parentElement;
+  const focusElement = selection.focusNode?.parentElement;
+
+  return Boolean(
+    anchorElement?.closest("textarea,input,[contenteditable='true']") ||
+      focusElement?.closest("textarea,input,[contenteditable='true']"),
+  );
+};
+
+const getSelectionRect = (range: Range) => {
+  const rect = range.getBoundingClientRect();
+  const fallbackRect = range.getClientRects()[0];
+  return rect.width || rect.height ? rect : fallbackRect;
+};
+
+const positionFromRange = (range: Range): Pick<SelectionAction, "top" | "left"> | null => {
+  const selectionRect = getSelectionRect(range);
+  if (!selectionRect) {
+    return null;
+  }
+
+  return {
+    top: Math.max(8, selectionRect.top - 40),
+    left: selectionRect.left + selectionRect.width / 2,
+  };
+};
+
+const readSelection = (): { text: string; range: Range } | null => {
   const selection = window.getSelection();
   const text = selection?.toString().replace(/\s+/g, " ").trim();
 
@@ -18,29 +45,13 @@ const getSelectionAction = (): SelectionAction | null => {
     return null;
   }
 
-  const anchorElement = selection.anchorNode?.parentElement;
-  const focusElement = selection.focusNode?.parentElement;
-
-  if (
-    anchorElement?.closest("textarea,input,[contenteditable='true']") ||
-    focusElement?.closest("textarea,input,[contenteditable='true']")
-  ) {
-    return null;
-  }
-
-  const range = selection.getRangeAt(0);
-  const rect = range.getBoundingClientRect();
-  const fallbackRect = range.getClientRects()[0];
-  const selectionRect = rect.width || rect.height ? rect : fallbackRect;
-
-  if (!selectionRect) {
+  if (isEditableSelection(selection)) {
     return null;
   }
 
   return {
     text,
-    top: Math.max(8, selectionRect.top - 40),
-    left: selectionRect.left + selectionRect.width / 2,
+    range: selection.getRangeAt(0).cloneRange(),
   };
 };
 
@@ -55,20 +66,54 @@ export const ChatTooltip = memo(function ChatTooltip({
   onAddReference,
 }: ChatTooltipProps) {
   const [selectionAction, setSelectionAction] = useState<SelectionAction | null>(null);
-  const frameRef = useRef<number | null>(null);
+  const rangeRef = useRef<Range | null>(null);
+  const textRef = useRef("");
   const onAddReferenceRef = useRef(onAddReference);
   onAddReferenceRef.current = onAddReference;
 
   useEffect(() => {
-    const syncSelectionAction = () => {
-      if (frameRef.current != null) {
-        window.cancelAnimationFrame(frameRef.current);
+    const clearSelectionAction = () => {
+      rangeRef.current = null;
+      textRef.current = "";
+      setSelectionAction(null);
+    };
+
+    const syncPosition = () => {
+      const range = rangeRef.current;
+      if (!range) {
+        return;
       }
 
-      frameRef.current = window.requestAnimationFrame(() => {
-        frameRef.current = null;
-        setSelectionAction(getSelectionAction());
+      const position = positionFromRange(range);
+      if (!position) {
+        clearSelectionAction();
+        return;
+      }
+
+      setSelectionAction({
+        text: textRef.current,
+        top: position.top,
+        left: position.left,
       });
+    };
+
+    const captureSelection = () => {
+      const next = readSelection();
+      if (!next) {
+        clearSelectionAction();
+        return;
+      }
+
+      rangeRef.current = next.range;
+      textRef.current = next.text;
+      syncPosition();
+    };
+
+    const onSelectionChange = () => {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed || !selection.toString().trim()) {
+        clearSelectionAction();
+      }
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -76,34 +121,31 @@ export const ChatTooltip = memo(function ChatTooltip({
         return;
       }
 
-      const next = getSelectionAction();
-      if (!next) {
+      const text = textRef.current || readSelection()?.text;
+      if (!text) {
         return;
       }
 
       event.preventDefault();
-      onAddReferenceRef.current(next.text);
-      setSelectionAction(null);
+      onAddReferenceRef.current(text);
       window.getSelection()?.removeAllRanges();
+      clearSelectionAction();
     };
 
-    document.addEventListener("selectionchange", syncSelectionAction);
-    document.addEventListener("mouseup", syncSelectionAction);
-    document.addEventListener("keyup", syncSelectionAction);
+    document.addEventListener("mouseup", captureSelection);
+    document.addEventListener("keyup", captureSelection);
+    document.addEventListener("selectionchange", onSelectionChange);
     document.addEventListener("keydown", onKeyDown);
-    window.addEventListener("scroll", syncSelectionAction, true);
-    window.addEventListener("resize", syncSelectionAction);
+    window.addEventListener("scroll", syncPosition, true);
+    window.addEventListener("resize", syncPosition);
 
     return () => {
-      if (frameRef.current != null) {
-        window.cancelAnimationFrame(frameRef.current);
-      }
-      document.removeEventListener("selectionchange", syncSelectionAction);
-      document.removeEventListener("mouseup", syncSelectionAction);
-      document.removeEventListener("keyup", syncSelectionAction);
+      document.removeEventListener("mouseup", captureSelection);
+      document.removeEventListener("keyup", captureSelection);
+      document.removeEventListener("selectionchange", onSelectionChange);
       document.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("scroll", syncSelectionAction, true);
-      window.removeEventListener("resize", syncSelectionAction);
+      window.removeEventListener("scroll", syncPosition, true);
+      window.removeEventListener("resize", syncPosition);
     };
   }, []);
 
@@ -112,22 +154,23 @@ export const ChatTooltip = memo(function ChatTooltip({
   }
 
   return createPortal(
-    <Button
+    <button
       type="button"
-      size="sm"
-      className="chat-reference-action transition-none"
+      className="chat-reference-action"
       style={{ top: selectionAction.top, left: selectionAction.left }}
       data-reference-action
       aria-label="Add selected text as reference"
       onMouseDown={(event) => event.preventDefault()}
       onClick={() => {
         onAddReference(selectionAction.text);
-        setSelectionAction(null);
         window.getSelection()?.removeAllRanges();
+        rangeRef.current = null;
+        textRef.current = "";
+        setSelectionAction(null);
       }}
     >
       {getReferenceShortcutLabel()}
-    </Button>,
+    </button>,
     document.body,
   );
 });

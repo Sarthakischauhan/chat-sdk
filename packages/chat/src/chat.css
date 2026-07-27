@@ -65,7 +65,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--chat-space-8) var(--chat-space-4) calc(var(--chat-composer-space) + var(--chat-space-6));
-  scroll-behavior: smooth;
 }
 
 .chat-messages-inner {
@@ -384,20 +383,31 @@
 .chat-reference-action {
   position: fixed;
   z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 2rem;
+  padding: 0 0.65rem;
   transform: translateX(-50%);
-  cursor: pointer;
+  border: 0;
   border-radius: var(--chat-radius-sm);
+  background: var(--chat-fg);
+  color: var(--chat-bg);
+  cursor: pointer;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: var(--chat-text-xs);
+  font-weight: 550;
+  line-height: 1;
   box-shadow: var(--chat-composer-shadow);
   pointer-events: auto;
   user-select: none;
   transition: none;
+  white-space: nowrap;
 }
 
 .chat-reference-action:hover {
   cursor: pointer;
+  opacity: 0.92;
 }
 
 .chat-references {
