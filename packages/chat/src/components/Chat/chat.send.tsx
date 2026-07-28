@@ -1,12 +1,11 @@
 "use client";
 
 import { Send, Square } from "lucide-react";
-import { useChat } from "./chat.context";
+import { useComposer, useMessages } from "./context";
 
 export const ChatSend = () => {
-  const { state, status, submitInput, stopResponse } = useChat();
-  const { sendDisabled } = state;
-  const isSending = status === "submitted" || status === "streaming";
+  const { canSend, submitInput } = useComposer();
+  const { status, stopResponse, isSending } = useMessages();
 
   return (
     <button
@@ -14,7 +13,7 @@ export const ChatSend = () => {
       type="button"
       data-state={isSending ? "stop" : "send"}
       onClick={isSending ? stopResponse : submitInput}
-      disabled={isSending ? false : sendDisabled}
+      disabled={isSending ? false : !canSend}
       aria-label={isSending ? "Stop response" : "Send message"}
     >
       {isSending ? <Square size={14} fill="currentColor" /> : <Send size={16} />}

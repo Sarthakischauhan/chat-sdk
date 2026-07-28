@@ -1,10 +1,11 @@
 "use client";
 
-import { useChat } from "../Chat/chat.context";
+import { useMessages, useThread } from "../Chat/context";
 import { MessageItem } from "../Message/message.item";
 
 export const Message = () => {
-  const { messages, isLoadingThread } = useChat();
+  const { messages } = useMessages();
+  const { isLoadingThread } = useThread();
 
   if (isLoadingThread) {
     return (
