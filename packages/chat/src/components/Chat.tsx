@@ -1,5 +1,6 @@
 "use client";
 
+import { PenSquare } from "lucide-react";
 import type { CSSProperties } from "react";
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import type { ChatAdapter } from "../types";
@@ -7,6 +8,7 @@ import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context"
 import { ThemeToggle } from "../theme/theme.toggle";
 import { ChatComposer } from "./Chat/chat";
 import { ChatContextProvider, useMessages } from "./Chat/chat.context";
+import { useThread } from "./Chat/context";
 import { Message } from "./Message/message";
 import {
   createWidgetRegistry,
@@ -42,6 +44,7 @@ function ChatShell({
   showThemeToggle?: boolean;
 }) {
   const { sendMessage, isSending, messages, status } = useMessages();
+  const { createThread } = useThread();
   const { resolvedTheme } = useTheme();
   const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
   const messagesRef = useRef<HTMLDivElement>(null);
@@ -104,11 +107,21 @@ function ChatShell({
         style={style}
         data-theme={resolvedTheme}
       >
-        {showThemeToggle && (
-          <div className="chat-toolbar">
+        <div className="chat-toolbar">
+          <button
+            type="button"
+            className="chat-theme-toggle"
+            onClick={() => void createThread()}
+            aria-label="Start a new chat"
+            title="New chat"
+            disabled={isSending}
+          >
+            <PenSquare size={16} strokeWidth={1.75} />
+          </button>
+          {showThemeToggle && (
             <ThemeToggle />
-          </div>
-        )}
+          )}
+        </div>
         <div className="chat-messages" ref={messagesRef}>
           <Message />
         </div>

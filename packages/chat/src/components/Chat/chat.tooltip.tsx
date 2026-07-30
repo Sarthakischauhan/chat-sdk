@@ -125,12 +125,14 @@ export const ChatTooltip = memo(function ChatTooltip({
 
     document.addEventListener("mouseup", captureSelection);
     document.addEventListener("keyup", captureSelection);
+    document.addEventListener("selectionchange", captureSelection);
     window.addEventListener("scroll", syncPosition, true);
     window.addEventListener("resize", syncPosition);
 
     return () => {
       document.removeEventListener("mouseup", captureSelection);
       document.removeEventListener("keyup", captureSelection);
+      document.removeEventListener("selectionchange", captureSelection);
       window.removeEventListener("scroll", syncPosition, true);
       window.removeEventListener("resize", syncPosition);
     };
@@ -146,7 +148,7 @@ export const ChatTooltip = memo(function ChatTooltip({
       className="chat-reference-action"
       style={{ top: selectionAction.top, left: selectionAction.left }}
       aria-label="Add selected text as reference"
-      onMouseDown={(event) => event.preventDefault()}
+      onPointerDown={(event) => event.preventDefault()}
       onClick={() => {
         onAddReference(selectionAction.text);
         window.getSelection()?.removeAllRanges();

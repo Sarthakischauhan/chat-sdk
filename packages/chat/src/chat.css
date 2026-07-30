@@ -402,6 +402,7 @@
   box-shadow: var(--chat-composer-shadow);
   pointer-events: auto;
   user-select: none;
+  touch-action: manipulation;
   transition: none;
   white-space: nowrap;
 }
