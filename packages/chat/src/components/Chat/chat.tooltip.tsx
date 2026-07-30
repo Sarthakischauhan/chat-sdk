@@ -1,54 +1,71 @@
 "use client";
 
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Button } from "../../ui/button";
 
 type SelectionAction = {
   text: string;
   top: number;
   left: number;
+  container: HTMLElement;
 };
 
-const getSelectionAction = (): SelectionAction | null => {
-  const selection = window.getSelection();
-  const text = selection?.toString().replace(/\s+/g, " ").trim();
-
-  if (!selection || !text || selection.rangeCount === 0) {
-    return null;
-  }
-
+const isEditableSelection = (selection: Selection) => {
   const anchorElement = selection.anchorNode?.parentElement;
   const focusElement = selection.focusNode?.parentElement;
 
-  if (
-    anchorElement?.closest("textarea,input,button,[data-reference-action]") ||
-    focusElement?.closest("textarea,input,button,[data-reference-action]")
-  ) {
+  return Boolean(
+    anchorElement?.closest("textarea,input,[contenteditable='true']") ||
+      focusElement?.closest("textarea,input,[contenteditable='true']"),
+  );
+};
+
+const getSelectionRect = (range: Range) => {
+  const rect = range.getBoundingClientRect();
+  const fallbackRect = range.getClientRects()[0];
+  return rect.width || rect.height ? rect : fallbackRect;
+};
+
+const positionFromRange = (
+  range: Range,
+  container: HTMLElement,
+): Pick<SelectionAction, "top" | "left"> | null => {
+  const selectionRect = getSelectionRect(range);
+  if (!selectionRect) {
     return null;
   }
 
-  const range = selection.getRangeAt(0);
-  const rect = range.getBoundingClientRect();
-  const fallbackRect = range.getClientRects()[0];
-  const selectionRect = rect.width || rect.height ? rect : fallbackRect;
+  const containerRect = container.getBoundingClientRect();
 
-  if (!selectionRect) {
+  return {
+    top: Math.max(8, selectionRect.top - containerRect.top + container.scrollTop),
+    left: selectionRect.left - containerRect.left + container.scrollLeft + selectionRect.width / 2,
+  };
+};
+
+const readSelection = (): { text: string; range: Range } | null => {
+  const selection = window.getSelection();
+  const text = selection?.toString().replace(/\s+/g, " ").trim();
+
+  if (!selection || !text || selection.rangeCount === 0 || selection.isCollapsed) {
+    return null;
+  }
+
+  if (isEditableSelection(selection)) {
     return null;
   }
 
   return {
     text,
-    top: Math.max(8, selectionRect.top - 44),
-    left: Math.min(
-      window.innerWidth - 96,
-      Math.max(8, selectionRect.left + selectionRect.width / 2 - 36),
-    ),
+    range: selection.getRangeAt(0).cloneRange(),
   };
 };
 
-const getReferenceShortcutLabel = () =>
-  /Mac|iPhone|iPad|iPod/.test(navigator?.platform) ? "Cmd + I" : "Ctrl + I";
+const getPortalContainer = (range: Range) => {
+  const node = range.commonAncestorContainer;
+  const element = node instanceof Element ? node : node.parentElement;
+  return element?.closest(".chat-messages") as HTMLElement | null;
+};
 
 type ChatTooltipProps = {
   onAddReference: (text: string) => void;
@@ -58,42 +75,90 @@ export const ChatTooltip = memo(function ChatTooltip({
   onAddReference,
 }: ChatTooltipProps) {
   const [selectionAction, setSelectionAction] = useState<SelectionAction | null>(null);
+  const rangeRef = useRef<Range | null>(null);
+  const textRef = useRef("");
 
   useEffect(() => {
-    const updateSelectionAction = () => {
-      window.setTimeout(() => {
-        setSelectionAction(getSelectionAction());
-      }, 0);
+    const clearSelectionAction = () => {
+      rangeRef.current = null;
+      textRef.current = "";
+      setSelectionAction(null);
     };
 
-    document.addEventListener("selectionchange", updateSelectionAction);
+    const syncPosition = () => {
+      const range = rangeRef.current;
+      if (!range) {
+        return;
+      }
+
+      const container = getPortalContainer(range);
+      if (!container) {
+        clearSelectionAction();
+        return;
+      }
+
+      const position = positionFromRange(range, container);
+      if (!position) {
+        clearSelectionAction();
+        return;
+      }
+
+      setSelectionAction({
+        text: textRef.current,
+        top: position.top,
+        left: position.left,
+        container,
+      });
+    };
+
+    const captureSelection = () => {
+      const next = readSelection();
+      if (!next) {
+        clearSelectionAction();
+        return;
+      }
+
+      rangeRef.current = next.range;
+      textRef.current = next.text;
+      syncPosition();
+    };
+
+    document.addEventListener("mouseup", captureSelection);
+    document.addEventListener("keyup", captureSelection);
+    document.addEventListener("selectionchange", captureSelection);
+    window.addEventListener("scroll", syncPosition, true);
+    window.addEventListener("resize", syncPosition);
 
     return () => {
-      document.removeEventListener("selectionchange", updateSelectionAction);
+      document.removeEventListener("mouseup", captureSelection);
+      document.removeEventListener("keyup", captureSelection);
+      document.removeEventListener("selectionchange", captureSelection);
+      window.removeEventListener("scroll", syncPosition, true);
+      window.removeEventListener("resize", syncPosition);
     };
-  }, []);
+  }, [onAddReference]);
 
   if (!selectionAction) {
     return null;
   }
 
   return createPortal(
-    <Button
+    <button
       type="button"
-      size="sm"
-      className="cursor-pointer fixed z-50 h-8 rounded-md px-2.5 font-mono text-xs shadow-lg"
+      className="chat-reference-action"
       style={{ top: selectionAction.top, left: selectionAction.left }}
-      data-reference-action
       aria-label="Add selected text as reference"
-      onMouseDown={(event) => event.preventDefault()}
+      onPointerDown={(event) => event.preventDefault()}
       onClick={() => {
         onAddReference(selectionAction.text);
-        setSelectionAction(null);
         window.getSelection()?.removeAllRanges();
+        rangeRef.current = null;
+        textRef.current = "";
+        setSelectionAction(null);
       }}
     >
-      {getReferenceShortcutLabel()}
-    </Button>,
-    document.body,
+      Add reference
+    </button>,
+    selectionAction.container,
   );
 });

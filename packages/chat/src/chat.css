@@ -65,7 +65,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--chat-space-8) var(--chat-space-4) calc(var(--chat-composer-space) + var(--chat-space-6));
-  scroll-behavior: smooth;
 }
 
 .chat-messages-inner {
@@ -308,7 +307,7 @@
   font-size: var(--chat-text-xs);
   font-weight: 550;
   line-height: 1;
-  padding: 0.35rem 0.55rem;
+  padding: 0.5rem 0.5rem;
   transition:
     color var(--chat-transition),
     background-color var(--chat-transition);
@@ -339,6 +338,7 @@
   background: transparent;
   color: var(--chat-fg-subtle);
   cursor: pointer;
+  padding: 3px 4px;
   opacity: 0;
   transition:
     opacity var(--chat-transition),
@@ -379,6 +379,37 @@
 
 .chat-edit-area:focus-visible {
   box-shadow: none;
+}
+
+.chat-reference-action {
+  position: absolute;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  padding: 0 0.65rem;
+  transform: translate(-50%, calc(-100% - 0.75rem));
+  border: 1px solid var(--chat-border);
+  border-radius: var(--chat-radius-sm);
+  background: var(--chat-bg-elevated);
+  color: var(--chat-fg);
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: var(--chat-text-xs);
+  font-weight: 550;
+  line-height: 1;
+  box-shadow: var(--chat-composer-shadow);
+  pointer-events: auto;
+  user-select: none;
+  touch-action: manipulation;
+  transition: none;
+  white-space: nowrap;
+}
+
+.chat-reference-action:hover {
+  cursor: pointer;
+  opacity: 0.92;
 }
 
 .chat-references {
