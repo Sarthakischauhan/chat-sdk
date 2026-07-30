@@ -307,7 +307,7 @@
   font-size: var(--chat-text-xs);
   font-weight: 550;
   line-height: 1;
-  padding: 0.35rem 0.55rem;
+  padding: 0.5rem 0.5rem;
   transition:
     color var(--chat-transition),
     background-color var(--chat-transition);
@@ -338,6 +338,7 @@
   background: transparent;
   color: var(--chat-fg-subtle);
   cursor: pointer;
+  padding: 3px 4px;
   opacity: 0;
   transition:
     opacity var(--chat-transition),
@@ -381,18 +382,18 @@
 }
 
 .chat-reference-action {
-  position: fixed;
+  position: absolute;
   z-index: 50;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2rem;
   padding: 0 0.65rem;
-  transform: translateX(-50%);
-  border: 0;
+  transform: translate(-50%, calc(-100% - 0.75rem));
+  border: 1px solid var(--chat-border);
   border-radius: var(--chat-radius-sm);
-  background: var(--chat-fg);
-  color: var(--chat-bg);
+  background: var(--chat-bg-elevated);
+  color: var(--chat-fg);
   cursor: pointer;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: var(--chat-text-xs);
