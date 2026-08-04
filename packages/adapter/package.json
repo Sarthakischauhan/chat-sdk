@@ -1,8 +1,7 @@
 {
-  "name": "@sarchauhan/chat-tui",
+  "name": "@sarchauhan/adapter",
   "version": "0.1.0",
   "private": false,
-  "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -19,18 +18,10 @@
   "scripts": {
     "build": "tsup"
   },
-  "peerDependencies": {
-    "ink": ">=5",
-    "react": ">=18"
-  },
   "dependencies": {
-    "@sarchauhan/adapter": "0.1.0",
     "@sarchauhan/protocol": "0.1.0"
   },
   "devDependencies": {
-    "@types/react": "^19",
-    "ink": "^7.1.1",
-    "react": "^19.2.3",
     "tsup": "^8.5.0",
     "typescript": "^5"
   }

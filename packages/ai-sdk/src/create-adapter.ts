@@ -1,8 +1,13 @@
 import { DefaultChatTransport, readUIMessageStream } from "ai";
 import type { UIMessage } from "ai";
-import type { ChatAdapter, ChatMessage, ChatThread } from "@sarchauhan/chat";
+import {
+  defineAdapter,
+  type ChatAdapter,
+  type ChatMessage,
+  type ChatThread,
+} from "@sarchauhan/adapter";
 
-type FetchAdapterOptions = {
+export type AiSdkAdapterOptions = {
   chatUrl?: string;
   threadsUrl?: string;
 };
@@ -10,10 +15,14 @@ type FetchAdapterOptions = {
 const asUIMessage = (message: ChatMessage) => message as UIMessage;
 const asChatMessage = (message: UIMessage) => message as ChatMessage;
 
-export function createDefaultFetchAdapter({
+/**
+ * AI SDK transport adapter for `@sarchauhan/chat` / `@sarchauhan/chat-tui`.
+ * Drop-in replacement for the previous example `createDefaultFetchAdapter`.
+ */
+export function createAiSdkAdapter({
   chatUrl = "/api/chat",
   threadsUrl = "/api/threads",
-}: FetchAdapterOptions = {}): ChatAdapter {
+}: AiSdkAdapterOptions = {}): ChatAdapter {
   const transport = new DefaultChatTransport<UIMessage>({
     api: chatUrl,
     prepareSendMessagesRequest({ id, messages, body }) {
@@ -28,7 +37,7 @@ export function createDefaultFetchAdapter({
     },
   });
 
-  return {
+  return defineAdapter({
     async listThreads() {
       const response = await fetch(threadsUrl, { cache: "no-store" });
       if (!response.ok) {
@@ -91,13 +100,16 @@ export function createDefaultFetchAdapter({
     },
 
     async editMessage({ threadId, messageId, text }) {
-      const response = await fetch(`${threadsUrl}/${threadId}/messages/${messageId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${threadsUrl}/${threadId}/messages/${messageId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text }),
         },
-        body: JSON.stringify({ text }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to edit message");
@@ -106,5 +118,8 @@ export function createDefaultFetchAdapter({
       const data = (await response.json()) as { messages: UIMessage[] };
       return data.messages.map(asChatMessage);
     },
-  };
+  });
 }
+
+/** @deprecated Prefer `createAiSdkAdapter` */
+export const createDefaultFetchAdapter = createAiSdkAdapter;

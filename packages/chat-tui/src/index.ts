@@ -15,6 +15,7 @@ export type {
   SendMessage,
   SendMessageInput,
 } from "./types";
+export { defineAdapter } from "@sarchauhan/adapter";
 export type {
   AgentEvent,
   AgentMessage,

@@ -1,14 +1,14 @@
 "use client";
 
 import { Chat } from "@sarchauhan/chat";
-import { createDefaultFetchAdapter } from "@/lib/adapters/fetch";
+import { createAiSdkAdapter } from "@sarchauhan/ai-sdk";
 import { exampleWidgets } from "@/components/chat-widgets";
 
 export default function Page() {
   return (
     <main className="chat-app-shell">
       <Chat
-        adapter={createDefaultFetchAdapter()}
+        adapter={createAiSdkAdapter()}
         widgets={exampleWidgets}
         defaultTheme="system"
         className="chat-app-frame"
