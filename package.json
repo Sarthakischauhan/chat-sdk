@@ -4,7 +4,7 @@
   "private": true,
   "workspaces": [
     "packages/adapter",
-    "packages/ai-sdk",
+    "packages/adapter/ai-sdk",
     "packages/chat",
     "packages/chat-tui",
     "packages/protocol"
@@ -14,7 +14,7 @@
     "build": "next build examples/next",
     "build:protocol": "npm run build -w @sarchauhan/protocol",
     "build:adapter": "npm run build -w @sarchauhan/protocol && npm run build -w @sarchauhan/adapter",
-    "build:ai-sdk": "npm run build -w @sarchauhan/protocol && npm run build -w @sarchauhan/adapter && npm run build -w @sarchauhan/ai-sdk",
+    "build:ai-sdk": "npm run build -w @sarchauhan/protocol && npm run build -w @sarchauhan/adapter && npm run build -w @sarchauhan/adapter-ai-sdk",
     "build:chat": "npm run build -w @sarchauhan/protocol && npm run build -w @sarchauhan/adapter && npm run build -w @sarchauhan/chat",
     "build:chat-tui": "npm run build -w @sarchauhan/protocol && npm run build -w @sarchauhan/adapter && npm run build -w @sarchauhan/chat-tui",
     "start": "next start examples/next",

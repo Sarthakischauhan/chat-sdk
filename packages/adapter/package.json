@@ -2,24 +2,39 @@
   "name": "@sarchauhan/adapter",
   "version": "0.1.0",
   "private": false,
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./ai-sdk": {
+      "types": "./ai-sdk/dist/index.d.ts",
+      "import": "./ai-sdk/dist/index.mjs",
+      "require": "./ai-sdk/dist/index.js"
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "ai-sdk/dist",
+    "ai-sdk/package.json"
   ],
   "scripts": {
     "build": "tsup"
   },
   "dependencies": {
     "@sarchauhan/protocol": "0.1.0"
+  },
+  "peerDependencies": {
+    "ai": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "ai": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "tsup": "^8.5.0",

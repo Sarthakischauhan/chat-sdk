@@ -1,7 +1,7 @@
 "use client";
 
 import { Chat } from "@sarchauhan/chat";
-import { createAiSdkAdapter } from "@sarchauhan/ai-sdk";
+import { createAiSdkAdapter } from "@sarchauhan/adapter/ai-sdk";
 import { exampleWidgets } from "@/components/chat-widgets";
 
 export default function Page() {

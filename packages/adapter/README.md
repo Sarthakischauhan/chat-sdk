@@ -24,4 +24,4 @@ const adapter = defineAdapter({
 | `messagesFromEvents` | `AgentEvent` stream → `ChatMessage` yields |
 | `createUserMessage` / `upsertAssistantMessage` | Message helpers |
 
-Drop-in AI SDK transport: `@sarchauhan/ai-sdk`.
+Drop-in AI SDK transport: `@sarchauhan/adapter/ai-sdk` (`packages/adapter/ai-sdk`).
