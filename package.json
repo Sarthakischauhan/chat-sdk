@@ -7,7 +7,8 @@
     "packages/adapter/ai-sdk",
     "packages/chat",
     "packages/chat-tui",
-    "packages/protocol"
+    "packages/protocol",
+    "examples/tui"
   ],
   "scripts": {
     "dev": "next dev examples/next",
@@ -17,6 +18,8 @@
     "build:ai-sdk": "npm run build -w @sarchauhan/protocol && npm run build -w @sarchauhan/adapter && npm run build -w @sarchauhan/adapter-ai-sdk",
     "build:chat": "npm run build -w @sarchauhan/protocol && npm run build -w @sarchauhan/adapter && npm run build -w @sarchauhan/chat",
     "build:chat-tui": "npm run build -w @sarchauhan/protocol && npm run build -w @sarchauhan/adapter && npm run build -w @sarchauhan/chat-tui",
+    "tui": "npm run demo -w @sarchauhan/example-tui",
+    "tui:remote": "npm run remote -w @sarchauhan/example-tui",
     "start": "next start examples/next",
     "lint": "eslint",
     "prisma:generate": "prisma generate --schema examples/next/prisma/schema.prisma",

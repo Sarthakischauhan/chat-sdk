@@ -1,0 +1,23 @@
+{
+  "name": "@sarchauhan/example-tui",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.tsx",
+    "demo": "tsx src/index.tsx",
+    "remote": "tsx src/index.tsx --remote"
+  },
+  "dependencies": {
+    "@sarchauhan/adapter": "0.1.0",
+    "@sarchauhan/adapter-ai-sdk": "0.1.0",
+    "@sarchauhan/chat-tui": "0.1.0",
+    "ai": "^6.0.88",
+    "ink": "^7.1.1",
+    "react": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "tsx": "^4.20.3",
+    "typescript": "^5"
+  }
+}
