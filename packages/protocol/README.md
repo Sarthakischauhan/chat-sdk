@@ -22,10 +22,26 @@ In this monorepo the package is available as a workspace dependency:
 ```json
 {
   "dependencies": {
-    "@sarchauhan/protocol": "0.1.0"
+    "@sarchauhan/protocol": "0.0.1"
   }
 }
 ```
+
+## How to use with an agent
+
+Have your agent emit `AgentEvent` values, then reduce them into a message for
+your UI or adapter:
+
+```ts
+import { reduceAgentEvents } from "@sarchauhan/protocol";
+
+const state = reduceAgentEvents(agentEvents);
+render(state.message);
+```
+
+Map custom agent events to the standard event types (`text-delta`,
+`tool-input-available`, `tool-output-available`, and so on). Use `data-*`
+events for agent-specific payloads such as plans, diffs, or terminal output.
 
 ## Example
 

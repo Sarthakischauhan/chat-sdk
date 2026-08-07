@@ -1,6 +1,6 @@
 {
   "name": "@sarchauhan/adapter-ai-sdk",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -22,7 +22,7 @@
     "ai": ">=5"
   },
   "dependencies": {
-    "@sarchauhan/adapter": "0.1.0"
+    "@sarchauhan/adapter": "0.0.1"
   },
   "devDependencies": {
     "ai": "^6.0.88",
