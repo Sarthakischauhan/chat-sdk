@@ -154,9 +154,11 @@ export function createDemoAdapter(): ChatAdapter {
       const withUser = [...existing, message];
       store.messages.set(threadId, withUser);
 
+      const textPart = message.parts.find((part) => part.type === "text");
       const prompt =
-        message.parts.find((part) => part.type === "text" && "text" in part)?.text ??
-        "";
+        textPart && "text" in textPart && typeof textPart.text === "string"
+          ? textPart.text
+          : "";
 
       let latest: ChatMessage | null = null;
       try {

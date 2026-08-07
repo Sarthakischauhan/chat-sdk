@@ -219,7 +219,12 @@ export function ChatProvider({
     if (!text || statusRef.current === "submitted" || statusRef.current === "streaming") {
       return;
     }
-    await sendMessage({ text });
+    try {
+      await sendMessage({ text });
+    } catch {
+      // streamMessage records the error in status; keep the TUI alive so the
+      // user can correct the connection or retry the request.
+    }
   }, [input, sendMessage]);
 
   const stopResponse = useCallback(() => {

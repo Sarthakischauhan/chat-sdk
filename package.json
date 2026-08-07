@@ -30,6 +30,7 @@
     "@ai-sdk/google": "^3.0.29",
     "@ai-sdk/openai": "^3.0.29",
     "@ai-sdk/react": "^3.0.88",
+    "ai": "^6.0.88",
     "@electric-sql/pglite": "^0.4.5",
     "@prisma/client": "6.19.3",
     "class-variance-authority": "^0.7.1",
