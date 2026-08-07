@@ -25,3 +25,26 @@ const adapter = defineAdapter({
 | `createUserMessage` / `upsertAssistantMessage` | Message helpers |
 
 Drop-in AI SDK transport: `@sarchauhan/adapter/ai-sdk` (`packages/adapter/ai-sdk`).
+
+## How to use with an agent
+
+Wrap your agent client in `defineAdapter`. The required method streams
+assistant message snapshots; optional methods provide persistence:
+
+```ts
+import { defineAdapter, messagesFromEvents } from "@sarchauhan/adapter";
+
+const adapter = defineAdapter({
+  async *sendMessage({ threadId, messages, signal }) {
+    const events = agent.run({ threadId, messages, signal });
+    yield* messagesFromEvents(mapAgentEvents(events));
+  },
+  listThreads,
+  createThread,
+  loadMessages,
+});
+```
+
+`mapAgentEvents` converts your agent's protocol into `AgentEvent` values from
+`@sarchauhan/protocol`. Custom interactive behavior can be added in your
+agent adapter and UI without changing the base contract.

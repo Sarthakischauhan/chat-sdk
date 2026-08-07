@@ -9,7 +9,7 @@ Ink terminal UI for the shared `@sarchauhan/adapter` contract.
 - Scrollable message history
 - Streaming spinner + status bar
 - Composer with paste support
-- Help overlay (`?`)
+- Help overlay (`/help`)
 - Protocol part rendering (text, reasoning, tools, sources, files, widgets)
 - `renderChat({ alternateScreen: true })`
 
@@ -27,6 +27,25 @@ renderChat({
 ```
 
 See `examples/tui` for a full showcase (`npm run tui`).
+
+## How to use with an agent
+
+Create an adapter for your agent, then pass it to `renderChat`:
+
+```ts
+import { renderChat } from "@sarchauhan/chat-tui";
+import { createAgentAdapter } from "./agent-adapter";
+
+renderChat({
+  adapter: createAgentAdapter(),
+  models: [{ id: "coding", label: "Coding Agent", provider: "custom" }],
+});
+```
+
+The adapter can translate your agent's custom events into protocol events or
+directly yield `ChatMessage` snapshots. Add custom Ink components around
+`ChatProvider` when your agent needs interactive approvals, diffs, or terminal
+views.
 
 ## Composition
 

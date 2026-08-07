@@ -1,6 +1,6 @@
 {
   "name": "@sarchauhan/adapter",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -26,7 +26,7 @@
     "build": "tsup"
   },
   "dependencies": {
-    "@sarchauhan/protocol": "0.1.0"
+    "@sarchauhan/protocol": "0.0.1"
   },
   "peerDependencies": {
     "ai": ">=5"
