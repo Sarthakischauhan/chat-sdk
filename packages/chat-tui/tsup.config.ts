@@ -4,5 +4,11 @@ export default {
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ["react", "react/jsx-runtime", "ink", "@sarchauhan/protocol"],
+  external: [
+    "react",
+    "react/jsx-runtime",
+    "ink",
+    "@sarchauhan/adapter",
+    "@sarchauhan/protocol",
+  ],
 };

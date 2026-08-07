@@ -19,6 +19,8 @@
       }
     ],
     "paths": {
+      "@sarchauhan/adapter": ["../../packages/adapter/src/index.ts"],
+      "@sarchauhan/adapter/ai-sdk": ["../../packages/adapter/ai-sdk/src/index.ts"],
       "@sarchauhan/chat": ["../../packages/chat/src/index.ts"],
       "@sarchauhan/chat/styles.css": ["../../packages/chat/src/styles.css"],
       "@/*": ["./*"]

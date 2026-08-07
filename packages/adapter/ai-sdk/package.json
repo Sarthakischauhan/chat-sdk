@@ -1,5 +1,5 @@
 {
-  "name": "@sarchauhan/protocol",
+  "name": "@sarchauhan/adapter-ai-sdk",
   "version": "0.0.1",
   "private": false,
   "main": "./dist/index.js",
@@ -18,7 +18,14 @@
   "scripts": {
     "build": "tsup"
   },
+  "peerDependencies": {
+    "ai": ">=5"
+  },
+  "dependencies": {
+    "@sarchauhan/adapter": "0.0.1"
+  },
   "devDependencies": {
+    "ai": "^6.0.88",
     "tsup": "^8.5.0",
     "typescript": "^5"
   }

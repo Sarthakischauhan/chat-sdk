@@ -1,8 +1,29 @@
 export { Chat, type ChatProps } from "./components/Chat";
+export {
+  ChatContextProvider,
+  ChatProvider,
+  useChat,
+} from "./components/Chat/chat.context";
+export {
+  ChatLayout,
+  ChatShell,
+  type ChatLayoutProps,
+} from "./components/Chat/chat.layout";
 export { ChatComposer } from "./components/Chat/chat.composer";
-export { ChatProvider, useChat } from "./components/Chat/chat.context";
-export { MessageList } from "./components/Message/message";
+export type {
+  ChatContextValue,
+  ChatProviderProps,
+  FocusPane,
+  ModelOption,
+} from "./components/Chat/chat.types";
+export { HelpOverlay } from "./components/Chat/chat.help";
+export { ModelPicker } from "./components/Chat/chat.model-picker";
+export { Spinner } from "./components/Chat/chat.spinner";
+export { StatusBar } from "./components/Chat/chat.status-bar";
+export { ThreadList } from "./components/Chat/chat.thread-list";
+export { Message, MessageList } from "./components/Message/message";
 export { MessageItem } from "./components/Message/message.item";
+export { MessagePart } from "./components/Message/message.item";
 export { messagesFromEvents } from "./lib/events";
 export { render, renderChat, type RenderChatOptions } from "./render";
 export type {
@@ -15,6 +36,7 @@ export type {
   SendMessage,
   SendMessageInput,
 } from "./types";
+export { defineAdapter } from "@sarchauhan/adapter";
 export type {
   AgentEvent,
   AgentMessage,

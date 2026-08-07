@@ -46,7 +46,8 @@ export type {
   ChatThread,
   EditMessageInput,
   SendMessageInput,
-} from "./types";
+} from "@sarchauhan/adapter";
+export { defineAdapter } from "@sarchauhan/adapter";
 export type {
   AgentEvent,
   AgentMessage,

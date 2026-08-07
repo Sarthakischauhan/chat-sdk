@@ -1,6 +1,6 @@
 {
   "name": "@sarchauhan/chat-tui",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": false,
   "type": "module",
   "main": "./dist/index.cjs",
@@ -24,7 +24,8 @@
     "react": ">=18"
   },
   "dependencies": {
-    "@sarchauhan/protocol": "0.1.0"
+    "@sarchauhan/adapter": "0.0.1",
+    "@sarchauhan/protocol": "0.0.1"
   },
   "devDependencies": {
     "@types/react": "^19",
