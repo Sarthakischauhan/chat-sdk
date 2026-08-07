@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Text, useInput, usePaste, useStdin } from "ink";
 import { useChat } from "./chat.context";
 import { useModelNavigation } from "./chat.model-picker";
@@ -22,12 +22,76 @@ export function ChatComposer() {
     scrollOffset,
     setScrollOffset,
     cycleModel,
+    models,
+    setModel,
   } = useChat();
   const { isRawModeSupported } = useStdin();
   const inputActive = Boolean(isRawModeSupported);
 
   const threadsNav = useThreadNavigation();
   const modelsNav = useModelNavigation();
+  const [commandNotice, setCommandNotice] = useState<string | null>(null);
+
+  const runCommand = async (value: string) => {
+    const [name = "", ...args] = value.slice(1).trim().split(/\s+/);
+    const command = name.toLowerCase();
+    const argument = args.join(" ").trim();
+
+    setInput("");
+    setCommandNotice(null);
+
+    switch (command) {
+      case "new":
+      case "clear":
+        await createThread();
+        setCommandNotice("Started a new conversation.");
+        return;
+      case "model": {
+        if (!argument) {
+          setFocus("models");
+          setCommandNotice("Choose a model with ↑/↓, then press Enter.");
+          return;
+        }
+
+        const selected = models.find(
+          (entry) =>
+            entry.id === argument ||
+            entry.label.toLowerCase() === argument.toLowerCase() ||
+            `${entry.provider}/${entry.id}` === argument,
+        );
+        if (!selected) {
+          setCommandNotice(`Unknown model: ${argument}. Try /model.`);
+          return;
+        }
+
+        setModel(selected.id);
+        setCommandNotice(`Model set to ${selected.provider}/${selected.label}.`);
+        return;
+      }
+      case "threads":
+      case "thread":
+        setFocus("threads");
+        setCommandNotice("Choose a conversation with ↑/↓, then press Enter.");
+        return;
+      case "help":
+      case "?":
+        setShowHelp(true);
+        setCommandNotice(null);
+        return;
+      case "stop":
+        stopResponse();
+        setCommandNotice("Stopped the response.");
+        return;
+      case "delete":
+        if (threadId) {
+          await deleteThread(threadId);
+          setCommandNotice("Deleted the current conversation.");
+        }
+        return;
+      default:
+        setCommandNotice(`Unknown command: /${command}. Try /help.`);
+    }
+  };
 
   usePaste(
     (clipboard) => {
@@ -45,16 +109,7 @@ export function ChatComposer() {
         return;
       }
 
-      if (char === "?" && !key.ctrl && !key.meta) {
-        if (focus === "composer" && input.length > 0) {
-          setInput((current) => `${current}?`);
-          return;
-        }
-        setShowHelp(!showHelp);
-        return;
-      }
-
-      if (showHelp && (key.escape || char === "?")) {
+      if (showHelp && key.escape) {
         setShowHelp(false);
         setFocus("composer");
         return;
@@ -154,7 +209,14 @@ export function ChatComposer() {
       }
 
       if (key.return) {
-        if (isSending || !input.trim()) {
+        if (!input.trim()) {
+          return;
+        }
+        if (isSending && input.trim() !== "/stop") {
+          return;
+        }
+        if (input.trimStart().startsWith("/")) {
+          void runCommand(input.trim());
           return;
         }
         void submitInput();
@@ -177,6 +239,7 @@ export function ChatComposer() {
 
       if (char) {
         setInput((current) => `${current}${char}`);
+        setCommandNotice(null);
       }
     },
     { isActive: inputActive },
@@ -204,8 +267,14 @@ export function ChatComposer() {
         <Text>{input}</Text>
         <Text color={focus === "composer" ? "white" : "gray"}>█</Text>
       </Box>
+      {input.trimStart().startsWith("/") && !showHelp ? (
+        <Text dimColor>
+          commands: /new · /model · /threads · /help · /clear · /delete · /stop
+        </Text>
+      ) : null}
+      {commandNotice ? <Text color="yellow">{commandNotice}</Text> : null}
       <Text dimColor>
-        {statusLabel} · enter send · tab model · ? help · ctrl+t threads
+        {statusLabel} · enter send · /help commands · esc stop
         {!inputActive ? " · (non-interactive stdin)" : ""}
       </Text>
     </Box>

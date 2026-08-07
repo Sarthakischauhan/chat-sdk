@@ -4,7 +4,7 @@ import { useChat } from "./chat.context";
 import { Spinner } from "./chat.spinner";
 
 export function StatusBar() {
-  const { status, threadId, provider, model, focus, isSending, threads } =
+  const { status, threadId, provider, model, isSending, threads } =
     useChat();
 
   const threadTitle =
@@ -36,7 +36,7 @@ export function StatusBar() {
         </Text>
       </Box>
       <Box gap={2}>
-        <Text dimColor>focus:{focus}</Text>
+        <Text dimColor>/help for commands</Text>
         {isSending ? (
           <Spinner
             label={status === "submitted" ? "sending" : "streaming"}

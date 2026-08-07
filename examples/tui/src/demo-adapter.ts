@@ -17,7 +17,7 @@ const store: DemoStore = {
           parts: [
             {
               type: "text",
-              text: "Welcome to chat-tui. This demo adapter streams locally — no server required.\n\nTry: threads (Ctrl+T), models (Ctrl+M), help (?), and send a message.",
+              text: "Welcome to chat-tui. This demo adapter streams locally — no server required.\n\nAsk me anything, or try /help to see the coding-assistant commands.",
             },
           ],
         },

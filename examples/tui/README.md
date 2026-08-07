@@ -26,23 +26,34 @@ npm run remote
 
 - Alternate screen full-app layout
 - Status bar (thread · model · streaming spinner)
-- Thread sidebar (create / select / delete)
-- Scrollable message viewport
-- Model picker + Tab to cycle
+- Linear conversation viewport
+- Slash commands for conversations and models
+- Inline thread and model selectors
 - Paste into composer
 - Help overlay (`?`)
 - Protocol parts: text, reasoning, tools, sources
 - Shared `ChatAdapter` (demo in-process, or `@sarchauhan/adapter/ai-sdk`)
+
+## Commands
+
+| Command | Action |
+| --- | --- |
+| `/new` or `/clear` | Start a new conversation |
+| `/model` | Open the model selector |
+| `/model <id>` | Select a model directly |
+| `/threads` | Browse conversations |
+| `/delete` | Delete the current conversation |
+| `/stop` | Stop a response |
+| `/help` | Show help |
 
 ## Shortcuts
 
 | Key | Action |
 | --- | --- |
 | Enter | Send |
-| Esc | Stop / close overlay |
-| Ctrl+T / L / K / M | Focus threads / messages / composer / models |
-| Ctrl+N / D | New / delete thread |
+| Esc | Stop / close help |
+| Ctrl+T / L / K / M | Open threads / scroll / composer / models |
+| Ctrl+N / D | New / delete conversation |
 | Tab | Cycle model |
-| ? | Help |
 | ↑ / ↓ | Navigate / scroll |
 | Ctrl+C | Quit |

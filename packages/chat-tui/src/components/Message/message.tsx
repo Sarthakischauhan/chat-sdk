@@ -3,7 +3,13 @@ import { Box, Text, useStdout } from "ink";
 import { useChat } from "../Chat/chat.context";
 import { MessageItem } from "./message.item";
 
-export function MessageList({ height }: { height?: number }) {
+export function MessageList({
+  height,
+  showBorder = true,
+}: {
+  height?: number;
+  showBorder?: boolean;
+}) {
   const { messages, isLoadingThread, isSending, scrollOffset, focus, status } =
     useChat();
   const { stdout } = useStdout();
@@ -19,10 +25,16 @@ export function MessageList({ height }: { height?: number }) {
 
   if (messages.length === 0) {
     return (
-      <Box flexDirection="column" borderStyle="single" borderColor={focus === "messages" ? "cyan" : "gray"} height={viewport} paddingX={1}>
+      <Box
+        flexDirection="column"
+        borderStyle={showBorder ? "single" : undefined}
+        borderColor={focus === "messages" ? "cyan" : "gray"}
+        height={viewport}
+        paddingX={1}
+      >
         <Text bold>How can I help?</Text>
         <Text dimColor>Type a message and press Enter.</Text>
-        <Text dimColor>Ctrl+T threads · Ctrl+M models · ? help</Text>
+        <Text dimColor>Try /help for commands.</Text>
       </Box>
     );
   }
@@ -36,7 +48,7 @@ export function MessageList({ height }: { height?: number }) {
   return (
     <Box
       flexDirection="column"
-      borderStyle="single"
+      borderStyle={showBorder ? "single" : undefined}
       borderColor={focus === "messages" ? "cyan" : "gray"}
       height={viewport}
       paddingX={1}
@@ -61,3 +73,6 @@ export function MessageList({ height }: { height?: number }) {
     </Box>
   );
 }
+
+/** React-style name for rendering the current conversation. */
+export const Message = MessageList;

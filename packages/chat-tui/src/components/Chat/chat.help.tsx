@@ -3,16 +3,14 @@ import { Box, Text } from "ink";
 import { useChat } from "./chat.context";
 
 const SHORTCUTS = [
-  ["Enter", "Send message"],
-  ["Esc", "Stop stream / close overlay"],
-  ["Ctrl+T", "Focus threads"],
-  ["Ctrl+L", "Focus messages (scroll)"],
-  ["Ctrl+K", "Focus composer"],
-  ["Ctrl+M", "Model picker"],
-  ["Ctrl+N", "New thread"],
-  ["Ctrl+D", "Delete thread"],
-  ["?", "Toggle help"],
-  ["↑ / ↓", "Navigate lists / scroll"],
+  ["Enter", "Send message / run command"],
+  ["Esc", "Stop stream / close help"],
+  ["↑ / ↓", "Scroll or navigate results"],
+  ["/new", "Start a new conversation"],
+  ["/model", "Choose or change the model"],
+  ["/threads", "Browse conversations"],
+  ["/clear", "Start a new conversation"],
+  ["/delete", "Delete this conversation"],
   ["Ctrl+C", "Quit"],
 ] as const;
 
@@ -30,7 +28,7 @@ export function HelpOverlay() {
       borderColor="cyan"
       paddingX={2}
       paddingY={1}
-      width={56}
+      width={64}
     >
       <Text bold color="cyan">
         Shortcuts
@@ -45,7 +43,7 @@ export function HelpOverlay() {
         </Box>
       ))}
       <Box height={1} />
-      <Text dimColor>Press Esc or ? to close</Text>
+      <Text dimColor>Press Esc or /help to close</Text>
     </Box>
   );
 }

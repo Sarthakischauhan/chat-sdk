@@ -1,22 +1,16 @@
 import React from "react";
-import { Box, useStdout } from "ink";
 import type { ChatAdapter } from "../types";
 import type { ModelOption } from "./Chat/chat.types";
 import { ChatProvider } from "./Chat/chat.context";
-import { ChatComposer } from "./Chat/chat.composer";
-import { HelpOverlay } from "./Chat/chat.help";
-import { ModelPicker } from "./Chat/chat.model-picker";
-import { StatusBar } from "./Chat/chat.status-bar";
-import { ThreadList } from "./Chat/chat.thread-list";
-import { MessageList } from "./Message/message";
+import { ChatLayout, type ChatLayoutProps } from "./Chat/chat.layout";
 
-export type ChatProps = {
+export type ChatProps = ChatLayoutProps & {
   adapter: ChatAdapter;
   defaultThreadId?: string;
   defaultProvider?: string;
   defaultModel?: string;
   models?: ModelOption[];
-  /** Show the thread sidebar (default true). */
+  /** Show the thread sidebar when mode="classic" (default true). */
   showThreads?: boolean;
 };
 
@@ -30,6 +24,8 @@ export function Chat({
   defaultModel,
   models,
   showThreads = true,
+  footerHeight,
+  mode,
 }: ChatProps) {
   return (
     <ChatProvider
@@ -39,34 +35,11 @@ export function Chat({
       defaultModel={defaultModel}
       models={models}
     >
-      <ChatLayout showThreads={showThreads} />
+      <ChatLayout
+        mode={mode}
+        showThreads={showThreads}
+        footerHeight={footerHeight}
+      />
     </ChatProvider>
-  );
-}
-
-function ChatLayout({ showThreads }: { showThreads: boolean }) {
-  const { stdout } = useStdout();
-  const rows = stdout?.rows ?? 24;
-  const messageHeight = Math.max(8, rows - 8);
-
-  return (
-    <Box flexDirection="column" width="100%" height={rows}>
-      <StatusBar />
-      <Box flexGrow={1} flexDirection="row">
-        {showThreads ? <ThreadList height={messageHeight} /> : null}
-        <Box flexDirection="column" flexGrow={1}>
-          <MessageList height={messageHeight} />
-        </Box>
-      </Box>
-      <Box flexDirection="column">
-        <ChatComposer />
-      </Box>
-      <Box justifyContent="center">
-        <HelpOverlay />
-      </Box>
-      <Box justifyContent="center">
-        <ModelPicker />
-      </Box>
-    </Box>
   );
 }

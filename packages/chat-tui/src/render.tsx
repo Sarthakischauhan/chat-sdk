@@ -14,6 +14,8 @@ export function renderChat({
   defaultModel,
   models,
   showThreads,
+  footerHeight,
+  mode,
   alternateScreen = true,
   interactive = process.stdin.isTTY,
   ...options
@@ -26,6 +28,8 @@ export function renderChat({
       defaultModel={defaultModel}
       models={models}
       showThreads={showThreads}
+      footerHeight={footerHeight}
+      mode={mode}
     />,
     { alternateScreen, interactive, ...options },
   );

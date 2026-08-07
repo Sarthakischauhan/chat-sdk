@@ -448,3 +448,6 @@ export function useChat() {
   }
   return context;
 }
+
+/** Alias matching the provider naming used by the React chat package. */
+export const ChatContextProvider = ChatProvider;

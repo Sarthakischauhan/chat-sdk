@@ -18,7 +18,7 @@ const formatUnknown = (value: unknown) => {
   }
 };
 
-function MessagePartView({ part }: { part: AgentPart }) {
+export function MessagePart({ part }: { part: AgentPart }) {
   switch (part.type) {
     case "text":
       return (
@@ -103,7 +103,7 @@ export function MessageItem({
       ) : (
         parts.map((part, index) => (
           <Box key={`${message.id}-${index}`} flexDirection="column">
-            <MessagePartView part={part} />
+            <MessagePart part={part} />
           </Box>
         ))
       )}

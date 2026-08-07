@@ -23,7 +23,12 @@ const upsertTextLike = (
   update: (currentText: string) => { text: string; state?: "streaming" | "done" },
   ids: Map<string, number>,
 ): AgentPart[] => {
-  const existingIndex = ids.get(id);
+  // Normalized message parts do not carry the stream event id. When a
+  // reducer is seeded from an existing UI message, recover the common
+  // continuation case by attaching the first unseen id to the open part.
+  const existingIndex =
+    ids.get(id) ??
+    parts.findIndex((part) => part.type === type && part.state === "streaming");
 
   if (existingIndex === undefined) {
     const next = update("");
@@ -129,7 +134,7 @@ export const applyAgentEvent = (
             state.message.parts,
             "text",
             event.id,
-            () => ({ text: "", state: "streaming" }),
+            (current) => ({ text: current, state: "streaming" }),
             textIds,
           ),
         },
@@ -177,7 +182,7 @@ export const applyAgentEvent = (
             state.message.parts,
             "reasoning",
             event.id,
-            () => ({ text: "", state: "streaming" }),
+            (current) => ({ text: current, state: "streaming" }),
             reasoningIds,
           ),
         },

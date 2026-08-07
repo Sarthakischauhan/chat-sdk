@@ -32,6 +32,6 @@ renderChat({
   models,
   defaultProvider: "ollama",
   defaultModel: "llama3.2",
-  showThreads: true,
+  mode: "linear",
   alternateScreen: true,
 });
