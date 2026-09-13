@@ -10,7 +10,7 @@ import {
   SelectItem,
 } from "../../ui/select";
 import { Check, Ellipsis } from "lucide-react";
-import { ProviderId, useMessages, useModel } from "./context";
+import { useMessages, useModel } from "./context";
 
 const ProviderBadge = ({ logo, name }: { logo?: string; name: string }) => {
   if (logo) {
@@ -59,7 +59,8 @@ export const ChatSelect = () => {
       .filter((entry) => entry.models.length > 0);
   }, [registry.providers, query]);
   const setRootElement = useCallback((node: HTMLDivElement | null) => {
-    setPortalContainer(node?.closest(".chat-root") as HTMLElement | null);
+    const found = node?.closest(".chat-root");
+    setPortalContainer(found instanceof HTMLElement ? found : null);
   }, []);
 
   return (
@@ -67,8 +68,19 @@ export const ChatSelect = () => {
       <Select
         value={selectedValue}
         onValueChange={(value) => {
-          const [nextProvider, nextModel] = value.split("::");
-          setProvider(nextProvider as ProviderId, nextModel);
+          const separator = value.indexOf("::");
+          if (separator <= 0) {
+            return;
+          }
+
+          const nextProvider = value.slice(0, separator);
+          const nextModel = value.slice(separator + 2);
+          const match = registry.providers.find((entry) => entry.id === nextProvider);
+          if (!match || !nextModel) {
+            return;
+          }
+
+          setProvider(match.id, nextModel);
         }}
         disabled={isSending}
       >
@@ -124,11 +136,14 @@ export const ChatSelect = () => {
                       {entry.models.map((item) => {
                         const key = `${entry.id}::${item.id}`;
                         const levels = item.thinkingLevels;
-                        const thinking = levels?.length ? { levels } : undefined;
-                        const activeThinking =
-                          thinking
-                            ? (getThinkingLevel(entry.id, item.id) ?? (levels!.includes("medium") ? "medium" : levels![0]))
+                        const defaultThinking =
+                          levels && levels.length > 0
+                            ? (levels.includes("medium") ? "medium" : levels[0])
                             : undefined;
+                        const thinking = defaultThinking && levels ? { levels } : undefined;
+                        const activeThinking = defaultThinking
+                          ? (getThinkingLevel(entry.id, item.id) ?? defaultThinking)
+                          : undefined;
                         const isOpen = thinkingOpen === key;
 
                         return (

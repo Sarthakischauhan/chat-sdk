@@ -3,6 +3,8 @@ export { ChatComposer } from "./components/Chat/chat";
 export {
   ChatContextProvider,
   ProviderId,
+  isProviderId,
+  parseRegistryConfig,
   useChat,
   useComposer,
   useMessages,

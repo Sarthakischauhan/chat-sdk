@@ -64,7 +64,8 @@ const readSelection = (): { text: string; range: Range } | null => {
 const getPortalContainer = (range: Range) => {
   const node = range.commonAncestorContainer;
   const element = node instanceof Element ? node : node.parentElement;
-  return element?.closest(".chat-messages") as HTMLElement | null;
+  const found = element?.closest(".chat-messages");
+  return found instanceof HTMLElement ? found : null;
 };
 
 type ChatTooltipProps = {

@@ -1,37 +1,45 @@
 import React from "react";
 import { Text } from "ink";
-import type { AgentDataPart } from "@sarchauhan/protocol";
-
-type Usage = {
-  input_tokens: number;
-  output_tokens: number;
-  reasoning_tokens: number;
-  total_tokens: number;
-};
-
-type Context = {
-  current_tokens: number;
-  context_window: number;
-};
+import { parseContext, parseUsage, type AgentDataPart } from "@sarchauhan/protocol";
 
 const formatTokens = (value: number) => new Intl.NumberFormat("en-US").format(value);
 
 export function MessageUsage({ part }: { part: AgentDataPart }) {
   if (part.name === "usage") {
-    const usage = part.data as Usage;
+    const usage = parseUsage(part.data);
+    const tokens = usage
+      ? [
+          ["in", usage.input_tokens],
+          ["out", usage.output_tokens],
+          ["reasoning", usage.reasoning_tokens],
+          ["total", usage.total_tokens],
+        ].filter((metric): metric is [string, number] => typeof metric[1] === "number")
+      : [];
+
+    if (tokens.length === 0) {
+      return null;
+    }
+
     return (
       <Text dimColor>
-        tokens in {formatTokens(usage.input_tokens)} · out {formatTokens(usage.output_tokens)} · reasoning {formatTokens(usage.reasoning_tokens)} · total {formatTokens(usage.total_tokens)}
+        tokens {tokens.map(([label, value]) => `${label} ${formatTokens(value)}`).join(" · ")}
       </Text>
     );
   }
 
   if (part.name === "context" || part.name === "context-warning") {
-    const context = part.data as Context;
+    const context = parseContext(part.data);
+    const currentTokens = context?.current_tokens;
+    const contextWindow = context?.context_window;
+
+    if (currentTokens === undefined || contextWindow === undefined) {
+      return null;
+    }
+
     return (
       <Text dimColor>
         {part.name === "context-warning" ? <Text color="yellow">⚠ </Text> : null}
-        context {formatTokens(context.current_tokens)}/{formatTokens(context.context_window)} ({Math.round((context.current_tokens / context.context_window) * 100)}%)
+        context {formatTokens(currentTokens)}/{formatTokens(contextWindow)} ({Math.round((currentTokens / contextWindow) * 100)}%)
       </Text>
     );
   }

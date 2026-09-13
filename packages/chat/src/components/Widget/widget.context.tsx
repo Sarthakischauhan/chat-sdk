@@ -160,7 +160,7 @@ export function useWidgets() {
 
   if (!context) {
     return {
-      widgets: {} as ChatWidgetRegistry,
+      widgets: {},
       respondToWidget: async () => undefined,
       disabled: false,
     };

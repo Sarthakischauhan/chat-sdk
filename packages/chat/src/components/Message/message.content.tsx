@@ -44,12 +44,11 @@ const formatJson = (value: unknown) => {
 const toolDetail = (part: AgentToolPart) => {
   const source = part.output ?? part.input;
 
-  if (!source || typeof source !== "object" || Array.isArray(source)) {
+  if (!isPropsRecord(source)) {
     return null;
   }
 
-  const record = source as Record<string, unknown>;
-  const value = record.path ?? record.file ?? record.filename ?? record.query ?? record.command ?? record.url;
+  const value = source.path ?? source.file ?? source.filename ?? source.query ?? source.command ?? source.url;
 
   return typeof value === "string" && value.trim() ? value : null;
 };

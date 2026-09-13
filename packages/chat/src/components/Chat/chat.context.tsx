@@ -4,6 +4,8 @@ export {
   ChatContextProvider,
   ProviderId,
   defaultRegistry,
+  isProviderId,
+  parseRegistryConfig,
   useChat,
   useComposer,
   useMessages,
