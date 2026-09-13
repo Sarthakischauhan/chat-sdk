@@ -6,14 +6,93 @@ import {
   type ChatMessage,
   type ChatThread,
 } from "@sarchauhan/adapter";
+import { normalizeAgentMessage } from "@sarchauhan/protocol";
 
 export type AiSdkAdapterOptions = {
   chatUrl?: string;
   threadsUrl?: string;
 };
 
-const asUIMessage = (message: ChatMessage) => message as UIMessage;
-const asChatMessage = (message: UIMessage) => message as ChatMessage;
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isChatRole = (value: unknown): value is ChatMessage["role"] =>
+  value === "system" || value === "user" || value === "assistant";
+
+const isUIMessage = (value: unknown): value is UIMessage =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  isChatRole(value.role) &&
+  Array.isArray(value.parts) &&
+  value.parts.every((part) => isRecord(part) && typeof part.type === "string");
+
+const isChatThread = (value: unknown): value is ChatThread =>
+  isRecord(value) && typeof value.id === "string" && typeof value.title === "string";
+
+const toUIMessage = (message: ChatMessage): UIMessage => {
+  const candidate = {
+    id: message.id,
+    role: message.role,
+    parts: message.parts,
+    metadata: message.metadata,
+  };
+
+  if (!isUIMessage(candidate)) {
+    throw new Error("ChatMessage is not a valid UIMessage");
+  }
+
+  return candidate;
+};
+
+const fromUIMessage = (message: UIMessage): ChatMessage => {
+  const normalized = normalizeAgentMessage({
+    id: message.id,
+    role: message.role,
+    parts: message.parts,
+    metadata: message.metadata,
+  });
+
+  return {
+    id: normalized.id,
+    role: normalized.role,
+    parts: normalized.parts,
+    ...(isRecord(normalized.metadata) ? { metadata: normalized.metadata } : {}),
+  };
+};
+
+const parseThreads = (value: unknown): ChatThread[] => {
+  if (!isRecord(value) || !Array.isArray(value.threads)) {
+    throw new Error("Invalid threads response");
+  }
+
+  const threads = value.threads.filter(isChatThread);
+  if (threads.length !== value.threads.length) {
+    throw new Error("Invalid threads response");
+  }
+
+  return threads;
+};
+
+const parseThread = (value: unknown): ChatThread => {
+  if (!isRecord(value) || !isChatThread(value.thread)) {
+    throw new Error("Invalid thread response");
+  }
+
+  return value.thread;
+};
+
+const parseMessages = (value: unknown): ChatMessage[] => {
+  if (!isRecord(value) || !Array.isArray(value.messages)) {
+    throw new Error("Invalid messages response");
+  }
+
+  const messages = value.messages.filter(isUIMessage);
+  if (messages.length !== value.messages.length) {
+    throw new Error("Invalid messages response");
+  }
+
+  return messages.map(fromUIMessage);
+};
 
 /**
  * AI SDK transport adapter for `@sarchauhan/chat` / `@sarchauhan/chat-tui`.
@@ -45,8 +124,7 @@ export function createAiSdkAdapter({
         throw new Error("Failed to list threads");
       }
 
-      const data = (await response.json()) as { threads: ChatThread[] };
-      return data.threads;
+      return parseThreads(await response.json());
     },
 
     async createThread() {
@@ -55,8 +133,7 @@ export function createAiSdkAdapter({
         throw new Error("Failed to create thread");
       }
 
-      const data = (await response.json()) as { thread: ChatThread };
-      return data.thread;
+      return parseThread(await response.json());
     },
 
     async deleteThread(threadId) {
@@ -78,8 +155,7 @@ export function createAiSdkAdapter({
         throw new Error("Failed to load messages");
       }
 
-      const data = (await response.json()) as { messages: UIMessage[] };
-      return data.messages.map(asChatMessage);
+      return parseMessages(await response.json());
     },
 
     async *sendMessage({ threadId, messages, provider, model, thinkingLevel, signal }) {
@@ -87,7 +163,7 @@ export function createAiSdkAdapter({
         trigger: "submit-message",
         chatId: threadId,
         messageId: undefined,
-        messages: messages.map(asUIMessage),
+        messages: messages.map(toUIMessage),
         abortSignal: signal,
         body: { provider, model, thinkingLevel },
       });
@@ -96,7 +172,7 @@ export function createAiSdkAdapter({
         stream,
         terminateOnError: true,
       })) {
-        yield asChatMessage(message);
+        yield fromUIMessage(message);
       }
     },
 
@@ -116,8 +192,7 @@ export function createAiSdkAdapter({
         throw new Error("Failed to edit message");
       }
 
-      const data = (await response.json()) as { messages: UIMessage[] };
-      return data.messages.map(asChatMessage);
+      return parseMessages(await response.json());
     },
   });
 }

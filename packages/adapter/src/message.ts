@@ -1,4 +1,15 @@
+import type { AgentMessage } from "@sarchauhan/protocol";
 import type { ChatMessage } from "./types";
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+export const toChatMessage = (message: AgentMessage): ChatMessage => ({
+  id: message.id,
+  role: message.role,
+  parts: message.parts,
+  ...(isRecord(message.metadata) ? { metadata: message.metadata } : {}),
+});
 
 export const createMessageId = (prefix = "msg") =>
   globalThis.crypto?.randomUUID?.() ??

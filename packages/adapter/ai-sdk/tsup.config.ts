@@ -4,5 +4,5 @@ export default {
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ["ai", "@sarchauhan/adapter"],
+  external: ["ai", "@sarchauhan/adapter", "@sarchauhan/protocol"],
 };
