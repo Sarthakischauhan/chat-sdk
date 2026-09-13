@@ -48,6 +48,9 @@ export type {
   AgentWidgetProps,
 } from "./parts";
 
+export type { AgentContext, AgentUsage } from "./usage";
+export { parseContext, parseUsage } from "./usage";
+
 export type { AgentWidgetData } from "./widgets";
 
 export {

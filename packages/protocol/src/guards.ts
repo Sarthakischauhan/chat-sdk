@@ -40,13 +40,15 @@ export const isDataPart = (part: AgentPart): part is AgentDataPart =>
 export const isWidgetPart = (part: AgentPart): part is AgentWidgetPart =>
   part.type === "widget";
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
 export const isAgentEvent = (value: unknown): value is AgentEvent => {
-  if (!value || typeof value !== "object") {
+  if (!isRecord(value)) {
     return false;
   }
 
-  const type = (value as { type?: unknown }).type;
-  return typeof type === "string" && type.length > 0;
+  return typeof value.type === "string" && value.type.length > 0;
 };
 
 export const isDataEvent = (

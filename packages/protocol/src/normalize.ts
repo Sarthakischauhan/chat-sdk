@@ -15,11 +15,11 @@ type RawPart = {
 type RawMessage = {
   id: string;
   role: string;
-  parts?: RawPart[];
+  parts?: ReadonlyArray<{ type: string }>;
   metadata?: unknown;
 };
 
-const TOOL_STATES = new Set<AgentToolState>([
+const TOOL_STATES: ReadonlySet<string> = new Set([
   "input-streaming",
   "input-available",
   "approval-requested",
@@ -29,10 +29,17 @@ const TOOL_STATES = new Set<AgentToolState>([
   "output-denied",
 ]);
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isAgentToolState = (value: unknown): value is AgentToolState =>
+  typeof value === "string" && TOOL_STATES.has(value);
+
 const asToolState = (value: unknown): AgentToolState =>
-  typeof value === "string" && TOOL_STATES.has(value as AgentToolState)
-    ? (value as AgentToolState)
-    : "input-streaming";
+  isAgentToolState(value) ? value : "input-streaming";
+
+const toRawPart = (part: { type: string }): RawPart =>
+  Object.assign({ type: part.type }, isRecord(part) ? part : null);
 
 const asString = (value: unknown, fallback = "") =>
   typeof value === "string" ? value : fallback;
@@ -57,8 +64,8 @@ const normalizeToolPart = (
     preliminary: typeof part.preliminary === "boolean" ? part.preliminary : undefined,
   };
 
-  if (part.approval && typeof part.approval === "object") {
-    const approval = part.approval as Record<string, unknown>;
+  if (isRecord(part.approval)) {
+    const approval = part.approval;
     tool.approval = {
       id: asString(approval.id),
       approved: typeof approval.approved === "boolean" ? approval.approved : undefined,
@@ -124,10 +131,7 @@ export const normalizeAgentPart = (part: RawPart): AgentPart => {
       return {
         type: "widget",
         name: asString(part.name, "widget"),
-        props:
-          part.props && typeof part.props === "object" && !Array.isArray(part.props)
-            ? (part.props as Record<string, unknown>)
-            : {},
+        props: isRecord(part.props) ? part.props : {},
         id: typeof part.id === "string" ? part.id : undefined,
         interactive: part.interactive === true,
       };
@@ -135,10 +139,7 @@ export const normalizeAgentPart = (part: RawPart): AgentPart => {
       return {
         type: "unknown",
         rawType: asString(part.rawType, "unknown"),
-        raw:
-          part.raw && typeof part.raw === "object" && !Array.isArray(part.raw)
-            ? (part.raw as Record<string, unknown>)
-            : part,
+        raw: isRecord(part.raw) ? part.raw : part,
       };
     default: {
       if (part.type.startsWith("tool-")) {
@@ -170,8 +171,9 @@ export const normalizeAgentPart = (part: RawPart): AgentPart => {
   }
 };
 
-export const normalizeAgentParts = (parts: RawPart[] | undefined | null): AgentPart[] =>
-  (parts ?? []).map(normalizeAgentPart);
+export const normalizeAgentParts = (
+  parts: ReadonlyArray<{ type: string }> | undefined | null,
+): AgentPart[] => (parts ?? []).map((part) => normalizeAgentPart(toRawPart(part)));
 
 export const normalizeAgentMessage = (message: RawMessage): AgentMessage => {
   const role: AgentRole =
