@@ -3,6 +3,7 @@
 import { ChevronDown, Sparkles } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "../../lib/utils";
+import { TextSwap } from "../../motion";
 import { formatElapsedWords, useElapsedTime } from "./message.loading";
 
 type ThinkingBlockProps = {
@@ -33,9 +34,10 @@ export const ThinkingBlock = ({ isComplete, elapsedMs, children }: ThinkingBlock
     >
       <summary>
         <Sparkles className="md-thinking-sparkle" aria-hidden="true" />
-        <span className="md-thinking-label">
-          {isComplete ? `Thought for ${formatElapsedWords(elapsed)}` : "Thinking"}
-        </span>
+        <TextSwap
+          className="md-thinking-label"
+          text={isComplete ? `Thought for ${formatElapsedWords(elapsed)}` : "Thinking"}
+        />
         {isComplete && <ChevronDown className="md-thinking-chevron" aria-hidden="true" />}
       </summary>
       {children}

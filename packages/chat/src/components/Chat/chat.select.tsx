@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useMemo, useState } from "react";
+import { Fragment, useCallback, useMemo, useRef, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -10,7 +10,12 @@ import {
   SelectItem,
 } from "../../ui/select";
 import { Check, Ellipsis } from "lucide-react";
+import { cn } from "../../lib/utils";
+import { motion, useDropdownPresence, type DropdownOrigin } from "../../motion";
 import { useMessages, useModel } from "./context";
+
+const SELECT_ORIGIN: DropdownOrigin = "top-left";
+const THINKING_ORIGIN: DropdownOrigin = "top-right";
 
 const ProviderBadge = ({ logo, name }: { logo?: string; name: string }) => {
   if (logo) {
@@ -37,6 +42,9 @@ export const ChatSelect = () => {
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
   const [query, setQuery] = useState("");
   const [thinkingOpen, setThinkingOpen] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const rootRef = useRef<HTMLElement | null>(null);
+  const menu = useDropdownPresence(menuOpen, rootRef);
   const selectedValue = `${provider}::${model}`;
   const selectedProvider = registry.providers.find((entry) => entry.id === provider);
   const selectedModel = selectedProvider?.models.find((entry) => entry.id === model);
@@ -60,12 +68,15 @@ export const ChatSelect = () => {
   }, [registry.providers, query]);
   const setRootElement = useCallback((node: HTMLDivElement | null) => {
     const found = node?.closest(".chat-root");
+    rootRef.current = found instanceof HTMLElement ? found : null;
     setPortalContainer(found instanceof HTMLElement ? found : null);
   }, []);
 
   return (
     <div ref={setRootElement}>
       <Select
+        open={menuOpen || menu.mounted}
+        onOpenChange={setMenuOpen}
         value={selectedValue}
         onValueChange={(value) => {
           const separator = value.indexOf("::");
@@ -97,7 +108,8 @@ export const ChatSelect = () => {
           position="popper"
           sideOffset={6}
           collisionPadding={12}
-          className="chat-model-content"
+          className={cn("chat-model-content", motion.dropdown, menu.className)}
+          data-origin={SELECT_ORIGIN}
           portalContainer={portalContainer}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
@@ -147,65 +159,19 @@ export const ChatSelect = () => {
                         const isOpen = thinkingOpen === key;
 
                         return (
-                          <div key={key} className="chat-model-row">
-                            <SelectItem value={key} className="chat-model-item">
-                              <span className="chat-model-item-label">{item.label}</span>
-                              {item.description ? (
-                                <span className="chat-model-item-hint">{item.description}</span>
-                              ) : thinking && activeThinking ? (
-                                <span className="chat-model-item-hint">{activeThinking}</span>
-                              ) : null}
-                            </SelectItem>
-                            {thinking ? (
-                              <>
-                                <button
-                                  type="button"
-                                  aria-label="Thinking settings"
-                                  className="chat-model-thinking-trigger"
-                                  data-open={isOpen ? "true" : "false"}
-                                  onPointerDown={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                  }}
-                                  onClick={(event) => {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    setThinkingOpen(isOpen ? null : key);
-                                  }}
-                                >
-                                  <Ellipsis className="chat-model-thinking-icon" />
-                                </button>
-                                {isOpen ? (
-                                  <div
-                                    className="chat-model-thinking-menu"
-                                    onPointerDown={(event) => event.stopPropagation()}
-                                    onClick={(event) => event.stopPropagation()}
-                                  >
-                                    {thinking.levels.map((level) => {
-                                      const isActive = level === activeThinking;
-                                      return (
-                                        <button
-                                          key={level}
-                                          type="button"
-                                          className="chat-model-thinking-option"
-                                          data-active={isActive ? "true" : "false"}
-                                          onClick={(event) => {
-                                            event.preventDefault();
-                                            event.stopPropagation();
-                                            setThinkingLevel(entry.id, item.id, level);
-                                            setThinkingOpen(null);
-                                          }}
-                                        >
-                                          <span>{level}</span>
-                                          {isActive ? <Check className="chat-model-thinking-check" /> : null}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                ) : null}
-                              </>
-                            ) : null}
-                          </div>
+                          <ModelRow
+                            key={key}
+                            itemKey={key}
+                            item={item}
+                            thinking={thinking}
+                            activeThinking={activeThinking}
+                            isOpen={isOpen}
+                            onToggleThinking={() => setThinkingOpen(isOpen ? null : key)}
+                            onPickThinking={(level) => {
+                              setThinkingLevel(entry.id, item.id, level);
+                              setThinkingOpen(null);
+                            }}
+                          />
                         );
                       })}
                     </SelectGroup>
@@ -216,6 +182,88 @@ export const ChatSelect = () => {
           </div>
         </SelectContent>
       </Select>
+    </div>
+  );
+};
+
+const ModelRow = ({
+  itemKey,
+  item,
+  thinking,
+  activeThinking,
+  isOpen,
+  onToggleThinking,
+  onPickThinking,
+}: {
+  itemKey: string;
+  item: { id: string; label: string; description?: string };
+  thinking?: { levels: string[] };
+  activeThinking?: string;
+  isOpen: boolean;
+  onToggleThinking: () => void;
+  onPickThinking: (level: string) => void;
+}) => {
+  const menu = useDropdownPresence(isOpen);
+
+  return (
+    <div className="chat-model-row">
+      <SelectItem value={itemKey} className="chat-model-item">
+        <span className="chat-model-item-label">{item.label}</span>
+        {item.description ? (
+          <span className="chat-model-item-hint">{item.description}</span>
+        ) : thinking && activeThinking ? (
+          <span className="chat-model-item-hint">{activeThinking}</span>
+        ) : null}
+      </SelectItem>
+      {thinking ? (
+        <>
+          <button
+            type="button"
+            aria-label="Thinking settings"
+            className="chat-model-thinking-trigger"
+            data-open={isOpen ? "true" : "false"}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onToggleThinking();
+            }}
+          >
+            <Ellipsis className="chat-model-thinking-icon" />
+          </button>
+          {menu.mounted ? (
+            <div
+              className={cn("chat-model-thinking-menu", motion.dropdown, menu.className)}
+              data-origin={THINKING_ORIGIN}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => event.stopPropagation()}
+            >
+              {thinking.levels.map((level) => {
+                const isActive = level === activeThinking;
+                return (
+                  <button
+                    key={level}
+                    type="button"
+                    className="chat-model-thinking-option"
+                    data-active={isActive ? "true" : "false"}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onPickThinking(level);
+                    }}
+                  >
+                    <span>{level}</span>
+                    {isActive ? <Check className="chat-model-thinking-check" /> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </>
+      ) : null}
     </div>
   );
 };

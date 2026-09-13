@@ -185,10 +185,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--chat-space-2);
+  border: 1px solid transparent;
   border-radius: var(--chat-radius-lg);
   background: var(--chat-composer-bg);
   box-shadow: var(--chat-composer-shadow);
   padding: var(--chat-space-3);
+}
+
+.chat-composer-shell.t-input.is-error {
+  border-color: color-mix(in oklab, var(--chat-danger) 55%, var(--chat-border));
 }
 
 .chat-composer-shell[data-variant="small"] {

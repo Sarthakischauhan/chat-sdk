@@ -13,9 +13,18 @@ import {
   type AgentWidgetProps,
 } from "@sarchauhan/protocol";
 import { ChevronDown } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { splitThinkingSegments } from "../../lib/message/segment";
 import { parseUserReferenceMessage } from "../../lib/message/user";
 import { cn } from "../../lib/utils";
+import {
+  TextSwap,
+  calibrateCheckPath,
+  motion,
+  triggerErrorShake,
+  type IconSwapState,
+  type SuccessCheckState,
+} from "../../motion";
 import { useWidgets } from "../Widget/widget.context";
 import { WidgetRenderer } from "../Widget/widget.renderer";
 import { MarkdownContent } from "./message.markdown";
@@ -88,35 +97,111 @@ const ReasoningBlock = ({ part }: { part: AgentReasoningPart }) => {
   );
 };
 
-const ToolBlock = ({ part }: { part: AgentToolPart }) => {
-  const isPending =
-    part.state === "input-streaming" ||
-    part.state === "input-available" ||
-    part.state === "approval-requested";
-  const detail = toolDetail(part);
+const ToolStatusIcon = ({
+  isPending,
+  isDone,
+}: {
+  isPending: boolean;
+  isDone: boolean;
+}) => {
+  const pathRef = useRef<SVGPathElement>(null);
+  const sawPending = useRef(isPending);
+  const iconState: IconSwapState = isPending ? "a" : "b";
+  const playCheck = Boolean(sawPending.current && isDone);
+  const checkState: SuccessCheckState = playCheck ? "in" : "out";
+
+  if (isPending) {
+    sawPending.current = true;
+  }
+
+  useLayoutEffect(() => {
+    if (pathRef.current) {
+      calibrateCheckPath(pathRef.current);
+    }
+  }, [playCheck]);
 
   return (
-    <details className={`agent-tool ${isPending ? "agent-tool-pending" : "agent-tool-complete"}`} open={isPending}>
-      <summary>
-        <ChevronDown className="agent-tool-chevron" aria-hidden="true" />
-        <span className="agent-tool-dot" aria-hidden="true">
-          {isPending ? (
-            <span className="agent-tool-spinner" />
+    <span className="agent-tool-dot" aria-hidden="true">
+      <span className={motion.iconSwap} data-state={iconState}>
+        <span className={motion.icon} data-icon="a">
+          <span className="agent-tool-spinner" />
+        </span>
+        <span className={motion.icon} data-icon="b">
+          {isDone ? (
+            playCheck ? (
+              <span className={motion.successCheck} data-state={checkState}>
+                <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
+                  <path
+                    ref={pathRef}
+                    d="M2.5 6.5 5 9l4.5-6"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            ) : (
+              <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
+                <path
+                  d="M2.5 6.5 5 9l4.5-6"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )
           ) : (
-            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" aria-hidden="true">
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
               <path
-                d="M2.5 6.5 5 9l4.5-6"
+                d="M3.2 3.2 8.8 8.8M8.8 3.2 3.2 8.8"
                 stroke="currentColor"
                 strokeWidth="1.6"
                 strokeLinecap="round"
-                strokeLinejoin="round"
               />
             </svg>
           )}
         </span>
+      </span>
+    </span>
+  );
+};
+
+const ToolBlock = ({ part }: { part: AgentToolPart }) => {
+  const wrapRef = useRef<HTMLDetailsElement>(null);
+  const isPending =
+    part.state === "input-streaming" ||
+    part.state === "input-available" ||
+    part.state === "approval-requested";
+  const isError = part.state === "output-error" || part.state === "output-denied";
+  const isDone = !isPending && !isError;
+  const detail = toolDetail(part);
+
+  useEffect(() => {
+    if (!isError || !wrapRef.current) {
+      return;
+    }
+
+    triggerErrorShake(wrapRef.current, { revert: false });
+  }, [isError]);
+
+  return (
+    <details
+      ref={wrapRef}
+      className={cn(
+        "agent-tool",
+        motion.inputWrap,
+        isPending ? "agent-tool-pending" : isError ? "agent-tool-error" : "agent-tool-complete",
+      )}
+      open={isPending || isError}
+    >
+      <summary className={cn(motion.input, isError && motion.isError)}>
+        <ChevronDown className="agent-tool-chevron" aria-hidden="true" />
+        <ToolStatusIcon isPending={isPending} isDone={isDone} />
         <span className="agent-tool-name">{part.title ?? part.toolName}</span>
         {detail ? <span className="agent-tool-chip">{detail}</span> : null}
-        <span className="agent-tool-state">{toolStateLabel(part.state)}</span>
+        <TextSwap className="agent-tool-state" text={toolStateLabel(part.state)} />
       </summary>
       <div className="agent-tool-body">
         {part.input !== undefined && (
