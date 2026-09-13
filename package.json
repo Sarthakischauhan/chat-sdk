@@ -29,6 +29,7 @@
     "start": "next start examples/next-symphony",
     "start:ai-sdk": "next start examples/next-ai-sdk",
     "lint": "eslint",
+    "typecheck": "tsc -p packages/protocol --noEmit && tsc -p packages/adapter --noEmit && tsc -p packages/adapter/ai-sdk --noEmit && tsc -p packages/chat --noEmit && tsc -p packages/chat-tui --noEmit",
     "prisma:generate": "prisma generate --schema examples/next-symphony/prisma/schema.prisma",
     "prisma:push": "prisma db push --schema examples/next-symphony/prisma/schema.prisma"
   },
