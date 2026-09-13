@@ -11,7 +11,7 @@ import { ProviderId } from "./types";
 export type ChatContextProviderProps = {
   adapter: ChatAdapter;
   children: ReactNode;
-  defaultProvider?: ProviderId;
+  defaultProvider?: string;
   defaultThreadId?: string;
   registryUrl?: string;
 };

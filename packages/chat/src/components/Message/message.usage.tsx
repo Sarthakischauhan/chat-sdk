@@ -1,21 +1,14 @@
-import type { AgentDataPart } from "@sarchauhan/protocol";
-
-type Usage = {
-  input_tokens?: number;
-  output_tokens?: number;
-  reasoning_tokens?: number;
-  total_tokens?: number;
-};
-
-type Context = {
-  current_tokens?: number;
-  context_window?: number;
-};
+import {
+  parseContext,
+  parseUsage,
+  type AgentContext,
+  type AgentDataPart,
+} from "@sarchauhan/protocol";
 
 const formatTokens = (value: number) => new Intl.NumberFormat("en-US").format(value);
 const isTokenCount = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value);
-const getContextMetrics = (context: Context | undefined) => {
+const getContextMetrics = (context: AgentContext | undefined) => {
   const currentTokens = context?.current_tokens;
   const contextWindow = context?.context_window;
 
@@ -25,8 +18,8 @@ const getContextMetrics = (context: Context | undefined) => {
 };
 
 export const MessageUsage = ({ parts }: { parts: AgentDataPart[] }) => {
-  const usage = parts.find((part) => part.name === "usage")?.data as Usage | undefined;
-  const context = parts.find((part) => part.name === "context")?.data as Context | undefined;
+  const usage = parseUsage(parts.find((part) => part.name === "usage")?.data);
+  const context = parseContext(parts.find((part) => part.name === "context")?.data);
   const contextMetrics = getContextMetrics(context);
   const tokenMetrics = usage
     ? [

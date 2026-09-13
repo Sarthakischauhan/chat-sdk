@@ -8,7 +8,6 @@ import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context"
 import { ThemeToggle } from "../theme/theme.toggle";
 import { ChatComposer } from "./Chat/chat";
 import { ChatContextProvider, useMessages } from "./Chat/chat.context";
-import { ProviderId } from "./Chat/context";
 import { useThread } from "./Chat/context";
 import { Message } from "./Message/message";
 import {
@@ -22,7 +21,7 @@ type ChatProps = {
   adapter: ChatAdapter;
   className?: string;
   defaultThreadId?: string;
-  defaultProvider?: ProviderId;
+  defaultProvider?: string;
   registryUrl?: string;
   style?: CSSProperties;
   /** Widget map or defineWidget(...) array. */

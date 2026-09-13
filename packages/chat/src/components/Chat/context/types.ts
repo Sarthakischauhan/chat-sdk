@@ -20,7 +20,8 @@ export type RegistryModel = {
 };
 
 export type RegistryProvider = {
-  id: ProviderId;
+  /** Known `ProviderId` values or a Symphony / custom registry id. */
+  id: string;
   name?: string;
   label: string;
   logo?: string;
@@ -29,8 +30,62 @@ export type RegistryProvider = {
 };
 
 export type RegistryConfig = {
-  defaultProviderId: ProviderId;
+  defaultProviderId: string;
   providers: RegistryProvider[];
+};
+
+const PROVIDER_IDS: ReadonlySet<string> = new Set(Object.values(ProviderId));
+
+export const isProviderId = (value: unknown): value is ProviderId =>
+  typeof value === "string" && PROVIDER_IDS.has(value);
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isRegistryModel = (value: unknown): value is RegistryModel => {
+  if (!isRecord(value) || typeof value.id !== "string" || typeof value.label !== "string") {
+    return false;
+  }
+
+  if (value.description !== undefined && typeof value.description !== "string") {
+    return false;
+  }
+
+  if (
+    value.thinkingLevels !== undefined &&
+    (!Array.isArray(value.thinkingLevels) ||
+      !value.thinkingLevels.every((level) => typeof level === "string"))
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
+const isRegistryProvider = (value: unknown): value is RegistryProvider =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  typeof value.label === "string" &&
+  typeof value.defaultModel === "string" &&
+  Array.isArray(value.models) &&
+  value.models.every(isRegistryModel) &&
+  (value.name === undefined || typeof value.name === "string") &&
+  (value.logo === undefined || typeof value.logo === "string");
+
+export const parseRegistryConfig = (value: unknown): RegistryConfig | undefined => {
+  if (!isRecord(value) || typeof value.defaultProviderId !== "string" || !Array.isArray(value.providers)) {
+    return undefined;
+  }
+
+  const providers = value.providers.filter(isRegistryProvider);
+  if (providers.length === 0) {
+    return undefined;
+  }
+
+  return {
+    defaultProviderId: value.defaultProviderId,
+    providers,
+  };
 };
 
 export type ChatReference = {

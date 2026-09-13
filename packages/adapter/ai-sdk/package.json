@@ -22,7 +22,8 @@
     "ai": ">=5"
   },
   "dependencies": {
-    "@sarchauhan/adapter": "0.0.1"
+    "@sarchauhan/adapter": "0.0.1",
+    "@sarchauhan/protocol": "0.0.1"
   },
   "devDependencies": {
     "ai": "^6.0.88",

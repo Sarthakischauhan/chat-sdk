@@ -5,11 +5,10 @@ import { useComposer } from "./composer.context";
 import { useMessages } from "./messages.context";
 import { useModel } from "./model.context";
 import { useThread } from "./thread.context";
-import type { ProviderId } from "./types";
 
 type CompatAction =
   | { type: "setInput"; data: { input: string } }
-  | { type: "setProvider"; data: { provider: ProviderId; model?: string } }
+  | { type: "setProvider"; data: { provider: string; model?: string } }
   | { type: "setModel"; data: { model: string } }
   | { type: "addReference"; data: { text: string } }
   | { type: "removeReference"; data: { id: string } }
@@ -90,6 +89,8 @@ export { useThread } from "./thread.context";
 export {
   ProviderId,
   defaultRegistry,
+  isProviderId,
+  parseRegistryConfig,
   type ChatReference,
   type RegistryConfig,
   type RegistryModel,

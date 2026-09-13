@@ -15,9 +15,35 @@ const markdownPlugins: { remark: PluggableList; rehype: PluggableList } = {
   rehype: [],
 };
 
+const SUPPORTED_LANGUAGES: ReadonlySet<string> = new Set([
+  "c",
+  "h",
+  "cpp",
+  "cxx",
+  "cc",
+  "hpp",
+  "hxx",
+  "go",
+  "javascript",
+  "js",
+  "jsx",
+  "mjs",
+  "python",
+  "py",
+  "rust",
+  "rs",
+  "typescript",
+  "ts",
+  "tsx",
+]);
+
+const isSupportedLanguage = (value: string): value is SupportedLanguage =>
+  SUPPORTED_LANGUAGES.has(value);
+
 const getCodeLanguage = (className?: string): SupportedLanguage => {
   const match = className?.match(/language-([\w-]+)/);
-  return (match?.[1]?.toLowerCase() ?? "typescript") as SupportedLanguage;
+  const language = match?.[1]?.toLowerCase();
+  return language && isSupportedLanguage(language) ? language : "typescript";
 };
 
 const getTextContent = (value: unknown): string => {

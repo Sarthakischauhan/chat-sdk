@@ -3,6 +3,7 @@ import {
   applyAgentEvent,
   createAgentMessageState,
 } from "@sarchauhan/protocol";
+import { toChatMessage } from "./message";
 import type { ChatMessage } from "./types";
 
 /**
@@ -28,6 +29,6 @@ export async function* messagesFromEvents(
 
   for await (const event of events) {
     state = applyAgentEvent(state, event);
-    yield state.message as ChatMessage;
+    yield toChatMessage(state.message);
   }
 }

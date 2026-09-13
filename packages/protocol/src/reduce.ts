@@ -1,4 +1,5 @@
 import type { AgentEvent } from "./events";
+import { isDataEvent } from "./guards";
 import type { AgentMessage, AgentPart, AgentToolPart } from "./parts";
 import { isAgentWidgetData, toWidgetPart } from "./widgets";
 
@@ -492,22 +493,21 @@ export const applyAgentEvent = (
         reasoningIds,
       };
     default: {
-      if (event.type.startsWith("data-")) {
-        const dataEvent = event as Extract<AgentEvent, { type: `data-${string}` }>;
-        const name = dataEvent.type.slice("data-".length);
+      if (isDataEvent(event)) {
+        const name = event.type.slice("data-".length);
 
-        if (dataEvent.transient) {
+        if (event.transient) {
           return { ...state, textIds, reasoningIds };
         }
 
         const nextPart =
-          name === "widget" && isAgentWidgetData(dataEvent.data)
-            ? toWidgetPart(dataEvent.data, dataEvent.id)
+          name === "widget" && isAgentWidgetData(event.data)
+            ? toWidgetPart(event.data, event.id)
             : {
                 type: "data" as const,
                 name,
-                data: dataEvent.data,
-                id: dataEvent.id,
+                data: event.data,
+                id: event.id,
               };
 
         return {

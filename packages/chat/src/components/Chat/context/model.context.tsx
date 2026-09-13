@@ -12,20 +12,21 @@ import {
 } from "react";
 import {
   defaultRegistry,
+  parseRegistryConfig,
   ProviderId,
   type RegistryConfig,
 } from "./types";
 
 type ModelContextValue = {
   registry: RegistryConfig;
-  provider: ProviderId;
+  provider: string;
   model: string;
   thinkingLevels: Record<string, string>;
   getThinkingLevel: (providerId: string, modelId: string) => string | undefined;
   setThinkingLevel: (providerId: string, modelId: string, level: string) => void;
-  setProvider: (provider: ProviderId, model?: string) => void;
+  setProvider: (provider: string, model?: string) => void;
   setModel: (model: string) => void;
-  providerRef: React.MutableRefObject<ProviderId>;
+  providerRef: React.MutableRefObject<string>;
   modelRef: React.MutableRefObject<string>;
   thinkingLevelsRef: React.MutableRefObject<Record<string, string>>;
 };
@@ -34,7 +35,7 @@ const ModelContext = createContext<ModelContextValue | null>(null);
 
 type ModelProviderProps = {
   children: ReactNode;
-  defaultProvider?: ProviderId;
+  defaultProvider?: string;
   registryUrl?: string;
 };
 
@@ -44,7 +45,7 @@ export function ModelProvider({
   registryUrl = "/api/ai/registry",
 }: ModelProviderProps) {
   const [registry, setRegistry] = useState<RegistryConfig>(defaultRegistry);
-  const [provider, setProviderState] = useState<ProviderId>(defaultProvider);
+  const [provider, setProviderState] = useState(defaultProvider);
   const [model, setModelState] = useState(
     () =>
       defaultRegistry.providers.find((entry) => entry.id === defaultProvider)?.defaultModel ?? "",
@@ -77,8 +78,8 @@ export function ModelProvider({
           throw new Error("Failed to load registry");
         }
 
-        const data = (await response.json()) as RegistryConfig;
-        if (cancelled || !Array.isArray(data.providers) || data.providers.length === 0) {
+        const data = parseRegistryConfig(await response.json());
+        if (cancelled || !data) {
           return;
         }
 
@@ -128,7 +129,7 @@ export function ModelProvider({
     }
   }, [model, provider, registry]);
 
-  const setProvider = useCallback((nextProvider: ProviderId, nextModel?: string) => {
+  const setProvider = useCallback((nextProvider: string, nextModel?: string) => {
     setProviderState(nextProvider);
     if (nextModel) {
       setModelState(nextModel);
