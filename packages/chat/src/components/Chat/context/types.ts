@@ -5,13 +5,18 @@ export enum ProviderId {
   MOCK = "mock",
   OPENAI = "openai",
   GOOGLE = "google",
+  GEMINI = "gemini",
   CLAUDE = "anthropic",
+  GROK = "grok",
   OLLAMA = "ollama",
+  LOCAL = "local",
 }
 
 export type RegistryModel = {
   id: string;
   label: string;
+  description?: string;
+  thinkingLevels?: string[];
 };
 
 export type RegistryProvider = {

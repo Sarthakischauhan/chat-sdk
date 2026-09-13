@@ -32,6 +32,7 @@ export function createAiSdkAdapter({
           message: messages[messages.length - 1],
           provider: body?.provider,
           model: body?.model,
+          thinkingLevel: body?.thinkingLevel,
         },
       };
     },
@@ -81,14 +82,14 @@ export function createAiSdkAdapter({
       return data.messages.map(asChatMessage);
     },
 
-    async *sendMessage({ threadId, messages, provider, model, signal }) {
+    async *sendMessage({ threadId, messages, provider, model, thinkingLevel, signal }) {
       const stream = await transport.sendMessages({
         trigger: "submit-message",
         chatId: threadId,
         messageId: undefined,
         messages: messages.map(asUIMessage),
         abortSignal: signal,
-        body: { provider, model },
+        body: { provider, model, thinkingLevel },
       });
 
       for await (const message of readUIMessageStream<UIMessage>({

@@ -26,6 +26,7 @@ export type SendMessageInput = {
   messages: ChatMessage[];
   provider?: string;
   model?: string;
+  thinkingLevel?: string;
   signal?: AbortSignal;
 };
 

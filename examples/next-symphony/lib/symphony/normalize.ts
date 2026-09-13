@@ -34,7 +34,7 @@ const askUserProps = (value: unknown) => {
   const choices = Array.isArray(rawChoices)
     ? rawChoices.flatMap((choice) => {
         if (typeof choice === "string") {
-          return choice;
+          return [{ label: choice, value: choice }];
         }
 
         const option = recordValue(choice);

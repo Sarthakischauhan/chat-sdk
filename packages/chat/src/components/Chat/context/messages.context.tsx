@@ -57,7 +57,7 @@ type MessagesProviderProps = {
 
 export function MessagesProvider({ adapter, children }: MessagesProviderProps) {
   const { activeThreadId, activeThreadIdRef, setThreads, setIsLoadingThread } = useThread();
-  const { providerRef, modelRef } = useModel();
+  const { providerRef, modelRef, thinkingLevelsRef } = useModel();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<ChatStatus>("ready");
@@ -117,11 +117,13 @@ export function MessagesProvider({ adapter, children }: MessagesProviderProps) {
       nextMessages,
       provider,
       model,
+      thinkingLevel,
     }: {
       message: ChatMessage;
       nextMessages: ChatMessage[];
       provider?: string;
       model?: string;
+      thinkingLevel?: string;
     }) => {
       const threadId = activeThreadIdRef.current;
       if (!threadId) {
@@ -143,6 +145,7 @@ export function MessagesProvider({ adapter, children }: MessagesProviderProps) {
           messages: nextMessages,
           provider,
           model,
+          thinkingLevel,
           signal: abortController.signal,
         })) {
           if (!receivedVisibleResponse && hasVisibleAssistantContent(assistantMessage)) {
@@ -203,11 +206,15 @@ export function MessagesProvider({ adapter, children }: MessagesProviderProps) {
         setIsWaitingForResponse(true);
       });
 
+      const resolvedProvider = options?.body?.provider ?? providerRef.current;
+      const resolvedModel = options?.body?.model ?? modelRef.current;
+      const thinkingLevel = thinkingLevelsRef.current[`${resolvedProvider}::${resolvedModel}`];
       await streamMessage({
         message: userMessage,
         nextMessages,
-        provider: options?.body?.provider ?? providerRef.current,
-        model: options?.body?.model ?? modelRef.current,
+        provider: resolvedProvider,
+        model: resolvedModel,
+        thinkingLevel,
       });
     },
     [activeThreadIdRef, modelRef, providerRef, streamMessage],
@@ -271,11 +278,13 @@ export function MessagesProvider({ adapter, children }: MessagesProviderProps) {
         setMessages(editedMessages);
         setIsWaitingForResponse(true);
 
+        const thinkingLevel = thinkingLevelsRef.current[`${providerRef.current}::${modelRef.current}`];
         await streamMessage({
           message: editedMessage,
           nextMessages: editedMessages,
           provider: providerRef.current,
           model: modelRef.current,
+          thinkingLevel,
         });
       } catch (error) {
         setIsWaitingForResponse(false);

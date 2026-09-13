@@ -1,9 +1,10 @@
 /**
  * Chat design tokens.
  *
- * Inspired by ChatGPT-style conversation psychology:
- * calm neutrals, clear turn-taking, soft elevation, and
- * a reading-width column that keeps focus on the dialogue.
+ * Vercel restraint, content-first reading column: calm neutrals, clear
+ * turn-taking. Hierarchy comes from type and spacing; color only marks
+ * real state (streaming, approval, error). Chrome stays quiet. See
+ * /design.md — do not invent a parallel visual system.
  */
 
 .chat-root,
@@ -29,38 +30,119 @@
   --chat-overlay: rgba(247, 247, 248, 0.92);
   --chat-composer-bg: #ffffff;
   --chat-composer-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.05),
-    0 8px 24px rgba(0, 0, 0, 0.06);
+    0 0 0 1px rgba(0, 0, 0, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.04);
   --chat-control-bg: rgba(0, 0, 0, 0.04);
   --chat-control-hover: rgba(0, 0, 0, 0.07);
   --chat-primary: #0d0d0d;
   --chat-primary-fg: #ffffff;
   --chat-danger: #b42318;
   --chat-accent: #10a37f;
+  --chat-warning: #d97706;
+  --chat-success: #059669;
 
-  /* Type + space */
-  --chat-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  --chat-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --chat-text: 0.975rem;
-  --chat-text-sm: 0.875rem;
-  --chat-text-xs: 0.75rem;
-  --chat-leading: 1.7;
-  --chat-leading-tight: 1.35;
+  /* Type — Geist tryout (opt-in, falls back to system) */
+  --chat-font-sans: "Geist Sans", "Geist", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --chat-font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Type scale — 11 / 12 / 13 / 14 / 15.5 / 16 / 18 / 22 */
+  --chat-fs-11: 0.6875rem;
+  --chat-fs-12: 0.75rem;
+  --chat-fs-13: 0.8125rem;
+  --chat-fs-14: 0.875rem;
+  --chat-fs-15: 0.9375rem;
+  --chat-fs-155: 0.975rem;
+  --chat-fs-16: 1rem;
+  --chat-fs-18: 1.125rem;
+  --chat-fs-22: 1.375rem;
+
+  /* Legacy aliases — keep for compat, all map to scale */
+  --chat-text: var(--chat-fs-155);
+  --chat-text-sm: var(--chat-fs-14);
+  --chat-text-xs: var(--chat-fs-12);
+
+  /* Leading — paired to size */
+  --chat-leading-none: 1;
+  --chat-leading-tight: 1.25;
+  --chat-leading-snug: 1.35;
+  --chat-leading-normal: 1.5;
+  --chat-leading-relaxed: 1.7;
+  --chat-leading: var(--chat-leading-relaxed);
+  --chat-leading-body: var(--chat-leading-relaxed);
+  --chat-leading-ui: var(--chat-leading-snug);
+  --chat-leading-heading: var(--chat-leading-tight);
+
+  /* Weight — 400 / 500 / 600 / 700 only */
+  --chat-weight-regular: 400;
+  --chat-weight-medium: 500;
+  --chat-weight-semibold: 600;
+  --chat-weight-bold: 700;
+
+  /* Tracking */
+  --chat-tracking-tighter: -0.03em;
+  --chat-tracking-tight: -0.02em;
+  --chat-tracking-snug: -0.015em;
+  --chat-tracking-normal: -0.01em;
+  --chat-tracking-wide: 0.03em;
+
+  /* Semantic type — body / heading / label / caption / code */
+  --chat-body-size: var(--chat-fs-155);
+  --chat-body-leading: 1.65;
+  --chat-body-weight: var(--chat-weight-regular);
+  --chat-body-tracking: -0.011em;
+
+  --chat-body-sm-size: var(--chat-fs-14);
+  --chat-body-sm-leading: var(--chat-leading-normal);
+  --chat-body-sm-weight: var(--chat-weight-regular);
+
+  --chat-heading-1-size: var(--chat-fs-22);
+  --chat-heading-1-leading: var(--chat-leading-tight);
+  --chat-heading-1-weight: var(--chat-weight-semibold);
+  --chat-heading-1-tracking: var(--chat-tracking-tighter);
+
+  --chat-heading-2-size: var(--chat-fs-16);
+  --chat-heading-2-leading: var(--chat-leading-tight);
+  --chat-heading-2-weight: var(--chat-weight-semibold);
+  --chat-heading-2-tracking: var(--chat-tracking-tight);
+
+  --chat-label-size: var(--chat-fs-11);
+  --chat-label-leading: var(--chat-leading-tight);
+  --chat-label-weight: var(--chat-weight-medium);
+  --chat-label-tracking: var(--chat-tracking-wide);
+
+  --chat-caption-size: var(--chat-fs-12);
+  --chat-caption-leading: var(--chat-leading-snug);
+  --chat-caption-weight: var(--chat-weight-regular);
+
+  --chat-code-size: 0.875em;
+  --chat-code-leading: var(--chat-leading-normal);
+  --chat-code-weight: var(--chat-weight-regular);
+  /* Radius — unified control radius, lg only for composer/bubble/root */
+  --chat-radius-xs: 0.25rem;
   --chat-radius-sm: 0.5rem;
-  --chat-radius-md: 0.875rem;
-  --chat-radius-lg: 1.25rem;
+  --chat-radius-md: 0.5rem;
+  --chat-radius: 0.5rem;
+  --chat-radius-lg: 1rem;
   --chat-radius-pill: 999px;
+  --chat-radius-full: 999px;
+  /* Legacy aliases */
+  --chat-radius-card: var(--chat-radius);
+  --chat-radius-control: var(--chat-radius);
+  --chat-space-05: 0.125rem;
   --chat-space-1: 0.25rem;
+  --chat-space-1_5: 0.375rem;
   --chat-space-2: 0.5rem;
+  --chat-space-2_5: 0.625rem;
   --chat-space-3: 0.75rem;
+  --chat-space-3_5: 0.875rem;
   --chat-space-4: 1rem;
   --chat-space-5: 1.25rem;
   --chat-space-6: 1.5rem;
   --chat-space-8: 2rem;
   --chat-column: 48rem;
   --chat-composer-space: 9.5rem;
-  --chat-composer-fade: .5rem;
+  --chat-composer-fade: 0.5rem;
   --chat-transition: 160ms ease;
 }
 
@@ -83,14 +165,16 @@
   --chat-overlay: rgba(33, 33, 33, 0.92);
   --chat-composer-bg: #2f2f2f;
   --chat-composer-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 12px 32px rgba(0, 0, 0, 0.35);
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 6px 18px rgba(0, 0, 0, 0.22);
   --chat-control-bg: rgba(255, 255, 255, 0.06);
   --chat-control-hover: rgba(255, 255, 255, 0.1);
   --chat-primary: #ececec;
   --chat-primary-fg: #212121;
   --chat-danger: #f97066;
   --chat-accent: #1a7f64;
+  --chat-warning: #fbbf24;
+  --chat-success: #34d399;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -101,7 +185,7 @@
     --chat-bg-elevated: #2f2f2f;
     --chat-fg: #ececec;
     --chat-fg-muted: #b4b4b4;
-    --chat-fg-subtle: #8f8f8f;
+    --chat-fg-subtle: #8e8ea0;
 
     --chat-user-bg: #303030;
     --chat-user-fg: #ececec;
@@ -113,13 +197,48 @@
     --chat-overlay: rgba(33, 33, 33, 0.92);
     --chat-composer-bg: #2f2f2f;
     --chat-composer-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.06),
-      0 12px 32px rgba(0, 0, 0, 0.35);
+      0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 6px 18px rgba(0, 0, 0, 0.22);
     --chat-control-bg: rgba(255, 255, 255, 0.06);
     --chat-control-hover: rgba(255, 255, 255, 0.1);
     --chat-primary: #ececec;
     --chat-primary-fg: #212121;
     --chat-danger: #f97066;
     --chat-accent: #1a7f64;
+    --chat-warning: #fbbf24;
+    --chat-success: #34d399;
+  }
+}
+
+/* Responsive type & layout — mobile / tablet / desktop */
+@media (max-width: 640px) {
+  .chat-root {
+    --chat-body-size: var(--chat-fs-15);
+    --chat-body-sm-size: var(--chat-fs-13);
+    --chat-heading-1-size: var(--chat-fs-18);
+    --chat-heading-2-size: var(--chat-fs-15);
+    --chat-caption-size: var(--chat-fs-11);
+    --chat-column: 100%;
+    --chat-composer-space: 8.5rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .chat-root {
+    --chat-body-size: var(--chat-fs-155);
+    --chat-heading-1-size: var(--chat-fs-22);
+    --chat-heading-2-size: var(--chat-fs-16);
+    --chat-column: 42rem;
+    --chat-composer-space: 9rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .chat-root {
+    --chat-body-size: var(--chat-fs-155);
+    --chat-heading-1-size: var(--chat-fs-22);
+    --chat-heading-2-size: var(--chat-fs-16);
+    --chat-column: 48rem;
+    --chat-composer-space: 9.5rem;
   }
 }

@@ -1,0 +1,115 @@
+/**
+ * Typography primitives — scoped to .chat-root
+ * Professional reading scale: all sizes flow through --chat-* tokens.
+ * Use these classes or the CSS vars directly; never hard-code rem/px.
+ */
+
+.chat-root {
+  font-family: var(--chat-font-sans);
+  font-size: var(--chat-body-size);
+  line-height: var(--chat-body-leading);
+  font-weight: var(--chat-body-weight);
+  letter-spacing: var(--chat-body-tracking);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  font-synthesis: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Headings — display hierarchy via tracking + weight, not color */
+.chat-text-heading-1,
+.chat-text-display {
+  font-size: var(--chat-heading-1-size);
+  line-height: var(--chat-heading-1-leading);
+  font-weight: var(--chat-heading-1-weight);
+  letter-spacing: var(--chat-heading-1-tracking);
+}
+
+.chat-text-heading-2,
+.chat-text-heading {
+  font-size: var(--chat-heading-2-size);
+  line-height: var(--chat-heading-2-leading);
+  font-weight: var(--chat-heading-2-weight);
+  letter-spacing: var(--chat-heading-2-tracking);
+}
+
+/* Body — reading column */
+.chat-text-body {
+  font-size: var(--chat-body-size);
+  line-height: var(--chat-body-leading);
+  font-weight: var(--chat-body-weight);
+  letter-spacing: var(--chat-body-tracking);
+}
+
+.chat-text-body-sm {
+  font-size: var(--chat-body-sm-size);
+  line-height: var(--chat-body-sm-leading);
+  font-weight: var(--chat-body-sm-weight);
+  letter-spacing: var(--chat-tracking-normal);
+}
+
+/* Label / caption — metadata, tool states, timestamps */
+.chat-text-label {
+  font-size: var(--chat-label-size);
+  line-height: var(--chat-label-leading);
+  font-weight: var(--chat-label-weight);
+  letter-spacing: var(--chat-label-tracking);
+  text-transform: uppercase;
+}
+
+.chat-text-caption {
+  font-size: var(--chat-caption-size);
+  line-height: var(--chat-caption-leading);
+  font-weight: var(--chat-caption-weight);
+  letter-spacing: var(--chat-tracking-normal);
+}
+
+.chat-text-caption-strong {
+  font-size: var(--chat-caption-size);
+  line-height: var(--chat-caption-leading);
+  font-weight: var(--chat-weight-medium);
+  letter-spacing: var(--chat-tracking-normal);
+}
+
+/* Code — mono, slightly smaller in context */
+.chat-text-code,
+.chat-text-mono {
+  font-family: var(--chat-font-mono);
+  font-size: var(--chat-code-size);
+  line-height: var(--chat-code-leading);
+  font-weight: var(--chat-code-weight);
+  font-variant-ligatures: none;
+}
+
+/* UI — controls, inputs, selects, buttons (snug leading, 14px) */
+.chat-text-ui {
+  font-size: var(--chat-fs-14);
+  line-height: var(--chat-leading-ui);
+  font-weight: var(--chat-weight-regular);
+  letter-spacing: var(--chat-tracking-normal);
+}
+
+.chat-text-ui-sm {
+  font-size: var(--chat-fs-13);
+  line-height: var(--chat-leading-ui);
+  font-weight: var(--chat-weight-regular);
+  letter-spacing: var(--chat-tracking-normal);
+}
+
+.chat-text-ui-strong {
+  font-size: var(--chat-fs-14);
+  line-height: var(--chat-leading-ui);
+  font-weight: var(--chat-weight-medium);
+  letter-spacing: var(--chat-tracking-normal);
+}
+
+/* Utilities — paired padding for vertical rhythm */
+.chat-pad-body {
+  padding-block: 0.15rem;
+}
+
+.chat-pad-ui {
+  padding-block: 0.3rem;
+}

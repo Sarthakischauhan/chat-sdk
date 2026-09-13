@@ -59,7 +59,7 @@ export function createSymphonyAdapter({
       return data.messages;
     },
 
-    async *sendMessage({ threadId, message, messages, model, signal }) {
+    async *sendMessage({ threadId, message, messages, model, thinkingLevel, signal }) {
       if (!model) {
         throw new Error("Symphony models are still loading or unavailable");
       }
@@ -77,6 +77,7 @@ export function createSymphonyAdapter({
           conversation,
           session_id: threadId,
           model_id: model,
+          ...(thinkingLevel ? { reasoning_effort: thinkingLevel } : {}),
         }),
         signal,
       });

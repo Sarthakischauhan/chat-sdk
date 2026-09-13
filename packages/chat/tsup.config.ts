@@ -7,7 +7,10 @@ const cssFiles = [
   "chat.css",
   "chat.select.css",
   "blocks.css",
+  "chips.css",
   "widgets.css",
+  "theme/typography.css",
+  "theme/tokens.css",
 ];
 
 export default defineConfig({

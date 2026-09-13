@@ -20,10 +20,14 @@ type ModelContextValue = {
   registry: RegistryConfig;
   provider: ProviderId;
   model: string;
+  thinkingLevels: Record<string, string>;
+  getThinkingLevel: (providerId: string, modelId: string) => string | undefined;
+  setThinkingLevel: (providerId: string, modelId: string, level: string) => void;
   setProvider: (provider: ProviderId, model?: string) => void;
   setModel: (model: string) => void;
   providerRef: React.MutableRefObject<ProviderId>;
   modelRef: React.MutableRefObject<string>;
+  thinkingLevelsRef: React.MutableRefObject<Record<string, string>>;
 };
 
 const ModelContext = createContext<ModelContextValue | null>(null);
@@ -45,11 +49,23 @@ export function ModelProvider({
     () =>
       defaultRegistry.providers.find((entry) => entry.id === defaultProvider)?.defaultModel ?? "",
   );
+  const [thinkingLevels, setThinkingLevelsState] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const p of defaultRegistry.providers) {
+      for (const m of p.models) {
+        const levels = m.thinkingLevels;
+        if (levels?.length) initial[`${p.id}::${m.id}`] = levels.includes("medium") ? "medium" : levels[0];
+      }
+    }
+    return initial;
+  });
 
   const providerRef = useRef(provider);
   const modelRef = useRef(model);
+  const thinkingLevelsRef = useRef(thinkingLevels);
   providerRef.current = provider;
   modelRef.current = model;
+  thinkingLevelsRef.current = thinkingLevels;
 
   useEffect(() => {
     let cancelled = false;
@@ -67,6 +83,14 @@ export function ModelProvider({
         }
 
         setRegistry(data);
+        const nextThinking: Record<string, string> = {};
+        for (const p of data.providers) {
+          for (const m of p.models) {
+            const levels = m.thinkingLevels;
+            if (levels?.length) nextThinking[`${p.id}::${m.id}`] = levels.includes("medium") ? "medium" : levels[0];
+          }
+        }
+        setThinkingLevelsState((prev) => ({ ...nextThinking, ...prev }));
         const preferred =
           data.providers.find((entry) => entry.id === data.defaultProviderId) ??
           data.providers[0];
@@ -111,6 +135,15 @@ export function ModelProvider({
     }
   }, []);
 
+  const getThinkingLevel = useCallback(
+    (providerId: string, modelId: string) => thinkingLevels[`${providerId}::${modelId}`],
+    [thinkingLevels],
+  );
+
+  const setThinkingLevel = useCallback((providerId: string, modelId: string, level: string) => {
+    setThinkingLevelsState((prev) => ({ ...prev, [`${providerId}::${modelId}`]: level }));
+  }, []);
+
   const setModel = useCallback((nextModel: string) => {
     setModelState(nextModel);
   }, []);
@@ -120,12 +153,16 @@ export function ModelProvider({
       registry,
       provider,
       model,
+      thinkingLevels,
+      getThinkingLevel,
+      setThinkingLevel,
       setProvider,
       setModel,
       providerRef,
       modelRef,
+      thinkingLevelsRef,
     }),
-    [model, provider, registry, setModel, setProvider],
+    [model, provider, registry, setModel, setProvider, thinkingLevels, getThinkingLevel, setThinkingLevel],
   );
 
   return <ModelContext.Provider value={value}>{children}</ModelContext.Provider>;

@@ -6,7 +6,7 @@
 
 .agent-tool,
 .agent-data {
-  margin: 0.35rem 0;
+  margin: 0;
   color: inherit;
 }
 
@@ -14,11 +14,14 @@
 .agent-data > summary {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.32rem 0;
+  gap: var(--chat-space-2);
+  padding: var(--chat-space-1_5) 0;
   cursor: pointer;
   list-style: none;
-  font-size: 0.9rem;
+  font-size: var(--chat-fs-14);
+  line-height: var(--chat-leading-snug);
+  font-weight: var(--chat-weight-regular);
+  letter-spacing: var(--chat-tracking-normal);
   opacity: 0.76;
   transition:
     color var(--chat-transition),
@@ -58,11 +61,11 @@
 }
 
 .agent-tool-pending .agent-tool-dot {
-  color: color-mix(in oklab, #fbbf24 64%, currentColor);
+  color: color-mix(in oklab, var(--chat-warning) 70%, currentColor);
 }
 
 .agent-tool-complete .agent-tool-dot {
-  color: color-mix(in oklab, #34d399 48%, currentColor);
+  color: var(--chat-fg-muted);
 }
 
 .agent-tool-spinner {
@@ -97,8 +100,8 @@
   background: currentColor;
   opacity: 0.3;
   transition:
-    opacity 160ms ease,
-    transform 160ms ease;
+    opacity var(--chat-transition),
+    transform var(--chat-transition);
 }
 
 .agent-data[open] > summary::before {
@@ -111,9 +114,8 @@
   overflow: hidden;
   color: inherit;
   font-family: var(--chat-font-sans);
-  font-size: 0.95rem;
-  font-weight: 500;
-  opacity: 1;
+  font-size: var(--chat-text);
+  font-weight: var(--chat-weight-medium);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -122,64 +124,54 @@
   min-width: 0;
   max-width: min(100%, 22rem);
   overflow: hidden;
-  padding: 0.28rem 0.55rem;
-  border-radius: calc(var(--chat-radius-lg) + 0.15rem);
-  background: var(--chat-control-bg);
   color: var(--chat-fg-muted);
   font-family: var(--chat-font-mono);
-  font-size: 0.82rem;
-  line-height: 1.15;
-  opacity: 0.9;
+  font-size: var(--chat-text-sm);
+  line-height: var(--chat-leading-snug);
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition:
-    background-color var(--chat-transition),
-    color var(--chat-transition);
-}
-
-.agent-tool > summary:hover .agent-tool-chip {
-  background: var(--chat-control-hover);
-  color: var(--chat-fg);
 }
 
 .agent-tool-state {
   margin-left: auto;
-  color: inherit;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  opacity: 0.5;
+  color: var(--chat-fg-muted);
+  font-size: var(--chat-text-sm);
+  font-weight: var(--chat-weight-medium);
   white-space: nowrap;
 }
 
 .agent-tool-pending .agent-tool-state {
-  color: color-mix(in oklab, #fbbf24 54%, currentColor);
-  opacity: 0.8;
+  color: color-mix(in oklab, var(--chat-warning) 62%, currentColor);
 }
 
 .agent-tool-complete .agent-tool-state {
-  color: color-mix(in oklab, #34d399 42%, currentColor);
+  color: var(--chat-fg-subtle);
+}
+
+.agent-tool-error .agent-tool-dot,
+.agent-tool-error .agent-tool-state {
+  color: color-mix(in oklab, var(--chat-danger) 64%, currentColor);
+}
+
+.agent-tool-error .agent-tool-state {
+  opacity: 0.88;
 }
 
 .agent-tool-body,
 .agent-data > pre {
   margin-left: 1.25rem;
-  padding: 0.55rem 0 0 1rem;
-  border-left: 1px solid var(--chat-border);
+  padding: var(--chat-space-2) 0 0;
 }
 
 .agent-tool-section + .agent-tool-section {
-  margin-top: 0.85rem;
+  margin-top: var(--chat-space-3_5);
 }
 
 .agent-tool-section-label {
-  margin-bottom: 0.28rem;
-  color: inherit;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  opacity: 0.38;
-  text-transform: uppercase;
+  margin-bottom: var(--chat-space-1);
+  color: var(--chat-fg-muted);
+  font-size: var(--chat-text-xs);
+  font-weight: var(--chat-weight-medium);
 }
 
 .agent-tool-code {
@@ -187,16 +179,16 @@
   overflow-x: auto;
   padding: 0;
   color: inherit;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.76rem;
-  line-height: 1.55;
+  font-family: var(--chat-font-mono);
+  font-size: var(--chat-fs-12);
+  line-height: var(--chat-leading-normal);
   opacity: 0.72;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .agent-tool-error {
-  color: color-mix(in oklab, var(--chat-danger, #fb7185) 72%, currentColor);
+  color: color-mix(in oklab, var(--chat-danger) 72%, currentColor);
   opacity: 0.92;
 }
 
@@ -205,41 +197,37 @@
 .agent-reference {
   display: inline-flex;
   flex-direction: column;
-  gap: 0.08rem;
+  gap: var(--chat-space-05);
   max-width: min(100%, 32rem);
-  padding: 0.12rem 0;
+  padding: var(--chat-space-05) 0;
   color: inherit;
   text-decoration: none;
 }
 
 .agent-source:hover,
 .agent-file:hover {
-  color: color-mix(in oklab, var(--chat-accent, #10a37f) 45%, currentColor);
+  color: var(--chat-fg);
 }
 
 .agent-source-label {
-  color: inherit;
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  opacity: 0.38;
-  text-transform: uppercase;
+  color: var(--chat-fg-subtle);
+  font-size: var(--chat-text-xs);
+  font-weight: var(--chat-weight-medium);
 }
 
 .agent-source-title {
   overflow: hidden;
   color: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  line-height: 1.45;
-  opacity: 0.82;
+  font-size: var(--chat-text-sm);
+  font-weight: var(--chat-weight-medium);
+  line-height: var(--chat-leading-normal);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .agent-source-meta {
   color: inherit;
-  font-size: 0.75rem;
+  font-size: var(--chat-caption-size);
   opacity: 0.46;
 }
 
@@ -258,25 +246,25 @@
 }
 
 .agent-file-image figcaption {
-  padding: 0.45rem 0 0;
+  padding: var(--chat-space-2) 0 0;
   color: inherit;
-  font-size: 0.75rem;
+  font-size: var(--chat-caption-size);
   opacity: 0.46;
 }
 
 .agent-reference {
   display: flex;
   max-width: 100%;
-  padding: 0.15rem 0;
+  padding: var(--chat-space-05) 0;
 }
 
 .agent-reference + .agent-reference {
-  margin-top: 0.45rem;
+  margin-top: var(--chat-space-2);
 }
 
 .agent-reference-body {
   color: inherit;
-  font-size: 0.875rem;
-  line-height: 1.45;
+  font-size: var(--chat-fs-14);
+  line-height: var(--chat-leading-normal);
   opacity: 0.72;
 }

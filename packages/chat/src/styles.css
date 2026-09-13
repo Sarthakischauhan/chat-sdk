@@ -1,6 +1,10 @@
+@import "@fontsource/geist-sans/latin.css";
+@import "@fontsource/geist-mono/latin.css";
 @import "@sarchauhan/code-markdown/styles.css";
+@import "./theme/typography.css";
 @import "./markdown.css";
 @import "./chat.css";
 @import "./chat.select.css";
 @import "./blocks.css";
+@import "./chips.css";
 @import "./widgets.css";
