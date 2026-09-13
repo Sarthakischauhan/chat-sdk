@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { clearErrorShake, motion, triggerErrorShake } from "../../motion";
 import { useComposer } from "./context";
 
 export const ChatInput = ({ placeholder = "Message..." }: { placeholder?: string }) => {
@@ -23,7 +24,13 @@ export const ChatInput = ({ placeholder = "Message..." }: { placeholder?: string
       <textarea
         ref={ref}
         value={input}
-        onChange={(event) => setInput(event.target.value)}
+        onChange={(event) => {
+          const wrap = event.currentTarget.closest<HTMLElement>(`.${motion.inputWrap}`);
+          if (wrap) {
+            clearErrorShake(wrap);
+          }
+          setInput(event.target.value);
+        }}
         placeholder={placeholder}
         disabled={disabled}
         rows={1}
@@ -31,9 +38,17 @@ export const ChatInput = ({ placeholder = "Message..." }: { placeholder?: string
           if (event.key !== "Enter" || event.shiftKey) return;
           if (event.nativeEvent.isComposing) return;
           event.preventDefault();
-          if (!disabled && input.trim()) {
-            void submitInput();
+          if (disabled) {
+            return;
           }
+          if (!input.trim()) {
+            const wrap = event.currentTarget.closest<HTMLElement>(`.${motion.inputWrap}`);
+            if (wrap) {
+              triggerErrorShake(wrap);
+            }
+            return;
+          }
+          void submitInput();
         }}
       />
     </div>

@@ -18,6 +18,8 @@ export const MessageItem = ({ message }: { message: ChatMessage }) => {
   const [draft, setDraft] = useState(() => getUserDisplayText(message));
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const isUser = message.role === "user";
+  const isActiveAssistantMessage =
+    isSending && messages[messages.length - 1]?.id === message.id;
 
   const assistantText = message.parts
     .filter((part) => part.type === "text")
@@ -115,19 +117,21 @@ export const MessageItem = ({ message }: { message: ChatMessage }) => {
       <div className="chat-message-assistant-inner">
         <MessageContent parts={message.parts} isUser={false} />
         <MessageUsage parts={dataParts} />
-        <MessageFeedback
-          responseText={assistantText}
-          canRegenerate={!!previousUserMessage}
-          disabled={isSending}
-          onRegenerate={() => {
-            if (previousUserMessage) {
-              void editAndResendMessage(
-                previousUserMessage.id,
-                getUserDisplayText(previousUserMessage),
-              );
-            }
-          }}
-        />
+        {isActiveAssistantMessage ? null : (
+          <MessageFeedback
+            responseText={assistantText}
+            canRegenerate={!!previousUserMessage}
+            disabled={isSending}
+            onRegenerate={() => {
+              if (previousUserMessage) {
+                void editAndResendMessage(
+                  previousUserMessage.id,
+                  getUserDisplayText(previousUserMessage),
+                );
+              }
+            }}
+          />
+        )}
       </div>
     </div>
   );

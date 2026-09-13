@@ -46,6 +46,27 @@
   height: 1rem;
   flex: 0 0 auto;
   color: var(--chat-fg-muted);
+  /* Restrain success-check so a 10px glyph does not bob 40px */
+  --check-y-amount: 3px;
+  --check-blur-from: 2px;
+  --check-rotate-from: 24deg;
+  --check-opacity-dur: 280ms;
+  --check-rotate-dur: 280ms;
+  --check-bob-dur: 240ms;
+  --check-blur-dur: 240ms;
+  --check-path-dur: 280ms;
+  --check-path-delay: 40ms;
+}
+
+.agent-tool-dot .t-icon-swap {
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+}
+
+.agent-tool-dot .t-success-check {
+  display: inline-flex;
+  line-height: 0;
 }
 
 .agent-tool-chevron {

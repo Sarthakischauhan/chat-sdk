@@ -212,7 +212,10 @@
 
 /* Responsive type & layout — mobile / tablet / desktop */
 @media (max-width: 640px) {
-  .chat-root {
+  .chat-root,
+  .chat-root[data-theme="light"],
+  .chat-root[data-theme="dark"],
+  .chat-root[data-theme="system"] {
     --chat-body-size: var(--chat-fs-15);
     --chat-body-sm-size: var(--chat-fs-13);
     --chat-heading-1-size: var(--chat-fs-18);
@@ -224,7 +227,10 @@
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
-  .chat-root {
+  .chat-root,
+  .chat-root[data-theme="light"],
+  .chat-root[data-theme="dark"],
+  .chat-root[data-theme="system"] {
     --chat-body-size: var(--chat-fs-155);
     --chat-heading-1-size: var(--chat-fs-22);
     --chat-heading-2-size: var(--chat-fs-16);
@@ -234,7 +240,10 @@
 }
 
 @media (min-width: 1025px) {
-  .chat-root {
+  .chat-root,
+  .chat-root[data-theme="light"],
+  .chat-root[data-theme="dark"],
+  .chat-root[data-theme="system"] {
     --chat-body-size: var(--chat-fs-155);
     --chat-heading-1-size: var(--chat-fs-22);
     --chat-heading-2-size: var(--chat-fs-16);
