@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync } from "node:fs";
+import { cpSync, mkdirSync, readdirSync } from "node:fs";
 import { defineConfig } from "tsup";
 
 const cssFiles = [
@@ -33,5 +33,12 @@ export default defineConfig({
 
     mkdirSync("dist/theme", { recursive: true });
     cpSync("src/theme/tokens.css", "dist/theme/tokens.css");
+
+    mkdirSync("dist/motion", { recursive: true });
+    for (const file of readdirSync("src/motion")) {
+      if (file.endsWith(".css")) {
+        cpSync(`src/motion/${file}`, `dist/motion/${file}`);
+      }
+    }
   },
 });

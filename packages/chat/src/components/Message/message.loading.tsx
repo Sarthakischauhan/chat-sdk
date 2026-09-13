@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { TextSwap } from "../../motion";
 
 export const useElapsedTime = (active: boolean) => {
   const startedAtRef = useRef(0);
@@ -68,7 +69,7 @@ export const LoadingState = ({ label = "Churning", compact = false }: LoadingSta
   return (
     <div className={`chat-loading${compact ? " chat-loading-inline" : ""}`} role="status" aria-live="polite">
       <PixelGrid />
-      <span className="chat-loading-label">{label}</span>
+      <TextSwap className="chat-loading-label" text={label} />
       <span className="chat-loading-timer" role="timer">
         {formatElapsed(elapsed, true)}
       </span>

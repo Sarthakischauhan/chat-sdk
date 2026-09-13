@@ -18,6 +18,17 @@ export const Loading: StoryObj = {
 export const Thinking: StoryObj = {
   name: "Thinking",
   render: () => (
+    <ThinkingBlock isComplete={false}>
+      <div className="md-thinking-body">
+        The response trace remains available without taking focus away from the conversation.
+      </div>
+    </ThinkingBlock>
+  ),
+};
+
+export const ThinkingComplete: StoryObj = {
+  name: "Thinking complete",
+  render: () => (
     <ThinkingBlock isComplete elapsedMs={4_000}>
       <div className="md-thinking-body">
         The response trace remains available without taking focus away from the conversation.
