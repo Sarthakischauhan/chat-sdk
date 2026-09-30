@@ -13,7 +13,7 @@ import {
   type AgentWidgetProps,
 } from "@sarchauhan/protocol";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { splitThinkingSegments } from "../../lib/message/segment";
 import { parseUserReferenceMessage } from "../../lib/message/user";
 import { cn } from "../../lib/utils";
@@ -25,6 +25,8 @@ import {
   type IconSwapState,
   type SuccessCheckState,
 } from "../../motion";
+import { computeToolWidget } from "../../widgets/compute";
+import { prebuiltWidgets } from "../../widgets/registry";
 import { useWidgets } from "../Widget/widget.context";
 import { WidgetRenderer } from "../Widget/widget.renderer";
 import { MarkdownContent } from "./message.markdown";
@@ -105,13 +107,13 @@ const ToolStatusIcon = ({
   isDone: boolean;
 }) => {
   const pathRef = useRef<SVGPathElement>(null);
-  const sawPending = useRef(isPending);
+  const [sawPending, setSawPending] = useState(isPending);
   const iconState: IconSwapState = isPending ? "a" : "b";
-  const playCheck = Boolean(sawPending.current && isDone);
+  const playCheck = Boolean(sawPending && isDone);
   const checkState: SuccessCheckState = playCheck ? "in" : "out";
 
-  if (isPending) {
-    sawPending.current = true;
+  if (isPending && !sawPending) {
+    setSawPending(true);
   }
 
   useLayoutEffect(() => {
@@ -355,8 +357,10 @@ const PartView = ({ part, index, isUser }: { part: AgentPart; index: number; isU
     return isUser ? null : <WidgetRenderer key={`widget-${part.id || index}`} part={part} />;
   }
 
-  if (part.type === "tool" && !isUser && widgets[part.toolName]) {
-    const widgetPart = asWidgetFromTool(part);
+  if (part.type === "tool" && !isUser) {
+    const entry = widgets[part.toolName];
+    const isCustom = entry && entry !== prebuiltWidgets[part.toolName];
+    const widgetPart = isCustom ? asWidgetFromTool(part) : computeToolWidget(part);
     if (widgetPart) {
       return <WidgetRenderer key={`tool-widget-${part.toolCallId || index}`} part={widgetPart} />;
     }

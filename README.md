@@ -1,263 +1,54 @@
 # Chat SDK
 
-Chat SDK is a monorepo for building streaming chat UIs on top of the [Vercel AI SDK](https://ai-sdk.dev). It includes a React chat package, an agent event protocol package, and a Next.js example app.
+A package-first TypeScript workspace for embeddable chat interfaces. React UI, terminal UI, backend adapters, and the event protocol are independently built packages. Next.js apps are examples, not the SDK runtime.
 
-## Packages
-
-| Package | Path | Description |
+| Package | Path | Purpose |
 | --- | --- | --- |
-| `@sarchauhan/chat` | `packages/chat` | Chat UI (`Chat`, message list, composer, model select) |
-| `@sarchauhan/protocol` | `packages/protocol` | Agent stream events + normalized parts for rendering |
-
-## Are protocol events the same as the AI SDK?
-
-Yes. `@sarchauhan/protocol` event types mirror the AI SDK **UI message stream** chunk types (`text-start`, `text-delta`, `reasoning-*`, `tool-input-*`, `tool-output-*`, `start-step`, `finish`, `data-*`, and so on).
-
-What this package adds:
-
-1. **Events** — typed stream chunks compatible with AI SDK UI streams
-2. **Parts** — a stable render model (`text`, `reasoning`, `tool`, `step-start`, `source-*`, `file`, `data`)
-3. **Helpers** — `normalizeAgentParts` (from AI SDK `UIMessage.parts`) and `reduceAgentEvents` (from raw stream events)
-
-So if your backend returns `toUIMessageStreamResponse()` / `createAgentUIStreamResponse()`, the chat UI can already understand those parts. Use the protocol package when you want shared types or to reduce raw events yourself.
-
-## Features
-
-- Chat interface built with React
-- Design system with light / dark / system themes
-- OpenAI, Anthropic, Google, and Ollama model selection
-- Streaming responses via the AI SDK UI message stream
-- Agent event rendering: reasoning, tools, steps, sources, files, data parts, and widgets
-- Example Next.js app under `examples/next`
-
-## Getting Started
-
-Install dependencies:
+| `@sarchauhan/chat` | `packages/chat` | React chat, themes, prebuilt/computed tool widgets |
+| `@sarchauhan/protocol` | `packages/protocol` | Stream events, normalized parts, reducers |
+| `@sarchauhan/adapter` | `packages/adapter` | Backend-neutral adapter contract |
+| `@sarchauhan/adapter-ai-sdk` | `packages/adapter/ai-sdk` | Optional AI SDK integration |
+| `@sarchauhan/chat-tui` | `packages/chat-tui` | Terminal chat UI |
 
 ```bash
-bun install
-# or: npm install
+npm install
+npm run build        # SDK packages only, no app or database required
+npm run typecheck
+npm test             # built-package regression tests
+npm run storybook    # component gallery on port 6006
 ```
 
-Build packages:
-
-```bash
-bun run build:chat
-# or: npm run build:chat
-```
-
-Create `examples/next/.env.local` and add the API keys you want to use:
-
-```bash
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
-GOOGLE_GENERATIVE_AI_API_KEY=
-```
-
-Start the development server:
-
-```bash
-bun run dev
-# or: npm run dev
-```
-
-Open `http://localhost:3000` in your browser.
-
-## Design system
-
-The chat window uses a ChatGPT-inspired visual language focused on calm reading and clear turn-taking:
-
-- Soft neutral canvas, not dashboard chrome
-- User messages as soft bubbles; assistant messages stay plain and content-first
-- Centered reading column with a floating composer
-- Shared CSS tokens for light and dark themes
+## Embed in a React app
 
 ```tsx
 import { Chat } from "@sarchauhan/chat";
+import type { ChatAdapter } from "@sarchauhan/adapter";
+import "@sarchauhan/chat/styles.css";
 
-<Chat
-  adapter={adapter}
-  defaultTheme="system" // or "light" | "dark"
-  showThemeToggle
-/>
-```
-
-Tokens live under `.chat-root` as `--chat-*` variables (`--chat-bg`, `--chat-user-bg`, `--chat-composer-bg`, …). Theme preference is stored locally and can be controlled via `theme` / `onThemeChange`.
-
-## End-user usage
-
-### Drop-in chat UI
-
-Wire any adapter that yields AI SDK `UIMessage`-shaped messages. The UI normalizes parts through the protocol and renders them.
-
-```tsx
-"use client";
-
-import { Chat } from "@sarchauhan/chat";
-import { createDefaultFetchAdapter } from "@/lib/adapters/fetch";
-
-export default function Page() {
-  return (
-    <main>
-      <Chat adapter={createDefaultFetchAdapter()} />
-    </main>
-  );
-}
-```
-
-Your `/api/chat` route can keep using the AI SDK as usual:
-
-```ts
-import { convertToModelMessages, streamText, stepCountIs, tool } from "ai";
-
-export async function POST(req: Request) {
-  const { messages } = await req.json();
-
-  const result = streamText({
-    model,
-    messages: await convertToModelMessages(messages),
-    tools: {
-      getCurrentTime: tool({
-        description: "Get the current time",
-        inputSchema: /* your schema */,
-        execute: async () => ({ iso: new Date().toISOString() }),
-      }),
-    },
-    stopWhen: stepCountIs(5),
-  });
-
-  return result.toUIMessageStreamResponse();
-}
-```
-
-Ask something like “what time is it?” and the assistant message will show tool call + result blocks, then the final text.
-
-### Widgets (generative UI)
-
-Widgets are not a separate event bus. They reuse AI SDK stream parts:
-
-1. `data-widget` parts with `{ name, props, interactive? }`
-2. Tool parts whose tool name is registered in the chat widget map
-3. Other `data-*` parts whose name matches a registered widget
-
-Register a widget by pairing a stream `name` with a React component. The component receives
-the streamed props directly, plus a `widget` helper for interactive responses:
-
-```tsx
-import { Chat, defineWidget, type WidgetComponentProps } from "@sarchauhan/chat";
-
-type WeatherProps = {
-  city: string;
-  temperature: number;
-  conditions: string;
+const adapter: ChatAdapter = {
+  async *sendMessage(input) {
+    // Yield normalized assistant message snapshots from your backend.
+    yield { id: "reply", role: "assistant", parts: [{ type: "text", text: "Hello" }] };
+  },
 };
 
-function WeatherWidget({
-  city,
-  temperature,
-  conditions,
-  widget,
-}: WidgetComponentProps<WeatherProps>) {
-  return (
-    <div>
-      <strong>{temperature}°</strong>
-      <span>{conditions}</span>
-      {widget.interactive ? (
-        <button onClick={() => widget.respond("refresh", "Refresh weather")}>
-          Refresh
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-const widgets = [
-  defineWidget<WeatherProps>("weather", WeatherWidget, {
-    label: "Weather",
-    title: (props) => props.city,
-    status: (_props, widget) => (widget.disabled ? "Locked" : "Live"),
-  }),
-];
-
-<Chat
-  adapter={createDefaultFetchAdapter()}
-  widgets={widgets}
-/>
+<Chat adapter={adapter} defaultTheme="system" showModelSelector={false} />;
 ```
 
-Server-side, emit a widget with AI SDK data parts:
+Prebuilt read-file, patch/diff, search, and question components are available at `@sarchauhan/chat/widgets` and from the root export. Known tool parts compute these views automatically; custom widget registries can override them. See [the chat package documentation](packages/chat/README.md) for payloads, interactive responses, and standalone usage.
 
-```ts
-import { createWidgetData } from "@sarchauhan/protocol";
+## Example applications
 
-writer.write(
-  createWidgetData(
-    "question",
-    {
-      prompt: "Where should we meet?",
-      options: ["Cafe", "Park", "Office"],
-    },
-    { interactive: true, id: "meet-1" },
-  ),
-);
+Each example owns its app dependencies, configuration, and scripts. The apps consume SDK exports rather than TypeScript source aliases. Build the packages after SDK edits before running an example.
+
+```bash
+npm run dev                     # Symphony example
+npm run dev:ai-sdk              # AI SDK example
+npm run build:symphony-example  # SDK + Symphony app
+npm run build:ai-sdk-example    # SDK + AI SDK app
+npm run tui                     # terminal demo
 ```
 
-Or return props from any tool whose name is registered in `widgets` — the UI maps those tool
-results to the same widget. Interactive widgets call back into `sendMessage` with the user's choice.
+Configure example-specific environment/database settings using [the Symphony guide](examples/next-symphony/README.md) or [the AI SDK guide](examples/next-ai-sdk/README.md).
 
-### Use protocol helpers directly
-
-Normalize AI SDK message parts for custom UI:
-
-```ts
-import { normalizeAgentParts } from "@sarchauhan/protocol";
-
-// message.parts comes from AI SDK UIMessage
-const parts = normalizeAgentParts(message.parts);
-
-for (const part of parts) {
-  switch (part.type) {
-    case "text":
-      renderText(part.text);
-      break;
-    case "reasoning":
-      renderThinking(part.text, part.state);
-      break;
-    case "tool":
-      renderTool(part.toolName, part.state, part.input, part.output);
-      break;
-    case "widget":
-      renderWidget(part.name, part.props, part.interactive);
-      break;
-    case "step-start":
-      renderStepDivider();
-      break;
-    // source-url | source-document | file | data | unknown
-  }
-}
-```
-
-Or reduce raw AI SDK stream events into one assistant message snapshot:
-
-```ts
-import {
-  createAgentMessageState,
-  applyAgentEvent,
-  type AgentEvent,
-} from "@sarchauhan/protocol";
-
-let state = createAgentMessageState("msg_1");
-
-for await (const event of readAgentEventStream()) {
-  state = applyAgentEvent(state, event as AgentEvent);
-  // state.message.parts is ready for rendering
-}
-```
-
-## Tech Stack
-
-- Next.js
-- React
-- TypeScript
-- Vercel AI SDK
-- Tailwind CSS
+The protocol supports text, reasoning, tool states, sources, files, data, and widgets. It mirrors AI SDK UI stream shapes while providing a transport-neutral render model and event reducers usable with any backend.

@@ -3,6 +3,7 @@
 import type { AgentWidgetPart, AgentWidgetProps } from "@sarchauhan/protocol";
 import type { ComponentType, ReactNode } from "react";
 import { createContext, useContext, useMemo } from "react";
+import { prebuiltWidgets } from "../../widgets/registry";
 import type { BaseWidgetProps } from "./base.widget";
 
 export type WidgetResponse = {
@@ -142,7 +143,7 @@ export function WidgetProvider({
   disabled = false,
   children,
 }: WidgetProviderProps) {
-  const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
+  const registry = useMemo(() => ({ ...prebuiltWidgets, ...createWidgetRegistry(widgets) }), [widgets]);
   const value = useMemo(
     () => ({
       widgets: registry,
@@ -160,9 +161,9 @@ export function useWidgets() {
 
   if (!context) {
     return {
-      widgets: {},
+      widgets: prebuiltWidgets,
       respondToWidget: async () => undefined,
-      disabled: false,
+      disabled: true,
     };
   }
 

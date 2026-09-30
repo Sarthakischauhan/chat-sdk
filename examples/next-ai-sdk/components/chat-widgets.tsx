@@ -1,13 +1,7 @@
 "use client";
 
-import { Check, ExternalLink, MapPin } from "lucide-react";
-import { useState } from "react";
+import { ExternalLink, MapPin } from "lucide-react";
 import { defineWidget, type WidgetComponentProps } from "@sarchauhan/chat";
-
-type QuestionWidgetProps = {
-  prompt?: string;
-  options?: Array<string | { label: string; value: string }>;
-};
 
 type MapWidgetProps = {
   lat?: number;
@@ -16,49 +10,8 @@ type MapWidgetProps = {
   zoom?: number;
 };
 
-const normalizeOptions = (options: QuestionWidgetProps["options"] = []) =>
-  options.map((option) =>
-    typeof option === "string" ? { label: option, value: option } : option,
-  );
-
 const asNumber = (value: unknown, fallback: number) =>
   typeof value === "number" && Number.isFinite(value) ? value : fallback;
-
-function QuestionWidget({ options: rawOptions, widget }: WidgetComponentProps<QuestionWidgetProps>) {
-  const [selected, setSelected] = useState<string | null>(null);
-  const options = normalizeOptions(rawOptions);
-  const selectedLabel = options.find((option) => option.value === selected)?.label ?? selected;
-
-  return (
-    <>
-      <div className="chat-widget-options">
-        {options.map((option) => {
-          const isActive = selected === option.value;
-
-          return (
-            <button
-              key={option.value}
-              type="button"
-              className="chat-widget-option"
-              data-selected={isActive ? "true" : undefined}
-              disabled={!widget.interactive || widget.disabled}
-              onClick={async () => {
-                setSelected(option.value);
-                await widget.respond(option.value, option.label, option.value);
-              }}
-            >
-              <span className="chat-widget-option-text">{option.label}</span>
-              <span className="chat-widget-option-check" aria-hidden="true">
-                {isActive ? <Check /> : null}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-      {selectedLabel ? <div className="chat-widget-inline-meta">Selected: {selectedLabel}</div> : null}
-    </>
-  );
-}
 
 function MapWidget({
   lat: rawLat,
@@ -102,12 +55,6 @@ function MapWidget({
 }
 
 export const exampleWidgets = [
-  defineWidget<QuestionWidgetProps>("question", QuestionWidget, {
-    label: "Question",
-    title: (props) => (typeof props.prompt === "string" ? props.prompt : "Choose an option"),
-    status: (_props, widget) =>
-      widget.interactive && !widget.disabled ? "Awaiting input" : "Locked",
-  }),
   defineWidget<MapWidgetProps>("map", MapWidget, {
     label: "Map",
     title: (props) => (typeof props.label === "string" ? props.label : "Map location"),

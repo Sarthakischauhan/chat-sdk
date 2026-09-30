@@ -14,7 +14,7 @@ node_modules/
 /coverage
 
 # next.js
-/.next/
+**/.next/
 /out/
 
 # storybook
@@ -42,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# SDK package output
+**/dist/

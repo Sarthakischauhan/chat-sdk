@@ -1,4 +1,5 @@
 import { cpSync, mkdirSync, readdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { defineConfig } from "tsup";
 
 const cssFiles = [
@@ -14,7 +15,8 @@ const cssFiles = [
 ];
 
 export default defineConfig({
-  entry: ["src/index.ts"],
+  entry: { index: "src/index.ts", widgets: "src/widgets/index.ts" },
+  banner: { js: '"use client";' },
   format: ["esm", "cjs"],
   dts: true,
   sourcemap: true,
@@ -28,6 +30,7 @@ export default defineConfig({
   ],
   async onSuccess() {
     for (const file of cssFiles) {
+      mkdirSync(dirname(`dist/${file}`), { recursive: true });
       cpSync(`src/${file}`, `dist/${file}`);
     }
 

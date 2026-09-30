@@ -87,8 +87,8 @@ function ChatShell({
   const respondToWidget = useCallback(
     async (response: WidgetResponse) => {
       const text =
-        response.actionId ??
         response.label ??
+        response.actionId ??
         (typeof response.value === "string" ? response.value : JSON.stringify(response.value));
 
       if (!text.trim()) {

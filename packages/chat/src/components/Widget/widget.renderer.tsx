@@ -1,7 +1,7 @@
 "use client";
 
 import type { AgentWidgetPart } from "@sarchauhan/protocol";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { BaseWidget } from "./base.widget";
 import {
   getWidgetShellProps,
@@ -15,21 +15,30 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
   const { widgets, respondToWidget, disabled } = useWidgets();
   const entry = resolveWidgetPart(part, widgets);
   const [submitted, setSubmitted] = useState(false);
+  const pending = useRef(false);
   const widgetDisabled = disabled || submitted;
 
   const respond = async (value: unknown, label?: string, actionId?: string) => {
-    if (!part.interactive || disabled || submitted) {
+    if (!part.interactive || disabled || submitted || pending.current) {
       return;
     }
 
+    pending.current = true;
     setSubmitted(true);
-    await respondToWidget({
-      widgetId: part.id,
-      name: part.name,
-      actionId,
-      value,
-      label,
-    });
+    try {
+      await respondToWidget({
+        widgetId: part.id,
+        name: part.name,
+        actionId,
+        value,
+        label,
+      });
+    } catch (error) {
+      setSubmitted(false);
+      throw error;
+    } finally {
+      pending.current = false;
+    }
   };
 
   const controls: WidgetControls = {
@@ -52,7 +61,9 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
           status="Raw props"
           className="chat-widget-missing"
         >
-          <pre className="agent-tool-code">{JSON.stringify(part.props, null, 2)}</pre>
+          <pre className="agent-tool-code">
+            {JSON.stringify(part.props, null, 2)}
+          </pre>
         </BaseWidget>
       </div>
     );
@@ -68,7 +79,9 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
 
     return (
       <div className="chat-widget">
-        <BaseWidget {...getWidgetShellProps(entry, part.props, controls)}>{content}</BaseWidget>
+        <BaseWidget {...getWidgetShellProps(entry, part.props, controls)}>
+          {content}
+        </BaseWidget>
       </div>
     );
   }
@@ -84,12 +97,20 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
         interactive={part.interactive}
         disabled={widgetDisabled}
         onRespond={async (response) => {
-          if (!part.interactive || disabled || submitted) {
+          if (!part.interactive || disabled || submitted || pending.current) {
             return;
           }
 
+          pending.current = true;
           setSubmitted(true);
-          await respondToWidget(response);
+          try {
+            await respondToWidget(response);
+          } catch (error) {
+            setSubmitted(false);
+            throw error;
+          } finally {
+            pending.current = false;
+          }
         }}
       />
     </div>
