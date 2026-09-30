@@ -1,0 +1,46 @@
+import assert from "node:assert/strict";
+import { afterEach, test } from "node:test";
+import { createElement } from "react";
+import { JSDOM } from "jsdom";
+const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "http://localhost" });
+for (const key of ["window", "document", "HTMLElement", "HTMLInputElement", "Node", "NodeFilter", "MutationObserver", "Event", "CustomEvent"]) globalThis[key] = dom.window[key];
+globalThis.getComputedStyle = dom.window.getComputedStyle.bind(dom.window);
+globalThis.requestAnimationFrame = (callback) => setTimeout(callback, 0);
+globalThis.cancelAnimationFrame = clearTimeout;
+Object.defineProperty(globalThis, "navigator", { value: dom.window.navigator, configurable: true });
+dom.window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+const { render, fireEvent, screen, cleanup, waitFor } = await import("@testing-library/react");
+const { SubagentWidget, ArtifactWidget } = await import("../dist/widgets.mjs");
+const { ThemeProvider, MessageContent } = await import("../dist/index.mjs");
+afterEach(cleanup);
+const agent = { id: "s1", title: "Research", state: "running", task: "Compare options", messages: [{ id: "m", role: "assistant", parts: [{ type: "text", text: "Checking the adapter." }] }] };
+const wrap = (value) => createElement(ThemeProvider, { theme: "dark" }, createElement("div", { className: "chat-root", "data-theme": "dark" }, value));
+test("subagent opens dialog, preserves theme and updates activity while open", async () => {
+  const { rerender } = render(wrap(createElement(SubagentWidget, { subagent: agent })));
+  const trigger = screen.getByRole("button", { name: "View activity for Research" });
+  fireEvent.click(trigger);
+  const dialog = await screen.findByRole("dialog");
+  assert.equal(dialog.getAttribute("data-theme"), "dark");
+  assert.ok(screen.getByText("Checking the adapter."));
+  rerender(wrap(createElement(SubagentWidget, { subagent: { ...agent, state: "completed", summary: "The adapter is ready." } })));
+  assert.ok(screen.getByRole("dialog"));
+  assert.ok(screen.getAllByText("The adapter is ready.").length);
+  fireEvent.click(screen.getByRole("button", { name: "Close details" }));
+  await waitFor(() => assert.equal(screen.queryByRole("dialog"), null));
+});
+test("file preview shows text as text and is dismissible", async () => {
+  render(wrap(createElement(ArtifactWidget, { artifact: { id: "f1", filename: "report.html", mediaType: "text/html", content: "<script>bad()</script>" } })));
+  fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+  const dialog = await screen.findByRole("dialog");
+  assert.equal(dialog.querySelector("script"), null);
+  assert.ok(screen.getByText("<script>bad()</script>"));
+  fireEvent.keyDown(dialog, { key: "Escape" });
+  await waitFor(() => assert.equal(screen.queryByRole("dialog"), null));
+});
+test("native files integrate into chat and failed image previews remain downloadable", () => {
+  const { container } = render(wrap(createElement(MessageContent, { parts: [{ type: "file", mediaType: "image/png", filename: "output.png", url: "/files/output.png" }] })));
+  assert.ok(container.querySelector(".chat-artifact"));
+  fireEvent.error(screen.getByRole("img"));
+  assert.ok(screen.getByText("Image preview unavailable."));
+  assert.equal(screen.getByRole("link", { name: "Download" }).getAttribute("href"), "/files/output.png");
+});

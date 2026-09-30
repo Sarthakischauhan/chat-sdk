@@ -516,7 +516,15 @@ export const applyAgentEvent = (
           reasoningIds,
           message: {
             ...state.message,
-            parts: [...state.message.parts, nextPart],
+            parts: (name === "artifact" || name === "subagent") && event.id
+              ? (() => {
+                  const index = state.message.parts.findIndex((part) =>
+                    part.type === "data" && part.name === name && part.id === event.id);
+                  return index < 0
+                    ? [...state.message.parts, nextPart]
+                    : state.message.parts.map((part, i) => i === index ? nextPart : part);
+                })()
+              : [...state.message.parts, nextPart],
           },
         };
       }

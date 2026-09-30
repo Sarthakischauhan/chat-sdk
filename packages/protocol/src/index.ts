@@ -86,3 +86,6 @@ export {
   isAgentWidgetData,
   toWidgetPart,
 } from "./widgets";
+
+export { createArtifactData, createSubagentData, parseArtifact, parseSubagent } from "./activity";
+export type { AgentArtifact, AgentSubagent, AgentSubagentState } from "./activity";

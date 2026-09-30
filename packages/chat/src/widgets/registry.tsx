@@ -3,6 +3,9 @@ import type {
   ChatWidgetRegistry,
   WidgetComponentProps,
 } from "../components/Widget/widget.context";
+import { parseArtifact, parseSubagent } from "@sarchauhan/protocol";
+import { ArtifactWidget, ArtifactsWidget } from "./artifact";
+import { SubagentWidget } from "./subagent";
 import { normalizeSearchResults } from "./compute";
 import { PatchWidget } from "./patch";
 import { QuestionWidget } from "./question";
@@ -98,8 +101,25 @@ function Question(props: WidgetComponentProps) {
     />
   );
 }
+function Artifact(props: WidgetComponentProps) {
+  const artifact = parseArtifact(props.artifact ?? props);
+  return artifact ? <ArtifactWidget artifact={artifact} /> : <p className="chat-widget-empty">File details are unavailable.</p>;
+}
+function Artifacts(props: WidgetComponentProps) {
+  const artifacts = Array.isArray(props.artifacts) ? props.artifacts.flatMap((value) => {
+    const artifact = parseArtifact(value); return artifact ? [artifact] : [];
+  }) : [];
+  return <ArtifactsWidget artifacts={artifacts} />;
+}
+function Subagent(props: WidgetComponentProps) {
+  const subagent = parseSubagent(props.subagent ?? props);
+  return subagent ? <SubagentWidget subagent={subagent} /> : <p className="chat-widget-empty">Agent details are unavailable.</p>;
+}
 /** Defaults are always available; a host registry can override any name. */
 export const prebuiltWidgets: ChatWidgetRegistry = {
+  artifact: { name: "artifact", component: Artifact, shell: false },
+  artifacts: { name: "artifacts", component: Artifacts, shell: false },
+  subagent: { name: "subagent", component: Subagent, shell: false },
   "read-file": { name: "read-file", component: Read, shell: false },
   patch: { name: "patch", component: Patch, shell: false },
   search: { name: "search", component: Search, shell: false },

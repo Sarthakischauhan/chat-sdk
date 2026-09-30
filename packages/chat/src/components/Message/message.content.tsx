@@ -2,6 +2,8 @@
 
 import {
   normalizeAgentParts,
+  parseArtifact,
+  parseSubagent,
   type AgentDataPart,
   type AgentFilePart,
   type AgentPart,
@@ -25,6 +27,7 @@ import {
   type IconSwapState,
   type SuccessCheckState,
 } from "../../motion";
+import { ArtifactWidget } from "../../widgets/artifact";
 import { computeToolWidget } from "../../widgets/compute";
 import { prebuiltWidgets } from "../../widgets/registry";
 import { useWidgets } from "../Widget/widget.context";
@@ -244,25 +247,12 @@ const SourceDocumentBlock = ({ part }: { part: AgentSourceDocumentPart }) => (
   </div>
 );
 
-const FileBlock = ({ part }: { part: AgentFilePart }) => {
-  const isImage = part.mediaType.startsWith("image/");
-
-  if (isImage) {
-    return (
-      <figure className="agent-file agent-file-image">
-        <img src={part.url} alt={part.filename || "Generated file"} />
-        {part.filename && <figcaption>{part.filename}</figcaption>}
-      </figure>
-    );
-  }
-
-  return (
-    <a className="agent-file" href={part.url} target="_blank" rel="noreferrer">
-      <span className="agent-source-label">File</span>
-      <span className="agent-source-title">{part.filename || part.mediaType}</span>
-    </a>
-  );
-};
+const FileBlock = ({ part }: { part: AgentFilePart }) => (
+  <ArtifactWidget artifact={{
+    id: part.url, filename: part.filename || (part.mediaType.startsWith("image/") ? "Generated image" : "Generated file"),
+    mediaType: part.mediaType, url: part.url, status: "ready",
+  }} />
+);
 
 const AgentEventBlock = ({ part }: { part: AgentDataPart }) => (
   <details className="agent-tool agent-event">
@@ -367,6 +357,10 @@ const PartView = ({ part, index, isUser }: { part: AgentPart; index: number; isU
   }
 
   if (part.type === "data" && !isUser && widgets[part.name]) {
+    // Malformed builtin snapshots retain the generic data view. Host overrides remain unrestricted.
+    const builtin = widgets[part.name] === prebuiltWidgets[part.name];
+    if (builtin && ((part.name === "artifact" && !parseArtifact(part.data)) ||
+        (part.name === "subagent" && !parseSubagent(part.data)))) return <AgentEventBlock part={part} />;
     return (
       <WidgetRenderer
         key={`data-widget-${part.name}-${part.id || index}`}

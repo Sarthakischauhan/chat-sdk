@@ -153,10 +153,13 @@ test("question presents native input semantics and disables without handler", ()
   assert.match(html, /type="checkbox"/);
   assert.match(html, /fieldset disabled/);
   assert.match(html, /Confirm/);
-  assert.deepEqual(Object.keys(prebuiltWidgets), [
-    "read-file",
+  assert.deepEqual(Object.keys(prebuiltWidgets).sort(), [
+    "artifact",
+    "artifacts",
     "patch",
-    "search",
     "question",
+    "read-file",
+    "search",
+    "subagent",
   ]);
 });

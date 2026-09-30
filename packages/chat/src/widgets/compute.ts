@@ -1,3 +1,4 @@
+import { parseArtifact } from "@sarchauhan/protocol";
 import type { AgentToolPart, AgentWidgetPart } from "@sarchauhan/protocol";
 import type { SearchResult, WidgetState } from "./types";
 
@@ -56,7 +57,19 @@ export function normalizeSearchResults(value: unknown): SearchResult[] {
 /** Convert known tool payloads; unknown or incomplete formats retain the raw tool view. */
 export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
   const name = aliases[part.toolName];
-  if (!name) return null;
+  if (!name) {
+    // Explicit artifact envelopes work across harnesses without guessing filesystem paths.
+    const output = record(part.output);
+    if (part.state !== "output-available") return null;
+    if (Array.isArray(output.artifacts)) {
+      const artifacts = output.artifacts.flatMap((value) => {
+        const artifact = parseArtifact(value); return artifact ? [artifact] : [];
+      });
+      return artifacts.length ? { type: "widget", name: "artifacts", id: part.toolCallId, props: { artifacts } } : null;
+    }
+    const artifact = parseArtifact(output.artifact);
+    return artifact ? { type: "widget", name: "artifact", id: part.toolCallId, props: { artifact } } : null;
+  }
   const input = record(part.input),
     output = record(part.output);
   const values = { ...input, ...output };
