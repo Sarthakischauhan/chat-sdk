@@ -547,7 +547,7 @@
 .chat-subagent[data-state="running"] .chat-subagent-icon svg { animation: chat-agent-spin 1.5s linear infinite; }
 .chat-subagent[data-state="failed"] .chat-subagent-state { color: var(--chat-danger, #b42318); }
 .chat-detail-overlay { position: fixed; inset: 0; z-index: 1000; background: rgb(0 0 0 / .4); animation: chat-detail-fade 160ms ease-out; }
-.chat-root.chat-detail-panel { position: fixed; z-index: 1001; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(46rem, calc(100vw - 3rem)); max-height: min(48rem, 85dvh); margin: 0; border: 1px solid var(--chat-border-strong); border-radius: .875rem; background: var(--chat-bg-elevated); box-shadow: 0 20px 80px rgb(0 0 0 / .2); animation: chat-detail-fade 160ms ease-out; }
+.chat-root.chat-detail-panel { box-sizing: border-box; position: fixed; z-index: 1001; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(46rem, calc(100vw - 3rem)); max-height: min(48rem, 85dvh); margin: 0; border: 1px solid var(--chat-border-strong); border-radius: .875rem; background: var(--chat-bg-elevated); box-shadow: 0 20px 80px rgb(0 0 0 / .2); animation: chat-detail-fade 160ms ease-out; }
 .chat-detail-header { display: flex; align-items: flex-start; gap: 1rem; justify-content: space-between; padding: 1.125rem; flex-shrink: 0; border-bottom: 1px solid var(--chat-border); }
 .chat-detail-header > div { min-width: 0; }
 .chat-detail-title { margin: 0; font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
