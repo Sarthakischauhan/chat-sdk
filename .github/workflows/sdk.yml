@@ -23,3 +23,16 @@ jobs:
       - run: npm run build -w @sarchauhan/storybook
       - run: npx eslint packages/chat/src/widgets packages/protocol/src/activity.ts
       - run: npm pack -w @sarchauhan/chat --dry-run --ignore-scripts
+      - name: Install browser test runtime
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Desktop and mobile browser smoke
+        run: node packages/chat/test/browser-smoke.cjs
+      - name: Upload UI screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chat-activity-screenshots
+          path: test-results/*.png
+          if-no-files-found: ignore
