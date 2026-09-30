@@ -6,6 +6,7 @@
 .storybook-stage {
   box-sizing: border-box;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   width: 100%;
   min-height: 100vh;
   place-items: center;

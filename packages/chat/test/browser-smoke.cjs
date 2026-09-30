@@ -58,7 +58,6 @@ const { chromium } = require("playwright");
     }));
     await page.screenshot({ path: "test-results/subagent-mobile.png" });
     assert.ok(overflow.document <= overflow.viewport, "Horizontal overflow: " + JSON.stringify(overflow));
-    await page.screenshot({ path: "test-results/subagent-mobile.png" });
     await page.getByRole("button", { name: "Close details" }).click();
     await dialog.waitFor({ state: "hidden" });
     await page.setViewportSize({ width: 1000, height: 800 });
