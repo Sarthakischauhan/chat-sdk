@@ -48,7 +48,16 @@ const { chromium } = require("playwright");
     box = await dialog.boundingBox();
     assert.ok(Math.abs(box.x) < 1 && Math.abs(box.width - 375) < 1, "mobile sheet must span the viewport");
     assert.ok(Math.abs(box.y + box.height - 812) < 2, "mobile sheet must dock to the bottom");
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth), false);
+    const overflow = await page.evaluate(() => ({
+      viewport: window.innerWidth,
+      document: document.documentElement.scrollWidth,
+      elements: [...document.querySelectorAll("*")].map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return { tag: element.tagName, className: element.className, left: bounds.left, right: bounds.right, width: bounds.width };
+      }).filter((bounds) => bounds.right > window.innerWidth + 1 || bounds.left < -1).slice(0, 30),
+    }));
+    await page.screenshot({ path: "test-results/subagent-mobile.png" });
+    assert.ok(overflow.document <= overflow.viewport, "Horizontal overflow: " + JSON.stringify(overflow));
     await page.screenshot({ path: "test-results/subagent-mobile.png" });
     await page.getByRole("button", { name: "Close details" }).click();
     await dialog.waitFor({ state: "hidden" });
