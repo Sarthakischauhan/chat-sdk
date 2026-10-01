@@ -4,7 +4,9 @@
 }
 
 .storybook-stage {
+  box-sizing: border-box;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   width: 100%;
   min-height: 100vh;
   place-items: center;
@@ -25,7 +27,7 @@
 
 .storybook-chat-surface {
   width: var(--storybook-chat-surface-width);
-  max-width: calc(100vw - 2rem);
+  max-width: 100%;
   height: min(70vh, var(--storybook-chat-surface-height));
   min-height: 32rem;
   box-sizing: border-box;

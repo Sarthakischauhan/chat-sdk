@@ -11,26 +11,31 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./styles.css": "./dist/styles.css"
+    "./styles.css": "./dist/styles.css",
+    "./widgets": {
+      "types": "./dist/widgets.d.ts",
+      "import": "./dist/widgets.mjs",
+      "require": "./dist/widgets.js"
+    }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
   },
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.88",
     "@fontsource/geist-mono": "^5.2.6",
     "@fontsource/geist-sans": "^5.2.6",
     "@sarchauhan/adapter": "0.0.1",
     "@sarchauhan/code-markdown": "^0.0.3",
     "@sarchauhan/protocol": "0.0.1",
-    "ai": "^6.0.88",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.11.0",
@@ -41,9 +46,15 @@
     "tailwind-merge": "^3.4.1"
   },
   "devDependencies": {
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "jsdom": "^30.1.1",
     "tsup": "^8.5.0",
     "typescript": "^5"
-  }
+  },
+  "description": "Embeddable React chat UI, streaming runtime, and prebuilt agent widgets.",
+  "sideEffects": [
+    "**/*.css"
+  ]
 }

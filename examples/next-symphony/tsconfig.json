@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -19,12 +23,9 @@
       }
     ],
     "paths": {
-      "@sarchauhan/protocol": ["../../packages/protocol/src/index.ts"],
-      "@sarchauhan/adapter": ["../../packages/adapter/src/index.ts"],
-      "@sarchauhan/adapter/ai-sdk": ["../../packages/adapter/ai-sdk/src/index.ts"],
-      "@sarchauhan/chat": ["../../packages/chat/src/index.ts"],
-      "@sarchauhan/chat/styles.css": ["../../packages/chat/src/styles.css"],
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
@@ -35,5 +36,7 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

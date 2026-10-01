@@ -9,6 +9,8 @@ const eslintConfig = defineConfig([
     files: ["packages/**/*.{js,jsx,ts,tsx}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
+      "@next/next/no-img-element": "off",
+      "@next/next/no-html-link-for-pages": "off",
       "no-restricted-syntax": [
         "error",
         {
@@ -22,6 +24,7 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  { settings: { next: { rootDir: ["examples/next-symphony", "examples/next-ai-sdk"] } } },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

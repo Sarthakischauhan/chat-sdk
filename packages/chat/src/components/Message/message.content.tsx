@@ -2,6 +2,8 @@
 
 import {
   normalizeAgentParts,
+  parseArtifact,
+  parseSubagent,
   type AgentDataPart,
   type AgentFilePart,
   type AgentPart,
@@ -13,7 +15,7 @@ import {
   type AgentWidgetProps,
 } from "@sarchauhan/protocol";
 import { ChevronDown } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { splitThinkingSegments } from "../../lib/message/segment";
 import { parseUserReferenceMessage } from "../../lib/message/user";
 import { cn } from "../../lib/utils";
@@ -25,6 +27,9 @@ import {
   type IconSwapState,
   type SuccessCheckState,
 } from "../../motion";
+import { ArtifactWidget } from "../../widgets/artifact";
+import { computeToolWidget } from "../../widgets/compute";
+import { prebuiltWidgets } from "../../widgets/registry";
 import { useWidgets } from "../Widget/widget.context";
 import { WidgetRenderer } from "../Widget/widget.renderer";
 import { MarkdownContent } from "./message.markdown";
@@ -105,13 +110,13 @@ const ToolStatusIcon = ({
   isDone: boolean;
 }) => {
   const pathRef = useRef<SVGPathElement>(null);
-  const sawPending = useRef(isPending);
+  const [sawPending, setSawPending] = useState(isPending);
   const iconState: IconSwapState = isPending ? "a" : "b";
-  const playCheck = Boolean(sawPending.current && isDone);
+  const playCheck = Boolean(sawPending && isDone);
   const checkState: SuccessCheckState = playCheck ? "in" : "out";
 
-  if (isPending) {
-    sawPending.current = true;
+  if (isPending && !sawPending) {
+    setSawPending(true);
   }
 
   useLayoutEffect(() => {
@@ -242,25 +247,12 @@ const SourceDocumentBlock = ({ part }: { part: AgentSourceDocumentPart }) => (
   </div>
 );
 
-const FileBlock = ({ part }: { part: AgentFilePart }) => {
-  const isImage = part.mediaType.startsWith("image/");
-
-  if (isImage) {
-    return (
-      <figure className="agent-file agent-file-image">
-        <img src={part.url} alt={part.filename || "Generated file"} />
-        {part.filename && <figcaption>{part.filename}</figcaption>}
-      </figure>
-    );
-  }
-
-  return (
-    <a className="agent-file" href={part.url} target="_blank" rel="noreferrer">
-      <span className="agent-source-label">File</span>
-      <span className="agent-source-title">{part.filename || part.mediaType}</span>
-    </a>
-  );
-};
+const FileBlock = ({ part }: { part: AgentFilePart }) => (
+  <ArtifactWidget artifact={{
+    id: part.url, filename: part.filename || (part.mediaType.startsWith("image/") ? "Generated image" : "Generated file"),
+    mediaType: part.mediaType, url: part.url, status: "ready",
+  }} />
+);
 
 const AgentEventBlock = ({ part }: { part: AgentDataPart }) => (
   <details className="agent-tool agent-event">
@@ -355,14 +347,20 @@ const PartView = ({ part, index, isUser }: { part: AgentPart; index: number; isU
     return isUser ? null : <WidgetRenderer key={`widget-${part.id || index}`} part={part} />;
   }
 
-  if (part.type === "tool" && !isUser && widgets[part.toolName]) {
-    const widgetPart = asWidgetFromTool(part);
+  if (part.type === "tool" && !isUser) {
+    const entry = widgets[part.toolName];
+    const isCustom = entry && entry !== prebuiltWidgets[part.toolName];
+    const widgetPart = isCustom ? asWidgetFromTool(part) : computeToolWidget(part);
     if (widgetPart) {
       return <WidgetRenderer key={`tool-widget-${part.toolCallId || index}`} part={widgetPart} />;
     }
   }
 
   if (part.type === "data" && !isUser && widgets[part.name]) {
+    // Malformed builtin snapshots retain the generic data view. Host overrides remain unrestricted.
+    const builtin = widgets[part.name] === prebuiltWidgets[part.name];
+    if (builtin && ((part.name === "artifact" && !parseArtifact(part.data)) ||
+        (part.name === "subagent" && !parseSubagent(part.data)))) return <AgentEventBlock part={part} />;
     return (
       <WidgetRenderer
         key={`data-widget-${part.name}-${part.id || index}`}
