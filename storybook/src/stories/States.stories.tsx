@@ -63,3 +63,24 @@ export const ToolChips: StoryObj = {
     />
   ),
 };
+
+export const Skeletons: StoryObj = {
+  name: "Skeletons",
+  render: () => (
+    <MessageContent
+      parts={[
+        { type: "text", text: "", state: "streaming" },
+        {
+          type: "tool",
+          toolName: "question",
+          toolCallId: "storybook-question",
+          state: "input-streaming",
+          input: {
+            prompt: "Which language should the service use?",
+            options: ["TypeScript", "Go"],
+          },
+        },
+      ]}
+    />
+  ),
+};

@@ -2,11 +2,11 @@
 
 import { useMessages, useThread } from "../Chat/context";
 import { MessageItem } from "../Message/message.item";
-import { LoadingState } from "./message.loading";
+import { TextSkeleton } from "./message.skeleton";
 
 const WaitingForResponse = () => (
   <div className="chat-response-status" role="status" aria-live="polite">
-    <LoadingState compact />
+    <TextSkeleton />
   </div>
 );
 
