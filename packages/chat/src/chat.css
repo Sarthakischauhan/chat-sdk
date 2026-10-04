@@ -134,16 +134,16 @@
   display: flex;
   width: min(100%, 18rem);
   flex-direction: column;
-  gap: var(--chat-space-2);
+  gap: var(--chat-space-1_5);
   padding: var(--chat-space-1) 0;
 }
 
 .chat-skeleton-bar {
   display: block;
-  height: 0.7rem;
+  height: 0.375rem;
   width: 100%;
   border-radius: var(--chat-radius-pill);
-  background: color-mix(in oklab, var(--chat-fg-muted) 28%, var(--chat-bg));
+  background: color-mix(in oklab, var(--chat-fg-muted) 14%, var(--chat-bg));
 }
 
 .chat-skeleton-bar-short {
@@ -159,8 +159,8 @@
 
 .chat-skeleton-control {
   width: 6.5rem;
-  height: 2rem;
-  border-radius: var(--chat-radius-md);
+  height: 1.125rem;
+  border-radius: var(--chat-radius-pill);
 }
 
 .chat-skeleton-control-short {
