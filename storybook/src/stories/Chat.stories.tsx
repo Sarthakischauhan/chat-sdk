@@ -146,3 +146,18 @@ export const EmptyConversation: StoryObj<ChatStoryArgs> = {
     />
   ),
 };
+
+/** Opt-in circle. Export name is the stable Storybook id suffix. */
+export const CollapsedCircle: StoryObj<ChatStoryArgs> = {
+  name: "Collapsed circle",
+  render: ({ height, width }) => (
+    <StoryChat
+      adapter={emptyAdapter}
+      registryUrl={noRegistryUrl}
+      showThemeToggle={false}
+      collapsedVariant="circle"
+      className="storybook-chat-surface"
+      style={chatStyle(width, height)}
+    />
+  ),
+};

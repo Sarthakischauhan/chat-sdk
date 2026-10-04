@@ -257,7 +257,46 @@
   color: #ffffff;
 }
 
-.chat-composer-shell[data-expanded="false"] {
+.chat-composer-shell[data-expanded="false"]:not([data-collapsed="circle"]) {
+  min-height: 3.25rem;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--chat-space-1);
+  border-radius: var(--chat-radius-pill);
+  padding: var(--chat-space-1) var(--chat-space-1_5) var(--chat-space-1) var(--chat-space-2);
+}
+
+.chat-composer-shell[data-expanded="false"]:not([data-collapsed="circle"]) .chat-composer-input {
+  order: 2;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.chat-composer-shell[data-expanded="false"]:not([data-collapsed="circle"]) .chat-composer-input textarea {
+  min-height: 2.5rem;
+  padding: var(--chat-space-2) var(--chat-space-2);
+}
+
+.chat-composer-shell[data-expanded="false"]:not([data-collapsed="circle"]) .chat-composer-row,
+.chat-composer-shell[data-expanded="false"]:not([data-collapsed="circle"]) .chat-composer-tools {
+  display: contents;
+}
+
+.chat-composer-shell[data-expanded="false"]:not([data-collapsed="circle"]) .chat-attach {
+  order: 1;
+}
+
+.chat-composer-shell[data-expanded="false"]:not([data-collapsed="circle"]) .chat-send {
+  order: 3;
+}
+
+.chat-composer-shell[data-expanded="false"]:not([data-collapsed="circle"]) .chat-composer-tools > div {
+  display: none;
+}
+
+.chat-composer-shell[data-expanded="false"][data-collapsed="circle"] {
   position: relative;
   display: grid;
   place-items: center;
@@ -272,19 +311,19 @@
   cursor: pointer;
 }
 
-.chat-composer-shell[data-expanded="false"] .chat-attachments,
-.chat-composer-shell[data-expanded="false"] .chat-references,
-.chat-composer-shell[data-expanded="false"] .chat-composer-row {
+.chat-composer-shell[data-expanded="false"][data-collapsed="circle"] .chat-attachments,
+.chat-composer-shell[data-expanded="false"][data-collapsed="circle"] .chat-references,
+.chat-composer-shell[data-expanded="false"][data-collapsed="circle"] .chat-composer-row {
   display: none;
 }
 
-.chat-composer-shell[data-expanded="false"] .chat-composer-input {
+.chat-composer-shell[data-expanded="false"][data-collapsed="circle"] .chat-composer-input {
   position: absolute;
   inset: 0;
   z-index: 1;
 }
 
-.chat-composer-shell[data-expanded="false"] .chat-composer-input textarea {
+.chat-composer-shell[data-expanded="false"][data-collapsed="circle"] .chat-composer-input textarea {
   height: 100%;
   min-height: 0;
   padding: 0;
@@ -293,7 +332,7 @@
   cursor: pointer;
 }
 
-.chat-composer-shell[data-expanded="false"] .chat-composer-input textarea::placeholder {
+.chat-composer-shell[data-expanded="false"][data-collapsed="circle"] .chat-composer-input textarea::placeholder {
   color: transparent;
 }
 

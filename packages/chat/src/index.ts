@@ -1,5 +1,5 @@
 export { Chat } from "./components/Chat";
-export { ChatComposer } from "./components/Chat/chat";
+export { ChatComposer, type ComposerCollapsedVariant } from "./components/Chat/chat";
 export {
   ChatContextProvider,
   ProviderId,

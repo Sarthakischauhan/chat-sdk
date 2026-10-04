@@ -19,7 +19,16 @@ const focusStaysInComposer = (shell: HTMLElement, node: Node | null) => {
   return node instanceof Element && node.closest("[data-slot='select-content']") !== null;
 };
 
-export const ChatComposer = ({ showModelSelector = true }: { showModelSelector?: boolean }) => {
+export type ComposerCollapsedVariant = "pill" | "circle";
+
+export const ChatComposer = ({
+  showModelSelector = true,
+  collapsedVariant = "pill",
+}: {
+  showModelSelector?: boolean;
+  /** Resting shape when the composer is empty and blurred. Default is the wide pill. */
+  collapsedVariant?: ComposerCollapsedVariant;
+}) => {
   const { status } = useMessages();
   const { input, attachments, references } = useComposer();
   const shellRef = useRef<HTMLDivElement>(null);
@@ -60,6 +69,7 @@ export const ChatComposer = ({ showModelSelector = true }: { showModelSelector?:
       ref={shellRef}
       className={cn("chat-composer-shell", motion.inputWrap, motion.input)}
       data-expanded={expanded ? "true" : "false"}
+      data-collapsed={collapsedVariant}
       onFocus={() => setFocused(true)}
       onBlur={(event) => {
         const shell = event.currentTarget;
@@ -76,7 +86,7 @@ export const ChatComposer = ({ showModelSelector = true }: { showModelSelector?:
         }, 0);
       }}
     >
-      {expanded ? null : (
+      {expanded || collapsedVariant !== "circle" ? null : (
         <MessageCircle className="chat-composer-collapsed-icon" size={18} aria-hidden="true" />
       )}
       <ChatAttachments />
