@@ -11,6 +11,8 @@ export {
   useModel,
   useThread,
   type ChatReference,
+  type ComposerAttachment,
+  type ComposerFile,
   type SendMessage,
 } from "./components/Chat/chat.context";
 export type {

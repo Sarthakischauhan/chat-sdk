@@ -1,17 +1,31 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { MessageCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
 import { motion, triggerErrorShake } from "../../motion";
+import { ChatAttachButton, ChatAttachments } from "./chat.attachments";
 import { ChatInput } from "./chat.input";
 import { ChatReferences } from "./chat.references";
 import { ChatSend } from "./chat.send";
 import { ChatSelect } from "./chat.select";
-import { useMessages } from "./context";
+import { useComposer, useMessages } from "./context";
+
+const focusStaysInComposer = (shell: HTMLElement, node: Node | null) => {
+  if (node && shell.contains(node)) {
+    return true;
+  }
+
+  return node instanceof Element && node.closest("[data-slot='select-content']") !== null;
+};
 
 export const ChatComposer = ({ showModelSelector = true }: { showModelSelector?: boolean }) => {
   const { status } = useMessages();
+  const { input, attachments, references } = useComposer();
   const shellRef = useRef<HTMLDivElement>(null);
+  const [focused, setFocused] = useState(false);
+  const expanded =
+    focused || input.trim().length > 0 || attachments.length > 0 || references.length > 0;
 
   useEffect(() => {
     if (status !== "error" || !shellRef.current) {
@@ -21,15 +35,58 @@ export const ChatComposer = ({ showModelSelector = true }: { showModelSelector?:
     triggerErrorShake(shellRef.current);
   }, [status]);
 
+  useEffect(() => {
+    if (!focused) {
+      return;
+    }
+
+    const onFocusIn = () => {
+      const shell = shellRef.current;
+      if (!shell) {
+        return;
+      }
+      if (focusStaysInComposer(shell, document.activeElement)) {
+        return;
+      }
+      setFocused(false);
+    };
+
+    document.addEventListener("focusin", onFocusIn, true);
+    return () => document.removeEventListener("focusin", onFocusIn, true);
+  }, [focused]);
+
   return (
     <div
       ref={shellRef}
       className={cn("chat-composer-shell", motion.inputWrap, motion.input)}
+      data-expanded={expanded ? "true" : "false"}
+      onFocus={() => setFocused(true)}
+      onBlur={(event) => {
+        const shell = event.currentTarget;
+        const next = event.relatedTarget;
+        if (next instanceof Node && focusStaysInComposer(shell, next)) {
+          return;
+        }
+
+        window.setTimeout(() => {
+          if (focusStaysInComposer(shell, document.activeElement)) {
+            return;
+          }
+          setFocused(false);
+        }, 0);
+      }}
     >
+      {expanded ? null : (
+        <MessageCircle className="chat-composer-collapsed-icon" size={18} aria-hidden="true" />
+      )}
+      <ChatAttachments />
       <ChatReferences />
-      <ChatInput />
+      <ChatInput expanded={expanded} />
       <div className="chat-composer-row">
-        {showModelSelector ? <ChatSelect /> : null}
+        <div className="chat-composer-tools">
+          <ChatAttachButton />
+          {showModelSelector ? <ChatSelect /> : null}
+        </div>
         <ChatSend />
       </div>
     </div>
