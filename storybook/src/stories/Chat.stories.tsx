@@ -147,6 +147,21 @@ export const EmptyConversation: StoryObj<ChatStoryArgs> = {
   ),
 };
 
+/** Expanded pill with the model picker visible. Export name is the stable id suffix. */
+export const Expanded: StoryObj<ChatStoryArgs> = {
+  name: "Expanded composer",
+  render: ({ height, width }) => (
+    <StoryChat
+      adapter={emptyAdapter}
+      registryUrl={noRegistryUrl}
+      showThemeToggle={false}
+      defaultExpanded
+      className="storybook-chat-surface"
+      style={chatStyle(width, height)}
+    />
+  ),
+};
+
 /** Opt-in circle. Export name is the stable Storybook id suffix. */
 export const CollapsedCircle: StoryObj<ChatStoryArgs> = {
   name: "Collapsed circle",

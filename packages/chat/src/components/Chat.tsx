@@ -33,6 +33,7 @@ type ChatProps = {
   showThemeToggle?: boolean;
   showModelSelector?: boolean;
   collapsedVariant?: ComposerCollapsedVariant;
+  defaultExpanded?: boolean;
 };
 
 function ChatShell({
@@ -42,6 +43,7 @@ function ChatShell({
   showThemeToggle = true,
   showModelSelector = true,
   collapsedVariant = "pill",
+  defaultExpanded = false,
 }: {
   className?: string;
   style?: CSSProperties;
@@ -49,6 +51,7 @@ function ChatShell({
   showThemeToggle?: boolean;
   showModelSelector?: boolean;
   collapsedVariant?: ComposerCollapsedVariant;
+  defaultExpanded?: boolean;
 }) {
   const { sendMessage, isSending, messages, status } = useMessages();
   const { createThread } = useThread();
@@ -133,7 +136,11 @@ function ChatShell({
           <Message />
         </div>
         <div className="chat-composer">
-          <ChatComposer showModelSelector={showModelSelector} collapsedVariant={collapsedVariant} />
+          <ChatComposer
+            showModelSelector={showModelSelector}
+            collapsedVariant={collapsedVariant}
+            defaultExpanded={defaultExpanded}
+          />
         </div>
       </div>
     </WidgetProvider>
@@ -154,6 +161,7 @@ export function Chat({
   showThemeToggle = true,
   showModelSelector = true,
   collapsedVariant = "pill",
+  defaultExpanded = false,
 }: ChatProps) {
   return (
     <ThemeProvider
@@ -174,6 +182,7 @@ export function Chat({
           showThemeToggle={showThemeToggle}
           showModelSelector={showModelSelector}
           collapsedVariant={collapsedVariant}
+          defaultExpanded={defaultExpanded}
         />
       </ChatContextProvider>
     </ThemeProvider>

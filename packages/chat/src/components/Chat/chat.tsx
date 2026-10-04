@@ -24,15 +24,18 @@ export type ComposerCollapsedVariant = "pill" | "circle";
 export const ChatComposer = ({
   showModelSelector = true,
   collapsedVariant = "pill",
+  defaultExpanded = false,
 }: {
   showModelSelector?: boolean;
   /** Resting shape when the composer is empty and blurred. Default is the wide pill. */
   collapsedVariant?: ComposerCollapsedVariant;
+  /** Open on the large composer. Used so a story can show the model picker without a click. */
+  defaultExpanded?: boolean;
 }) => {
   const { status } = useMessages();
   const { input, attachments, references } = useComposer();
   const shellRef = useRef<HTMLDivElement>(null);
-  const [focused, setFocused] = useState(false);
+  const [focused, setFocused] = useState(defaultExpanded);
   const expanded =
     focused || input.trim().length > 0 || attachments.length > 0 || references.length > 0;
 
@@ -95,7 +98,7 @@ export const ChatComposer = ({
       <div className="chat-composer-row">
         <div className="chat-composer-tools">
           <ChatAttachButton />
-          {showModelSelector ? <ChatSelect /> : null}
+          {showModelSelector && expanded && collapsedVariant !== "circle" ? <ChatSelect /> : null}
         </div>
         <ChatSend />
       </div>
