@@ -157,17 +157,21 @@
   margin-top: var(--chat-space-2);
 }
 
-.chat-skeleton-control {
-  width: 6.5rem;
-  height: 1.125rem;
-  border-radius: var(--chat-radius-pill);
+button[data-slot="button"][data-skeleton="true"] {
+  min-width: 5.5rem;
+  border-color: transparent;
+  background: color-mix(in oklab, var(--chat-fg-muted) 14%, var(--chat-bg));
+  color: transparent;
+  box-shadow: none;
+  cursor: default;
+  opacity: 1;
 }
 
-.chat-skeleton-control-short {
-  width: 4.25rem;
+button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
+  min-width: 4.25rem;
 }
 
-.chat-widget[data-pending="true"] button,
+.chat-widget[data-pending="true"] button:not([data-skeleton="true"]),
 .chat-widget[data-pending="true"] footer {
   display: none;
 }
