@@ -98,7 +98,7 @@ export const ChatComposer = ({
       <div className="chat-composer-row">
         <div className="chat-composer-tools">
           <ChatAttachButton />
-          {showModelSelector && expanded && collapsedVariant !== "circle" ? <ChatSelect /> : null}
+          {showModelSelector && expanded && collapsedVariant === "circle" ? <ChatSelect /> : null}
         </div>
         <ChatSend />
       </div>
