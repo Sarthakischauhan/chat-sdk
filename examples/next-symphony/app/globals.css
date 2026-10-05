@@ -146,6 +146,205 @@
   border-radius: 0 !important;
 }
 
+.chat-widget-subagent {
+  position: relative;
+  margin: 0.3rem 0 0.55rem;
+  padding: 0.9rem 1rem 0.8rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--chat-border) 80%, transparent);
+  border-radius: 0.8rem;
+  background:
+    linear-gradient(90deg, color-mix(in oklab, var(--chat-accent) 8%, transparent), transparent 42%),
+    color-mix(in oklab, var(--chat-control-bg) 55%, transparent);
+}
+
+.chat-widget-subagent::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--chat-accent);
+  content: "";
+  opacity: 0.7;
+}
+
+.chat-widget-subagent-completed::before {
+  opacity: 0.42;
+}
+
+.chat-widget-subagent-failed::before,
+.chat-widget-subagent-cancelled::before {
+  background: #d45d5d;
+}
+
+.chat-widget-subagent-running .chat-widget-status-dot {
+  animation: subagent-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--chat-accent) 30%, transparent);
+}
+
+.chat-widget-subagent-failed .chat-widget-status-dot,
+.chat-widget-subagent-cancelled .chat-widget-status-dot {
+  background: #d45d5d;
+}
+
+.subagent-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.subagent-title svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--chat-accent);
+}
+
+.subagent-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.subagent-prompt {
+  margin: 0;
+  color: color-mix(in oklab, currentColor 72%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.subagent-timeline {
+  display: grid;
+  gap: 0.42rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.subagent-timeline-item {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: start;
+  color: color-mix(in oklab, currentColor 62%, transparent);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.subagent-event-icon {
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  margin-top: 0.03rem;
+  color: color-mix(in oklab, var(--chat-accent) 70%, currentColor);
+}
+
+.subagent-timeline-item[data-status="failed"] .subagent-event-icon {
+  color: #d45d5d;
+}
+
+.subagent-event-icon svg {
+  width: 0.78rem;
+  height: 0.78rem;
+}
+
+.subagent-event-icon .is-spinning,
+.subagent-working svg {
+  animation: subagent-spin 1s linear infinite;
+}
+
+.subagent-event-copy {
+  min-width: 0;
+}
+
+.subagent-event-copy > span {
+  font-weight: 590;
+}
+
+.subagent-event-copy pre {
+  max-height: 5.5rem;
+  margin: 0.18rem 0 0;
+  overflow: auto;
+  color: color-mix(in oklab, currentColor 75%, transparent);
+  font: 0.7rem/1.45 var(--font-geist-mono), monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.subagent-live-response,
+.subagent-result {
+  border-top: 1px solid color-mix(in oklab, var(--chat-border) 65%, transparent);
+  padding-top: 0.65rem;
+}
+
+.subagent-live-response > span,
+.subagent-result summary {
+  color: color-mix(in oklab, currentColor 52%, transparent);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.subagent-live-response p,
+.subagent-result div {
+  max-height: 12rem;
+  margin: 0.35rem 0 0;
+  overflow: auto;
+  color: color-mix(in oklab, currentColor 82%, transparent);
+  font-size: 0.79rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.subagent-result summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.subagent-result summary::-webkit-details-marker {
+  display: none;
+}
+
+.subagent-error {
+  border-top: 1px solid color-mix(in oklab, #d45d5d 32%, transparent);
+  padding-top: 0.65rem;
+  color: #c64d4d;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.subagent-working {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: color-mix(in oklab, currentColor 52%, transparent);
+  font-size: 0.72rem;
+}
+
+.subagent-working svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+@keyframes subagent-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes subagent-pulse {
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 0.28rem transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-widget-subagent-running .chat-widget-status-dot,
+  .subagent-event-icon .is-spinning,
+  .subagent-working svg {
+    animation: none;
+  }
+}
+
 @media (min-width: 900px) {
   .chat-app-shell {
     padding: 1.25rem;
