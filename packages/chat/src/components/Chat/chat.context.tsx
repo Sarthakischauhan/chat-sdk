@@ -13,6 +13,8 @@ export {
   useThread,
   type ChatContextProviderProps,
   type ChatReference,
+  type ComposerAttachment,
+  type ComposerFile,
   type RegistryConfig,
   type RegistryModel,
   type RegistryProvider,

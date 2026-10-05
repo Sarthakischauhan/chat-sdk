@@ -193,13 +193,14 @@ export function MessagesProvider({ adapter, children }: MessagesProviderProps) {
   const sendMessage = useCallback<SendMessage>(
     async (message, options) => {
       const text = message.text.trim();
+      const files = message.files ?? [];
       const threadId = activeThreadIdRef.current;
 
-      if (!text || !threadId) {
+      if ((!text && files.length === 0) || !threadId) {
         return;
       }
 
-      const userMessage = createUserMessage(text);
+      const userMessage = createUserMessage(text, files);
       const nextMessages = [...messagesRef.current, userMessage];
       flushSync(() => {
         setMessages(nextMessages);

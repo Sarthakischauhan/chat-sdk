@@ -6,7 +6,7 @@ import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import type { ChatAdapter } from "../types";
 import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context";
 import { ThemeToggle } from "../theme/theme.toggle";
-import { ChatComposer } from "./Chat/chat";
+import { ChatComposer, type ComposerCollapsedVariant } from "./Chat/chat";
 import { ChatContextProvider, useMessages } from "./Chat/chat.context";
 import { useThread } from "./Chat/context";
 import { Message } from "./Message/message";
@@ -32,6 +32,8 @@ type ChatProps = {
   onThemeChange?: (theme: ChatTheme) => void;
   showThemeToggle?: boolean;
   showModelSelector?: boolean;
+  collapsedVariant?: ComposerCollapsedVariant;
+  defaultExpanded?: boolean;
 };
 
 function ChatShell({
@@ -40,12 +42,16 @@ function ChatShell({
   widgets,
   showThemeToggle = true,
   showModelSelector = true,
+  collapsedVariant = "pill",
+  defaultExpanded = false,
 }: {
   className?: string;
   style?: CSSProperties;
   widgets?: ChatWidgetInput;
   showThemeToggle?: boolean;
   showModelSelector?: boolean;
+  collapsedVariant?: ComposerCollapsedVariant;
+  defaultExpanded?: boolean;
 }) {
   const { sendMessage, isSending, messages, status } = useMessages();
   const { createThread } = useThread();
@@ -130,7 +136,11 @@ function ChatShell({
           <Message />
         </div>
         <div className="chat-composer">
-          <ChatComposer showModelSelector={showModelSelector} />
+          <ChatComposer
+            showModelSelector={showModelSelector}
+            collapsedVariant={collapsedVariant}
+            defaultExpanded={defaultExpanded}
+          />
         </div>
       </div>
     </WidgetProvider>
@@ -150,6 +160,8 @@ export function Chat({
   onThemeChange,
   showThemeToggle = true,
   showModelSelector = true,
+  collapsedVariant = "pill",
+  defaultExpanded = false,
 }: ChatProps) {
   return (
     <ThemeProvider
@@ -169,6 +181,8 @@ export function Chat({
           widgets={widgets}
           showThemeToggle={showThemeToggle}
           showModelSelector={showModelSelector}
+          collapsedVariant={collapsedVariant}
+          defaultExpanded={defaultExpanded}
         />
       </ChatContextProvider>
     </ThemeProvider>

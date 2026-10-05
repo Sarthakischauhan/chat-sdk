@@ -1,7 +1,9 @@
 "use client";
 
 import type { AgentWidgetPart } from "@sarchauhan/protocol";
+import type { ReactNode } from "react";
 import { useRef, useState } from "react";
+import { WidgetActionSkeleton } from "../Message/message.skeleton";
 import { BaseWidget } from "./base.widget";
 import {
   getWidgetShellProps,
@@ -11,19 +13,25 @@ import {
   type WidgetControls,
 } from "./widget.context";
 
-export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
+export function WidgetRenderer({
+  part,
+  pending = false,
+}: {
+  part: AgentWidgetPart;
+  pending?: boolean;
+}) {
   const { widgets, respondToWidget, disabled } = useWidgets();
   const entry = resolveWidgetPart(part, widgets);
   const [submitted, setSubmitted] = useState(false);
-  const pending = useRef(false);
+  const responsePending = useRef(false);
   const widgetDisabled = disabled || submitted;
 
   const respond = async (value: unknown, label?: string, actionId?: string) => {
-    if (!part.interactive || disabled || submitted || pending.current) {
+    if (!part.interactive || disabled || submitted || responsePending.current) {
       return;
     }
 
-    pending.current = true;
+    responsePending.current = true;
     setSubmitted(true);
     try {
       await respondToWidget({
@@ -37,7 +45,7 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
       setSubmitted(false);
       throw error;
     } finally {
-      pending.current = false;
+      responsePending.current = false;
     }
   };
 
@@ -52,20 +60,23 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
     },
   };
 
+  const frame = (node: ReactNode) => (
+    <div className="chat-widget" data-pending={pending ? "true" : undefined}>
+      {node}
+      {pending ? <WidgetActionSkeleton /> : null}
+    </div>
+  );
+
   if (!entry) {
-    return (
-      <div className="chat-widget">
-        <BaseWidget
-          label="Unhandled widget"
-          title={part.name}
-          status="Raw props"
-          className="chat-widget-missing"
-        >
-          <pre className="agent-tool-code">
-            {JSON.stringify(part.props, null, 2)}
-          </pre>
-        </BaseWidget>
-      </div>
+    return frame(
+      <BaseWidget
+        label="Unhandled widget"
+        title={part.name}
+        status="Raw props"
+        className="chat-widget-missing"
+      >
+        <pre className="agent-tool-code">{JSON.stringify(part.props, null, 2)}</pre>
+      </BaseWidget>,
     );
   }
 
@@ -74,45 +85,39 @@ export function WidgetRenderer({ part }: { part: AgentWidgetPart }) {
     const content = <Component {...part.props} widget={controls} />;
 
     if (entry.shell === false) {
-      return <div className="chat-widget">{content}</div>;
+      return frame(content);
     }
 
-    return (
-      <div className="chat-widget">
-        <BaseWidget {...getWidgetShellProps(entry, part.props, controls)}>
-          {content}
-        </BaseWidget>
-      </div>
+    return frame(
+      <BaseWidget {...getWidgetShellProps(entry, part.props, controls)}>{content}</BaseWidget>,
     );
   }
 
   const Component = entry;
 
-  return (
-    <div className="chat-widget">
-      <Component
-        id={part.id}
-        name={part.name}
-        props={part.props}
-        interactive={part.interactive}
-        disabled={widgetDisabled}
-        onRespond={async (response) => {
-          if (!part.interactive || disabled || submitted || pending.current) {
-            return;
-          }
+  return frame(
+    <Component
+      id={part.id}
+      name={part.name}
+      props={part.props}
+      interactive={part.interactive}
+      disabled={widgetDisabled}
+      onRespond={async (response) => {
+        if (!part.interactive || disabled || submitted || responsePending.current) {
+          return;
+        }
 
-          pending.current = true;
-          setSubmitted(true);
-          try {
-            await respondToWidget(response);
-          } catch (error) {
-            setSubmitted(false);
-            throw error;
-          } finally {
-            pending.current = false;
-          }
-        }}
-      />
-    </div>
+        responsePending.current = true;
+        setSubmitted(true);
+        try {
+          await respondToWidget(response);
+        } catch (error) {
+          setSubmitted(false);
+          throw error;
+        } finally {
+          responsePending.current = false;
+        }
+      }}
+    />,
   );
 }

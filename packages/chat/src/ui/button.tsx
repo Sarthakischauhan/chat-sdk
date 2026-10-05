@@ -43,10 +43,14 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  skeleton = false,
+  disabled,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    /** Muted, non-interactive button while its action is still loading. */
+    skeleton?: boolean
   }) {
   const Comp = asChild ? Slot.Root : "button"
 
@@ -55,6 +59,9 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      data-skeleton={skeleton ? "true" : undefined}
+      aria-busy={skeleton ? true : undefined}
+      disabled={skeleton || disabled}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

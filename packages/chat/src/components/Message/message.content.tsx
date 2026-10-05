@@ -31,6 +31,7 @@ import { ArtifactWidget } from "../../widgets/artifact";
 import { computeToolWidget } from "../../widgets/compute";
 import { prebuiltWidgets } from "../../widgets/registry";
 import { useWidgets } from "../Widget/widget.context";
+import { TextSkeleton } from "./message.skeleton";
 import { WidgetRenderer } from "../Widget/widget.renderer";
 import { MarkdownContent } from "./message.markdown";
 import { ThinkingBlock } from "./message.thinking";
@@ -352,7 +353,13 @@ const PartView = ({ part, index, isUser }: { part: AgentPart; index: number; isU
     const isCustom = entry && entry !== prebuiltWidgets[part.toolName];
     const widgetPart = isCustom ? asWidgetFromTool(part) : computeToolWidget(part);
     if (widgetPart) {
-      return <WidgetRenderer key={`tool-widget-${part.toolCallId || index}`} part={widgetPart} />;
+      return (
+        <WidgetRenderer
+          key={`tool-widget-${part.toolCallId || index}`}
+          part={widgetPart}
+          pending={part.state === "input-streaming"}
+        />
+      );
     }
   }
 
@@ -371,6 +378,9 @@ const PartView = ({ part, index, isUser }: { part: AgentPart; index: number; isU
 
   switch (part.type) {
     case "text":
+      if (!isUser && part.state === "streaming" && part.text.trim().length === 0) {
+        return <TextSkeleton key={`text-${index}`} />;
+      }
       return <TextWithLegacyThinking key={`text-${index}`} text={part.text} isUser={isUser} />;
     case "reasoning":
       return isUser ? null : <ReasoningBlock key={`reasoning-${index}`} part={part} />;

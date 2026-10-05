@@ -93,8 +93,20 @@ export type ChatReference = {
   text: string;
 };
 
+/** File part carried on the existing send payload. `url` is a data URL. */
+export type ComposerFile = {
+  mediaType: string;
+  url: string;
+  filename?: string;
+};
+
+export type ComposerAttachment = ComposerFile & {
+  id: string;
+  filename: string;
+};
+
 export type SendMessage = (
-  message: { text: string },
+  message: { text: string; files?: ComposerFile[] },
   options?: { body?: { provider?: string; model?: string } },
 ) => Promise<void>;
 

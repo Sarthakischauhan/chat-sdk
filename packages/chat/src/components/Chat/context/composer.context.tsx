@@ -14,7 +14,23 @@ import { createMessageId, normalizeReferenceText } from "./message.helpers";
 import { useMessages } from "./messages.context";
 import { useModel } from "./model.context";
 import { useThread } from "./thread.context";
-import type { ChatReference } from "./types";
+import type { ChatReference, ComposerAttachment } from "./types";
+
+const readFileAsDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+        return;
+      }
+      reject(new Error("Could not read file"));
+    };
+    reader.onerror = () => {
+      reject(reader.error ?? new Error("Could not read file"));
+    };
+    reader.readAsDataURL(file);
+  });
 
 type ComposerContextValue = {
   input: string;
@@ -23,6 +39,9 @@ type ComposerContextValue = {
   addReference: (text: string) => void;
   removeReference: (id: string) => void;
   clearReferences: () => void;
+  attachments: ComposerAttachment[];
+  addFiles: (files: FileList | readonly File[]) => Promise<void>;
+  removeAttachment: (id: string) => void;
   disabled: boolean;
   canSend: boolean;
   submitInput: () => Promise<void>;
@@ -42,10 +61,13 @@ export function ComposerProvider({ children }: ComposerProviderProps) {
   // Local composer state — typing does not hop through a shared reducer/context mega-object.
   const [input, setInputState] = useState("");
   const [references, setReferences] = useState<ChatReference[]>([]);
+  const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
   const inputRef = useRef(input);
   const referencesRef = useRef(references);
+  const attachmentsRef = useRef(attachments);
   inputRef.current = input;
   referencesRef.current = references;
+  attachmentsRef.current = attachments;
 
   const setInput = useCallback((value: string) => {
     setInputState(value);
@@ -80,20 +102,50 @@ export function ComposerProvider({ children }: ComposerProviderProps) {
     setReferences([]);
   }, []);
 
+  const addFiles = useCallback(async (list: FileList | readonly File[]) => {
+    const incoming = Array.from(list);
+    const next: ComposerAttachment[] = [];
+
+    for (const file of incoming) {
+      try {
+        const url = await readFileAsDataUrl(file);
+        next.push({
+          id: createMessageId("file"),
+          filename: file.name || "file",
+          mediaType: file.type || "application/octet-stream",
+          url,
+        });
+      } catch {
+        // Skip a file the browser could not read. The rest still attach.
+      }
+    }
+
+    if (next.length === 0) {
+      return;
+    }
+
+    setAttachments((current) => [...current, ...next]);
+  }, []);
+
+  const removeAttachment = useCallback((id: string) => {
+    setAttachments((current) => current.filter((attachment) => attachment.id !== id));
+  }, []);
+
   const disabled = isSending || isLoadingThread || !activeThreadId;
-  const canSend = !disabled && !!input.trim();
+  const canSend = !disabled && (!!input.trim() || attachments.length > 0);
   const disabledRef = useRef(disabled);
   disabledRef.current = disabled;
 
   const submitInput = useCallback(async () => {
     const text = inputRef.current.trim();
     const threadId = activeThreadIdRef.current;
+    const attachmentsSnapshot = attachmentsRef.current;
 
-    if (!text || !threadId || disabledRef.current) {
+    if ((!text && attachmentsSnapshot.length === 0) || !threadId || disabledRef.current) {
       return;
     }
 
-    const nextTitle = text.slice(0, 60);
+    const nextTitle = (text || attachmentsSnapshot[0]?.filename || "").slice(0, 60);
     const referencesSnapshot = referencesRef.current;
     const referenceText = referencesSnapshot
       .map(
@@ -108,6 +160,7 @@ export function ComposerProvider({ children }: ComposerProviderProps) {
 
     setInputState("");
     setReferences([]);
+    setAttachments([]);
 
     setThreads((current) => {
       const next = current.map((thread) =>
@@ -122,7 +175,14 @@ export function ComposerProvider({ children }: ComposerProviderProps) {
 
     try {
       await sendMessage(
-        { text: messageText },
+        {
+          text: messageText,
+          files: attachmentsSnapshot.map((file) => ({
+            mediaType: file.mediaType,
+            url: file.url,
+            filename: file.filename,
+          })),
+        },
         {
           body: {
             provider: providerRef.current,
@@ -133,6 +193,7 @@ export function ComposerProvider({ children }: ComposerProviderProps) {
     } catch (error) {
       setInputState(text);
       setReferences(referencesSnapshot);
+      setAttachments(attachmentsSnapshot);
       throw error;
     }
   }, [activeThreadIdRef, modelRef, providerRef, sendMessage, setThreads]);
@@ -145,6 +206,9 @@ export function ComposerProvider({ children }: ComposerProviderProps) {
       addReference,
       removeReference,
       clearReferences,
+      attachments,
+      addFiles,
+      removeAttachment,
       disabled,
       canSend,
       submitInput,
@@ -155,7 +219,10 @@ export function ComposerProvider({ children }: ComposerProviderProps) {
       clearReferences,
       disabled,
       input,
+      addFiles,
+      attachments,
       references,
+      removeAttachment,
       removeReference,
       setInput,
       submitInput,

@@ -146,3 +146,34 @@ export const EmptyConversation: StoryObj<ChatStoryArgs> = {
     />
   ),
 };
+
+/** Expanded default pill. No model picker. */
+export const Expanded: StoryObj<ChatStoryArgs> = {
+  name: "Expanded composer",
+  render: ({ height, width }) => (
+    <StoryChat
+      adapter={emptyAdapter}
+      registryUrl={noRegistryUrl}
+      showThemeToggle={false}
+      defaultExpanded
+      className="storybook-chat-surface"
+      style={chatStyle(width, height)}
+    />
+  ),
+};
+
+/** Circle variant, opened so the model picker is visible. */
+export const CollapsedCircle: StoryObj<ChatStoryArgs> = {
+  name: "Collapsed circle",
+  render: ({ height, width }) => (
+    <StoryChat
+      adapter={emptyAdapter}
+      registryUrl={noRegistryUrl}
+      showThemeToggle={false}
+      collapsedVariant="circle"
+      defaultExpanded
+      className="storybook-chat-surface"
+      style={chatStyle(width, height)}
+    />
+  ),
+};

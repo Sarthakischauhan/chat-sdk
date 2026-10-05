@@ -4,20 +4,32 @@ import { useEffect, useRef } from "react";
 import { clearErrorShake, motion, triggerErrorShake } from "../../motion";
 import { useComposer } from "./context";
 
-export const ChatInput = ({ placeholder = "Message..." }: { placeholder?: string }) => {
-  const { input, setInput, disabled, submitInput } = useComposer();
+export const ChatInput = ({
+  placeholder = "Message...",
+  expanded = true,
+}: {
+  placeholder?: string;
+  expanded?: boolean;
+}) => {
+  const { input, setInput, disabled, submitInput, attachments } = useComposer();
   const ref = useRef<HTMLTextAreaElement>(null);
+  const hasDraft = input.trim().length > 0 || attachments.length > 0;
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (!expanded) {
+      el.style.height = "";
+      el.style.overflowY = "hidden";
+      return;
+    }
     el.style.height = "auto";
     const shell = el.closest<HTMLElement>(".chat-composer-shell");
     const isSmall = shell?.dataset.variant === "small";
     const max = isSmall ? 128 : 320;
     el.style.height = `${Math.min(el.scrollHeight, max)}px`;
     el.style.overflowY = el.scrollHeight > max ? "auto" : "hidden";
-  }, [input]);
+  }, [expanded, input]);
 
   return (
     <div className="chat-composer-input">
@@ -41,7 +53,7 @@ export const ChatInput = ({ placeholder = "Message..." }: { placeholder?: string
           if (disabled) {
             return;
           }
-          if (!input.trim()) {
+          if (!hasDraft) {
             const wrap = event.currentTarget.closest<HTMLElement>(`.${motion.inputWrap}`);
             if (wrap) {
               triggerErrorShake(wrap);

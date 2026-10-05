@@ -1,4 +1,5 @@
 import type { ChatMessage } from "../../../types";
+import type { ComposerFile } from "./types";
 
 export const normalizeReferenceText = (text: string) =>
   text.replace(/\s+/g, " ").trim().slice(0, 4000);
@@ -6,10 +7,18 @@ export const normalizeReferenceText = (text: string) =>
 export const createMessageId = (prefix: string) =>
   globalThis.crypto?.randomUUID?.() ?? `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-export const createUserMessage = (text: string): ChatMessage => ({
+export const createUserMessage = (text: string, files: ComposerFile[] = []): ChatMessage => ({
   id: createMessageId("msg"),
   role: "user",
-  parts: [{ type: "text", text }],
+  parts: [
+    ...files.map((file) => ({
+      type: "file" as const,
+      mediaType: file.mediaType,
+      url: file.url,
+      filename: file.filename,
+    })),
+    ...(text ? [{ type: "text" as const, text }] : []),
+  ],
 });
 
 export const updateMessageText = (message: ChatMessage, text: string): ChatMessage => ({
