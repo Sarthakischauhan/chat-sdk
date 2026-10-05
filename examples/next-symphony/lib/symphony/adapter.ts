@@ -17,6 +17,34 @@ const messageText = (message: ChatMessage) =>
     .map((part) => ("text" in part ? String(part.text) : ""))
     .join("\n");
 
+const collapseSubagentWidgets = (message: ChatMessage): ChatMessage => {
+  const latestById = new Map<string, ChatMessage["parts"][number]>();
+
+  for (const part of message.parts) {
+    const name = "name" in part && typeof part.name === "string" ? part.name : "";
+    const id = "id" in part && typeof part.id === "string" ? part.id : "";
+    if (part.type === "widget" && name === "subagent" && id) {
+      latestById.set(id, part);
+    }
+  }
+
+  if (latestById.size === 0) return message;
+
+  const emitted = new Set<string>();
+  const parts = message.parts.flatMap((part) => {
+    const name = "name" in part && typeof part.name === "string" ? part.name : "";
+    const id = "id" in part && typeof part.id === "string" ? part.id : "";
+    if (part.type !== "widget" || name !== "subagent" || !id) {
+      return [part];
+    }
+    if (emitted.has(id)) return [];
+    emitted.add(id);
+    return [latestById.get(id) ?? part];
+  });
+
+  return { ...message, parts };
+};
+
 const request = async <T,>(url: string, init?: RequestInit) => {
   const response = await fetch(url, init);
   if (!response.ok) {
@@ -91,8 +119,8 @@ export function createSymphonyAdapter({
       const events = normalizeSymphonyStream(response.body, messageId);
 
       for await (const snapshot of messagesFromEvents(events)) {
-        assistant = snapshot;
-        yield snapshot;
+        assistant = collapseSubagentWidgets(snapshot);
+        yield assistant;
       }
 
       if (!assistant) {
