@@ -1,4 +1,5 @@
 import {
+  createMessageId,
   defineAdapter,
   messagesFromEvents,
   type ChatMessage,
@@ -115,7 +116,7 @@ export function createSymphonyAdapter({
       }
 
       let assistant: ChatMessage | undefined;
-      const messageId = globalThis.crypto.randomUUID();
+      const messageId = createMessageId("assistant");
       const events = normalizeSymphonyStream(response.body, messageId);
 
       for await (const snapshot of messagesFromEvents(events)) {
