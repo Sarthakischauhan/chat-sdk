@@ -11,9 +11,12 @@ export const toChatMessage = (message: AgentMessage): ChatMessage => ({
   ...(isRecord(message.metadata) ? { metadata: message.metadata } : {}),
 });
 
-export const createMessageId = (prefix = "msg") =>
-  globalThis.crypto?.randomUUID?.() ??
-  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+export const createMessageId = (prefix = "msg") => {
+  const randomUUID = globalThis.crypto?.randomUUID;
+  return typeof randomUUID === "function"
+    ? randomUUID.call(globalThis.crypto)
+    : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
 
 export const createUserMessage = (text: string): ChatMessage => ({
   id: createMessageId("msg"),

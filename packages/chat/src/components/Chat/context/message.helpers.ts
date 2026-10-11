@@ -4,8 +4,12 @@ import type { ComposerFile } from "./types";
 export const normalizeReferenceText = (text: string) =>
   text.replace(/\s+/g, " ").trim().slice(0, 4000);
 
-export const createMessageId = (prefix: string) =>
-  globalThis.crypto?.randomUUID?.() ?? `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+export const createMessageId = (prefix: string) => {
+  const randomUUID = globalThis.crypto?.randomUUID;
+  return typeof randomUUID === "function"
+    ? randomUUID.call(globalThis.crypto)
+    : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
 
 export const createUserMessage = (text: string, files: ComposerFile[] = []): ChatMessage => ({
   id: createMessageId("msg"),
