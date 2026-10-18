@@ -1,6 +1,36 @@
 # @sarchauhan/chat
 
-An embeddable React chat package with streaming messages, themes, tool views, and interactive widgets. Next.js is only used by the example apps. Bring any backend through `ChatAdapter`.
+An embeddable React chat package with streaming messages, themes, tool views, and interactive widgets. Bring any backend through `ChatAdapter`; Next.js is only used by the example apps.
+
+## Install
+
+```sh
+npm install @sarchauhan/chat
+```
+
+React and React DOM (version 18 or later) are peer dependencies and must be installed in your application. The package also depends on the published `@sarchauhan/adapter` and `@sarchauhan/protocol` packages; npm installs these automatically.
+
+## Quick start
+
+Create a `ChatAdapter` for your backend, then mount the component and import its stylesheet once:
+
+```tsx
+import { Chat } from "@sarchauhan/chat";
+import type { ChatAdapter } from "@sarchauhan/adapter";
+import "@sarchauhan/chat/styles.css";
+
+const adapter: ChatAdapter = {
+  async *sendMessage() {
+    yield { id: "reply-1", role: "assistant", parts: [{ type: "text", text: "Hello!" }] };
+  },
+};
+
+export function App() {
+  return <Chat adapter={adapter} />;
+}
+```
+
+See the sections below for built-in widgets, adapter payloads, and artifact/subagent rendering.
 
 ```tsx
 import { Chat } from "@sarchauhan/chat";

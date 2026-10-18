@@ -1,7 +1,26 @@
 {
   "name": "@sarchauhan/chat",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": false,
+  "description": "Embeddable React chat UI, streaming runtime, and prebuilt agent widgets.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sarthakischauhan/chat-sdk.git",
+    "directory": "packages/chat"
+  },
+  "homepage": "https://github.com/Sarthakischauhan/chat-sdk/tree/main/packages/chat",
+  "bugs": {
+    "url": "https://github.com/Sarthakischauhan/chat-sdk/issues"
+  },
+  "keywords": [
+    "react",
+    "chat",
+    "chat-ui",
+    "ai",
+    "streaming",
+    "widgets"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -53,7 +72,6 @@
     "tsup": "^8.5.0",
     "typescript": "^5"
   },
-  "description": "Embeddable React chat UI, streaming runtime, and prebuilt agent widgets.",
   "sideEffects": [
     "**/*.css"
   ]
