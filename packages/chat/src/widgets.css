@@ -602,12 +602,12 @@
   transform: rotate(90deg);
 }
 .chat-tool-widget-label {
-  font-weight: 400;
+  font-weight: var(--chat-weight-regular, 400);
   color: var(--chat-fg-muted, #737373);
 }
 .chat-tool-widget-allow {
   color: var(--chat-warning, #d97706);
-  font-weight: 500;
+  font-weight: var(--chat-weight-medium, 500);
 }
 .chat-tool-widget-title {
   flex: 0 1 auto;
@@ -675,7 +675,7 @@
   color: var(--chat-fg-muted, #737373);
 }
 .chat-subagent-heading strong {
-  font-weight: 400;
+  font-weight: var(--chat-weight-regular, 400);
 }
 .chat-subagent[data-state="running"] .chat-subagent-state,
 .chat-subagent[data-state="running"] .chat-subagent-icon {
