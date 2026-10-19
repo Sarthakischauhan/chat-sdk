@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { computeDiff, computeTextDiff } from "./compute";
+import { FilePen } from "lucide-react";
 import { ToolFrame } from "./tool-frame";
 import type { PatchWidgetProps } from "./types";
 export function PatchWidget({
@@ -32,6 +33,7 @@ export function PatchWidget({
   return (
     <ToolFrame
       {...props}
+      icon={FilePen}
       label="Edited"
       activeLabel="Editing"
       defaultOpen

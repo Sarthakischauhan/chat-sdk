@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { formatSummary } from "./format";
+import { FileText } from "lucide-react";
 import { ToolFrame } from "./tool-frame";
 import type { ReadFileWidgetProps } from "./types";
 export function ReadFileWidget({
@@ -19,6 +20,7 @@ export function ReadFileWidget({
   return (
     <ToolFrame
       {...props}
+      icon={FileText}
       label="Read"
       activeLabel="Reading"
       title={path}

@@ -1,17 +1,20 @@
 "use client";
 import { useRef } from "react";
 import type { ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useAutoDisclosure } from "./disclosure";
 import { formatDuration, formatStatus, useElapsed } from "./format";
 import type { ToolWidgetProps } from "./types";
 
 /**
- * Inline prose row: muted verb, mono target, dim meta, status suffix, optional collapsible body.
+ * Inline prose row: state glyph, muted verb, mono target, dim meta, status suffix, optional collapsible body.
  * `label` is the completed verb ("Read"); `activeLabel` is used while running and
  * in the approval prompt ("Allow reading …"). Exit code and timing appear only when sent.
+ * `icon` is the tool glyph; running, failed and approval states replace it.
  */
 export function ToolFrame({
+  icon: Icon,
   label,
   activeLabel,
   title,
@@ -26,6 +29,7 @@ export function ToolFrame({
   className = "",
   children,
 }: Omit<ToolWidgetProps, "summary"> & {
+  icon: LucideIcon;
   label: string;
   activeLabel?: string;
   title: string;
@@ -56,6 +60,17 @@ export function ToolFrame({
       onToggle={onToggle}
     >
       <summary onClick={onSummaryClick}>
+        <span className="chat-tool-widget-glyph" aria-hidden="true">
+          {state === "running" ? (
+            <span className="chat-tool-spinner" />
+          ) : state === "error" || state === "denied" ? (
+            <X size={14} />
+          ) : state === "approval" ? (
+            <span className="chat-tool-widget-dot" />
+          ) : (
+            <Icon size={14} />
+          )}
+        </span>
         {state === "approval" ? (
           <>
             <span className="chat-tool-widget-allow">Allow</span>

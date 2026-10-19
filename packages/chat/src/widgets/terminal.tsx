@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { formatDuration } from "./format";
+import { SquareTerminal } from "lucide-react";
 import { ToolFrame } from "./tool-frame";
 import type { TerminalWidgetProps } from "./types";
 
@@ -26,7 +27,7 @@ export function TerminalWidget({ command, chunks, output, maxLines = 400, ...pro
     visible = kept;
   }
   return (
-    <ToolFrame {...props} label="Ran" activeLabel="Running" title={command} defaultOpen showBodyOnError>
+    <ToolFrame {...props} icon={SquareTerminal} label="Ran" activeLabel="Running" title={command} defaultOpen showBodyOnError>
       <pre className="chat-terminal-output" role="log" aria-label={`Output of ${command}`} tabIndex={0}>
         <span className="chat-terminal-prompt">$ </span>
         {command}

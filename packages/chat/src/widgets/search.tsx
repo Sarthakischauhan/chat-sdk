@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { safeResultUrl } from "./compute";
+import { Search } from "lucide-react";
 import { ToolFrame } from "./tool-frame";
 import type { SearchWidgetProps } from "./types";
 export function SearchWidget({
@@ -17,6 +18,7 @@ export function SearchWidget({
   return (
     <ToolFrame
       {...props}
+      icon={Search}
       label="Searched for"
       activeLabel="Searching for"
       title={query}
