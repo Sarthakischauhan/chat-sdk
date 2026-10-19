@@ -196,6 +196,9 @@
 
 .chat-model-item-hint {
   flex: 0 0 auto;
+  /* Radix ItemText wraps label and hint together, so the item's gap does not
+     separate them. */
+  margin-inline-start: var(--chat-space-2);
   color: var(--chat-fg-subtle, #8e8ea0);
   font-size: var(--chat-fs-12);
   font-weight: var(--chat-weight-regular);
