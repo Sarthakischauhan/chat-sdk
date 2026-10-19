@@ -11,11 +11,61 @@ import { PatchWidget } from "./patch";
 import { QuestionWidget } from "./question";
 import { ReadFileWidget } from "./read-file";
 import { SearchWidget } from "./search";
-import type { QuestionOption, ToolWidgetProps } from "./types";
+import { TerminalWidget } from "./terminal";
+import { ApprovalWidget } from "./approval";
+import type {
+  QuestionOption,
+  SubagentStep,
+  TerminalChunk,
+  ToolSummary,
+  ToolWidgetProps,
+} from "./types";
 const str = (value: unknown, fallback = "") =>
   typeof value === "string" ? value : fallback;
 const num = (value: unknown) =>
   typeof value === "number" && Number.isFinite(value) ? value : undefined;
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const intOrNull = (value: unknown) =>
+  value === null ? null : num(value);
+const summaryOf = (value: unknown): ToolSummary | undefined =>
+  isRecord(value)
+    ? {
+        lines: intOrNull(value.lines),
+        matches: intOrNull(value.matches),
+        added: intOrNull(value.added),
+        removed: intOrNull(value.removed),
+      }
+    : undefined;
+const chunksOf = (value: unknown): TerminalChunk[] =>
+  Array.isArray(value)
+    ? value.flatMap((item) =>
+        isRecord(item) && typeof item.text === "string"
+          ? [{ stream: item.stream === "stderr" ? "stderr" as const : "stdout" as const, text: item.text }]
+          : [],
+      )
+    : [];
+const stepsOf = (value: unknown): SubagentStep[] =>
+  Array.isArray(value)
+    ? value.flatMap((item) =>
+        isRecord(item) && typeof item.id === "string" && typeof item.label === "string"
+          ? [
+              {
+                id: item.id,
+                label: item.label,
+                target: typeof item.target === "string" ? item.target : undefined,
+                meta: typeof item.meta === "string" ? item.meta : undefined,
+                state:
+                  item.state === "running" || item.state === "error"
+                    ? item.state
+                    : ("complete" as const),
+                startedAt: typeof item.startedAt === "string" ? item.startedAt : undefined,
+                durationMs: intOrNull(item.durationMs),
+              },
+            ]
+          : [],
+      )
+    : [];
 const common = (props: Record<string, unknown>): ToolWidgetProps => ({
   state:
     props.state === "running" ||
@@ -25,6 +75,10 @@ const common = (props: Record<string, unknown>): ToolWidgetProps => ({
       ? props.state
       : "complete",
   error: typeof props.error === "string" ? props.error : undefined,
+  summary: summaryOf(props.summary),
+  startedAt: typeof props.startedAt === "string" ? props.startedAt : undefined,
+  durationMs: intOrNull(props.durationMs),
+  exitCode: intOrNull(props.exitCode),
 });
 function Read(props: WidgetComponentProps) {
   return (
@@ -101,6 +155,34 @@ function Question(props: WidgetComponentProps) {
     />
   );
 }
+function Terminal(props: WidgetComponentProps) {
+  return (
+    <TerminalWidget
+      {...common(props)}
+      command={str(props.command, "command")}
+      chunks={chunksOf(props.chunks)}
+      output={typeof props.output === "string" ? props.output : undefined}
+    />
+  );
+}
+function Approval(props: WidgetComponentProps) {
+  const choices = Array.isArray(props.choices)
+    ? props.choices.filter((choice): choice is string => typeof choice === "string")
+    : [];
+  return (
+    <ApprovalWidget
+      question={str(props.question, "Allow this action?")}
+      toolName={typeof props.toolName === "string" ? props.toolName : undefined}
+      target={typeof props.target === "string" ? props.target : undefined}
+      detail={typeof props.detail === "string" ? props.detail : undefined}
+      bytes={intOrNull(props.bytes)}
+      choices={choices}
+      defaultChoice={typeof props.default === "string" ? props.default : undefined}
+      disabled={!props.widget.interactive || props.widget.disabled}
+      onAnswer={(choice) => props.widget.respond(choice, choice, "answer")}
+    />
+  );
+}
 function Artifact(props: WidgetComponentProps) {
   const artifact = parseArtifact(props.artifact ?? props);
   return artifact ? <ArtifactWidget artifact={artifact} /> : <p className="chat-widget-empty">File details are unavailable.</p>;
@@ -113,7 +195,7 @@ function Artifacts(props: WidgetComponentProps) {
 }
 function Subagent(props: WidgetComponentProps) {
   const subagent = parseSubagent(props.subagent ?? props);
-  return subagent ? <SubagentWidget subagent={subagent} /> : <p className="chat-widget-empty">Agent details are unavailable.</p>;
+  return subagent ? <SubagentWidget subagent={subagent} steps={stepsOf(props.steps)} /> : <p className="chat-widget-empty">Agent details are unavailable.</p>;
 }
 /** Defaults are always available; a host registry can override any name. */
 export const prebuiltWidgets: ChatWidgetRegistry = {
@@ -124,4 +206,6 @@ export const prebuiltWidgets: ChatWidgetRegistry = {
   patch: { name: "patch", component: Patch, shell: false },
   search: { name: "search", component: Search, shell: false },
   question: { name: "question", component: Question, shell: false },
+  terminal: { name: "terminal", component: Terminal, shell: false },
+  approval: { name: "approval", component: Approval, shell: false },
 };

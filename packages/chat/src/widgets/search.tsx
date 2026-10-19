@@ -8,11 +8,12 @@ export function SearchWidget({
   results = [],
   total,
   maxResults = 5,
+  summary,
   ...props
 }: SearchWidgetProps) {
   const [expanded, setExpanded] = useState(false);
   const limit = Math.max(1, maxResults);
-  const count = Math.max(results.length, total ?? 0);
+  const count = typeof summary?.matches === "number" ? summary.matches : Math.max(results.length, total ?? 0);
   return (
     <ToolFrame
       {...props}

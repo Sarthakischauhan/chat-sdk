@@ -1,9 +1,60 @@
 export type WidgetState =
   "running" | "complete" | "error" | "denied" | "approval";
-export type ToolWidgetProps = {
+/** Counts reported by the harness (Symphony `summary`); null means "not applicable". */
+export type ToolSummary = {
+  lines?: number | null;
+  matches?: number | null;
+  added?: number | null;
+  removed?: number | null;
+};
+/** Timing and exit metadata from tool_execution_started/completed. All optional for old sessions. */
+export type ToolRunInfo = {
+  /** ISO timestamp from `started_at`; drives the live elapsed counter while running. */
+  startedAt?: string;
+  /** `duration_ms` from tool_execution_completed. */
+  durationMs?: number | null;
+  /** `exit_code` from tool_execution_completed. */
+  exitCode?: number | null;
+};
+export type ToolWidgetProps = ToolRunInfo & {
   state?: WidgetState;
   error?: string;
   className?: string;
+  summary?: ToolSummary;
+};
+export type TerminalStream = "stdout" | "stderr";
+export type TerminalChunk = { stream: TerminalStream; text: string };
+export type TerminalWidgetProps = ToolWidgetProps & {
+  command: string;
+  /** Streamed `tool_execution_output` deltas in arrival order. */
+  chunks?: TerminalChunk[];
+  /** Final result text, used when no chunks were streamed (older sessions). */
+  output?: string;
+  maxLines?: number;
+};
+export type ApprovalWidgetProps = {
+  question: string;
+  toolName?: string;
+  target?: string;
+  detail?: string;
+  bytes?: number | null;
+  /** Answer labels exactly as sent by the harness, e.g. Deny / Always allow / Allow once. */
+  choices: string[];
+  defaultChoice?: string;
+  disabled?: boolean;
+  onAnswer?: (choice: string) => void | Promise<void>;
+  className?: string;
+};
+export type SubagentStepState = "running" | "complete" | "error";
+/** One step of a child agent, linked to its parent call by `parent_call_id`. */
+export type SubagentStep = {
+  id: string;
+  label: string;
+  target?: string;
+  meta?: string;
+  state?: SubagentStepState;
+  startedAt?: string;
+  durationMs?: number | null;
 };
 export type ReadFileWidgetProps = ToolWidgetProps & {
   path: string;

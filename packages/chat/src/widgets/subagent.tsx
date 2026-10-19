@@ -5,12 +5,19 @@ import type { AgentSubagent } from "@sarchauhan/protocol";
 import { MessageContent } from "../components/Message/message.content";
 import { ArtifactsWidget } from "./artifact";
 import { ResponsiveDetail } from "./responsive-detail";
+import { formatDuration, useElapsed } from "./format";
+import type { SubagentStep } from "./types";
 
-export type SubagentWidgetProps = { subagent: AgentSubagent; className?: string };
+export type SubagentWidgetProps = {
+  subagent: AgentSubagent;
+  /** Child steps linked by `parent_call_id`, rendered indented under the Delegated row. */
+  steps?: SubagentStep[];
+  className?: string;
+};
 const Depth = createContext(0);
 const labels = { queued: "Queued", running: "Working", completed: "Completed", failed: "Failed", cancelled: "Cancelled" };
 
-export function SubagentWidget({ subagent, className = "" }: SubagentWidgetProps) {
+export function SubagentWidget({ subagent, steps = [], className = "" }: SubagentWidgetProps) {
   const depth = useContext(Depth);
   const { title, task, state, summary, progress, messages = [], artifacts = [], error } = subagent;
   const Icon = state === "completed" ? CircleCheck : state === "failed" ? CircleX : state === "running" ? LoaderCircle : Bot;
@@ -36,7 +43,21 @@ export function SubagentWidget({ subagent, className = "" }: SubagentWidgetProps
     </div>
     {task ? <p className="chat-subagent-task">{task}</p> : null}
     {summary ? <p className="chat-subagent-summary">{summary}</p> : null}
+    {steps.length ? <ol className="chat-subagent-steps" aria-label={"Steps for " + title}>{steps.map((step) => <StepRow key={step.id} step={step} />)}</ol> : null}
     {state === "running" && progress !== undefined ? <progress className="chat-subagent-progress" value={progress} max={1} aria-label={"Progress for " + title} /> : null}
     {state === "failed" && error ? <p className="chat-widget-error" role="alert">{error}</p> : null}
   </section>;
+}
+
+function StepRow({ step }: { step: SubagentStep }) {
+  const running = step.state === "running";
+  const elapsed = useElapsed(step.startedAt, running);
+  const meta = step.meta ?? (running
+    ? elapsed === undefined ? "running" : `${Math.floor(elapsed / 1000)}s`
+    : typeof step.durationMs === "number" ? formatDuration(step.durationMs) : step.state === "error" ? "failed" : undefined);
+  return <li data-state={step.state ?? "complete"}>
+    <span className="chat-subagent-step-label">{step.label}</span>
+    {step.target ? <span className="chat-subagent-step-target">{step.target}</span> : null}
+    {meta ? <span className="chat-subagent-step-meta">· {meta}</span> : null}
+  </li>;
 }

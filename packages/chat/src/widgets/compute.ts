@@ -28,6 +28,9 @@ const aliases: Record<string, string> = {
   web_search: "search",
   question: "question",
   ask_question: "question",
+  bash: "terminal",
+  shell: "terminal",
+  run_command: "terminal",
 };
 export function computeToolState(part: AgentToolPart): WidgetState {
   if (part.state === "output-error") return "error";
@@ -135,6 +138,14 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
       query,
       results: normalizeSearchResults(results),
       total: number(output.total, output.totalCount),
+    };
+  } else if (name === "terminal") {
+    const command = string(input.command, input.cmd, part.input);
+    if (command === undefined) return null;
+    props = {
+      ...common,
+      command,
+      output: string(output.output, output.stdout, part.output),
     };
   } else {
     if (

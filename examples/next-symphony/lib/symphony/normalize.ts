@@ -1,4 +1,6 @@
-import type { AgentEvent } from "@sarchauhan/protocol";
+import type { AgentEvent, AgentToolPart } from "@sarchauhan/protocol";
+import { computeToolWidget } from "@sarchauhan/chat";
+import type { SubagentStep, TerminalChunk, ToolSummary } from "@sarchauhan/chat";
 
 type SymphonyEvent = {
   event_type: string;
@@ -29,6 +31,22 @@ type SubagentState = {
   outputText: string;
   error: string;
   events: SubagentTimelineEvent[];
+  /** Spawning tool call (`agent_spawned.tool_call_id`); child frames reference it as `parent_call_id`. */
+  parentCallId?: string;
+  steps: SubagentStep[];
+};
+
+const setStep = (state: SubagentState, step: SubagentStep) => {
+  const index = state.steps.findIndex((item) => item.id === step.id);
+  if (index === -1) state.steps.push(step);
+  else state.steps[index] = { ...state.steps[index], ...step };
+  if (state.steps.length > 20) state.steps.splice(0, state.steps.length - 20);
+};
+
+const stepTarget = (args: unknown) => {
+  const record = recordValue(parseValue(args));
+  return optionalString(record?.path) ?? optionalString(record?.file_path) ?? optionalString(record?.command) ??
+    optionalString(record?.pattern) ?? optionalString(record?.query);
 };
 
 const numberValue = (value: unknown) =>
@@ -41,6 +59,67 @@ const recordValue = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+
+/** Integer field that may be explicitly null (protocol 3) or missing (older sessions). */
+const optionalInt = (value: unknown): number | null | undefined =>
+  value === null ? null : typeof value === "number" && Number.isFinite(value) ? value : undefined;
+const optionalString = (value: unknown) =>
+  typeof value === "string" && value ? value : undefined;
+
+const summaryValue = (value: unknown): ToolSummary | undefined => {
+  const record = recordValue(value);
+  return record
+    ? {
+        lines: optionalInt(record.lines),
+        matches: optionalInt(record.matches),
+        added: optionalInt(record.added),
+        removed: optionalInt(record.removed),
+      }
+    : undefined;
+};
+
+/** Live state for a tool call rendered as a prebuilt widget (terminal, read, patch, search). */
+type ToolCallState = {
+  toolCallId: string;
+  toolName: string;
+  input: unknown;
+  startedAt?: string;
+  chunks: TerminalChunk[];
+};
+
+const TERMINAL_TOOLS = new Set(["bash", "shell", "run_command"]);
+const WIDGET_TOOLS = new Set([
+  "read", "read_file", "readFile", "read-file",
+  "patch", "apply_patch", "edit_file", "edit",
+  "search", "grep", "file_search", "web_search",
+]);
+
+const terminalCommand = (input: unknown) => {
+  const record = recordValue(parseValue(input));
+  return stringValue(record?.command ?? record?.cmd) || stringValue(input) || "command";
+};
+
+const terminalWidgetEvent = (
+  call: ToolCallState,
+  extra: Record<string, unknown>,
+): AgentEvent => ({
+  type: "data-widget",
+  id: call.toolCallId,
+  data: {
+    name: "terminal",
+    props: {
+      command: terminalCommand(call.input),
+      chunks: call.chunks.map((chunk) => ({ ...chunk })),
+      startedAt: call.startedAt,
+      ...extra,
+    },
+  },
+});
+
+const completedState = (status: string) =>
+  status === "success" ? "complete" : "error";
+const completedError = (status: string, fallback: string) =>
+  status === "timeout" ? "Timed out" : status === "cancelled" ? "Cancelled" : status === "error" ? fallback || undefined : undefined;
 
 const parseValue = (value: unknown) => {
   if (typeof value !== "string") {
@@ -92,6 +171,13 @@ const subagentWidgetEvent = (state: SubagentState): AgentEvent => ({
       outputText: state.outputText,
       error: state.error,
       events: state.events.map((event) => ({ ...event })),
+      // Fields read by the prebuilt @sarchauhan/chat SubagentWidget.
+      id: state.childId,
+      title: state.label,
+      task: state.prompt,
+      state: state.status,
+      parentCallId: state.parentCallId,
+      steps: state.steps.map((step) => ({ ...step })),
     },
   },
 });
@@ -111,6 +197,8 @@ const createSubagentState = (
       : undefined,
   depth: typeof payload.depth === "number" ? payload.depth : undefined,
   maxTurns: typeof payload.max_turns === "number" ? payload.max_turns : undefined,
+  parentCallId: optionalString(payload.tool_call_id),
+  steps: [],
   status: "running",
   phase: "Starting",
   response: "",
@@ -176,7 +264,23 @@ const updateSubagentFromChildEvent = (
       });
       state.phase = `Using ${stringValue(payload.tool_name) || "a tool"}`;
       return true;
+    case "subagent_step":
+      setTimelineEvent(state, {
+        id: `turn-${turn}`,
+        kind: "status",
+        label: `Turn ${turn || 1}`,
+        status: "running",
+      });
+      state.phase = `Turn ${turn || 1}`;
+      return true;
     case "tool_execution_started": {
+      setStep(state, {
+        id: `tool-${toolCallId}`,
+        label: stringValue(payload.tool_name) || "Tool",
+        target: stepTarget(payload.arguments),
+        state: "running",
+        startedAt: optionalString(payload.started_at),
+      });
       const existing = state.events.find((item) => item.id === `tool-${toolCallId}`);
       setTimelineEvent(state, {
         id: `tool-${toolCallId}`,
@@ -190,6 +294,12 @@ const updateSubagentFromChildEvent = (
     case "tool_execution_completed": {
       const existing = state.events.find((item) => item.id === `tool-${toolCallId}`);
       const failed = stringValue(payload.status) !== "success";
+      setStep(state, {
+        id: `tool-${toolCallId}`,
+        label: stringValue(payload.tool_name) || existing?.label || "Tool",
+        state: failed ? "error" : "complete",
+        durationMs: optionalInt(payload.duration_ms),
+      });
       setTimelineEvent(state, {
         id: `tool-${toolCallId}`,
         kind: "tool",
@@ -318,6 +428,9 @@ export async function* normalizeSymphonyStream(
   const askUserToolIds = new Set<string>();
   const spawnToolIds = new Set<string>();
   const subagents = new Map<string, SubagentState>();
+  const subagentByCall = new Map<string, string>();
+  const widgetToolIds = new Set<string>();
+  const calls = new Map<string, ToolCallState>();
 
   for await (const event of readSse(stream)) {
     const payload = event.payload;
@@ -332,6 +445,7 @@ export async function* normalizeSymphonyStream(
       if (childId) {
         const state = createSubagentState(childId, payload);
         subagents.set(childId, state);
+        if (state.parentCallId) subagentByCall.set(state.parentCallId, childId);
         yield subagentWidgetEvent(state);
       }
       continue;
@@ -367,13 +481,44 @@ export async function* normalizeSymphonyStream(
       continue;
     }
 
-    if (stringValue(payload.parent_id) && childAgentId) {
+    // Protocol 3: child frames carry parent_call_id, which names the spawning call.
+    const parentCallId = optionalString(payload.parent_call_id);
+    const owner = childAgentId || (parentCallId ? subagentByCall.get(parentCallId) ?? "" : "");
+    if ((stringValue(payload.parent_id) || (parentCallId && subagentByCall.has(parentCallId))) && owner) {
       const state =
-        subagents.get(childAgentId) ?? createSubagentState(childAgentId, payload);
-      subagents.set(childAgentId, state);
+        subagents.get(owner) ?? createSubagentState(owner, payload);
+      subagents.set(owner, state);
       if (updateSubagentFromChildEvent(state, event)) {
         yield subagentWidgetEvent(state);
       }
+      continue;
+    }
+
+    if (
+      (event.event_type === "question_asked" || event.event_type === "input_requested") &&
+      stringValue(payload.kind) === "approval"
+    ) {
+      const choices = Array.isArray(payload.choices)
+        ? payload.choices.filter((choice): choice is string => typeof choice === "string")
+        : [];
+      yield {
+        type: "data-widget",
+        id: optionalString(payload.request_id),
+        data: {
+          name: "approval",
+          props: {
+            question: stringValue(payload.question),
+            choices,
+            default: optionalString(payload.default),
+            toolName: optionalString(payload.tool_name),
+            toolCallId: optionalString(payload.tool_call_id),
+            target: optionalString(payload.target),
+            detail: optionalString(payload.detail),
+            bytes: optionalInt(payload.bytes),
+          },
+          interactive: true,
+        },
+      };
       continue;
     }
 
@@ -425,6 +570,10 @@ export async function* normalizeSymphonyStream(
           askUserToolIds.add(stringValue(payload.tool_call_id));
           break;
         }
+        if (TERMINAL_TOOLS.has(stringValue(payload.tool_name)) || WIDGET_TOOLS.has(stringValue(payload.tool_name))) {
+          widgetToolIds.add(stringValue(payload.tool_call_id));
+          break;
+        }
         yield {
           type: "tool-input-start",
           toolCallId: stringValue(payload.tool_call_id),
@@ -437,6 +586,9 @@ export async function* normalizeSymphonyStream(
           break;
         }
         if (askUserToolIds.has(stringValue(payload.tool_call_id))) {
+          break;
+        }
+        if (widgetToolIds.has(stringValue(payload.tool_call_id))) {
           break;
         }
         yield {
@@ -462,6 +614,39 @@ export async function* normalizeSymphonyStream(
           };
           break;
         }
+        {
+          const toolCallId = stringValue(payload.tool_call_id);
+          const toolName = stringValue(payload.tool_name);
+          if (widgetToolIds.has(toolCallId) || TERMINAL_TOOLS.has(toolName) || WIDGET_TOOLS.has(toolName)) {
+            widgetToolIds.add(toolCallId);
+            const call: ToolCallState = {
+              toolCallId,
+              toolName,
+              input: parseValue(payload.arguments),
+              startedAt: optionalString(payload.started_at),
+              chunks: [],
+            };
+            calls.set(toolCallId, call);
+            if (TERMINAL_TOOLS.has(toolName)) {
+              yield terminalWidgetEvent(call, { state: "running" });
+              break;
+            }
+            const widget = computeToolWidget({
+              type: "tool", toolCallId, toolName, state: "input-available", input: call.input,
+            });
+            if (widget) {
+              yield {
+                type: "data-widget",
+                id: toolCallId,
+                data: { name: widget.name, props: { ...widget.props, startedAt: call.startedAt } },
+              };
+              break;
+            }
+            // Unknown argument format: keep the generic tool view.
+            widgetToolIds.delete(toolCallId);
+            calls.delete(toolCallId);
+          }
+        }
         yield {
           type: "tool-input-available",
           toolCallId: stringValue(payload.tool_call_id),
@@ -470,6 +655,19 @@ export async function* normalizeSymphonyStream(
         };
         break;
 
+      case "tool_execution_output": {
+        const call = calls.get(stringValue(payload.tool_call_id));
+        if (!call || !TERMINAL_TOOLS.has(call.toolName)) break;
+        const delta = stringValue(payload.delta);
+        if (!delta) break;
+        const stream = payload.stream === "stderr" ? "stderr" : "stdout";
+        const last = call.chunks[call.chunks.length - 1];
+        if (last && last.stream === stream) last.text = appendText(last.text, delta, 60_000);
+        else call.chunks.push({ stream, text: delta });
+        yield terminalWidgetEvent(call, { state: "running" });
+        break;
+      }
+
       case "tool_execution_completed":
         if (spawnToolIds.has(stringValue(payload.tool_call_id))) {
           spawnToolIds.delete(stringValue(payload.tool_call_id));
@@ -477,6 +675,44 @@ export async function* normalizeSymphonyStream(
         }
         if (askUserToolIds.has(stringValue(payload.tool_call_id))) {
           break;
+        }
+        {
+          const call = calls.get(stringValue(payload.tool_call_id));
+          if (call) {
+            calls.delete(call.toolCallId);
+            const status = stringValue(payload.status) || "success";
+            const result = parseValue(payload.result);
+            const meta = {
+              durationMs: optionalInt(payload.duration_ms),
+              exitCode: optionalInt(payload.exit_code),
+              summary: summaryValue(payload.summary),
+            };
+            if (TERMINAL_TOOLS.has(call.toolName)) {
+              const resultText = typeof result === "string" ? result : stringValue(recordValue(result)?.output);
+              yield terminalWidgetEvent(call, {
+                ...meta,
+                state: completedState(status),
+                error: completedError(status, ""),
+                output: call.chunks.length ? undefined : resultText || undefined,
+              });
+              break;
+            }
+            const part: AgentToolPart = status === "success"
+              ? { type: "tool", toolCallId: call.toolCallId, toolName: call.toolName, state: "output-available", input: call.input, output: result }
+              : { type: "tool", toolCallId: call.toolCallId, toolName: call.toolName, state: "output-error", input: call.input,
+                  errorText: completedError(status, stringValue(payload.result)) ?? "Tool failed" };
+            const widget = computeToolWidget(part);
+            if (widget) {
+              yield {
+                type: "data-widget",
+                id: call.toolCallId,
+                data: { name: widget.name, props: { ...widget.props, ...meta, startedAt: call.startedAt } },
+              };
+              break;
+            }
+            // The result did not match a known format; fall back to the generic tool view.
+            yield { type: "tool-input-available", toolCallId: call.toolCallId, toolName: call.toolName, input: call.input };
+          }
         }
         yield {
           type: "tool-output-available",

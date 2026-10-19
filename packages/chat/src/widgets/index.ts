@@ -2,6 +2,9 @@ export { ReadFileWidget } from "./read-file";
 export { PatchWidget } from "./patch";
 export { SearchWidget } from "./search";
 export { QuestionWidget } from "./question";
+export { TerminalWidget } from "./terminal";
+export { ApprovalWidget } from "./approval";
+export { formatDuration, formatStatus, formatSummary } from "./format";
 export { prebuiltWidgets } from "./registry";
 export {
   computeToolWidget,
@@ -21,6 +24,14 @@ export type {
   QuestionOption,
   QuestionAnswer,
   ToolWidgetProps,
+  ToolSummary,
+  ToolRunInfo,
+  TerminalWidgetProps,
+  TerminalChunk,
+  TerminalStream,
+  ApprovalWidgetProps,
+  SubagentStep,
+  SubagentStepState,
   WidgetState,
 } from "./types";
 

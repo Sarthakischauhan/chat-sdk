@@ -9,6 +9,7 @@ export function PatchWidget({
   before,
   after,
   maxLines = 100,
+  summary,
   ...props
 }: PatchWidgetProps) {
   const diff = useMemo(
@@ -20,10 +21,12 @@ export function PatchWidget({
     [rawDiff, before, after, path],
   );
   const [expanded, setExpanded] = useState(false);
-  const { lines, additions, deletions } = useMemo(
+  const { lines, additions: derivedAdded, deletions: derivedRemoved } = useMemo(
     () => computeDiff(diff),
     [diff],
   );
+  const additions = typeof summary?.added === "number" ? summary.added : derivedAdded;
+  const deletions = typeof summary?.removed === "number" ? summary.removed : derivedRemoved;
   const limit = Math.max(1, maxLines);
   return (
     <ToolFrame

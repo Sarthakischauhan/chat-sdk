@@ -8,7 +8,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate --schema prisma/schema.prisma",
-    "prisma:push": "prisma db push --schema prisma/schema.prisma"
+    "prisma:push": "prisma db push --schema prisma/schema.prisma",
+    "test": "node --experimental-strip-types --test test/normalize.test.ts"
   },
   "dependencies": {
     "next": "16.1.6",
