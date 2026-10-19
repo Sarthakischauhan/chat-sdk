@@ -1,233 +1,295 @@
 "use client";
 
-import { Fragment, useCallback, useMemo, useRef, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectLabel,
-  SelectTrigger,
-  SelectItem,
-} from "../../ui/select";
-import { Check, Ellipsis } from "lucide-react";
+import { useCallback, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { Popover } from "radix-ui";
+import { Check, ChevronDown, Ellipsis, Search } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { motion, useDropdownPresence, type DropdownOrigin } from "../../motion";
 import { useMessages, useModel } from "./context";
+import type { RegistryModel, RegistryProvider } from "./context/types";
+import { ProviderLogo } from "./provider-logo";
 
-const SELECT_ORIGIN: DropdownOrigin = "top-left";
 const THINKING_ORIGIN: DropdownOrigin = "top-right";
 
-const ProviderBadge = ({ logo, name }: { logo?: string; name: string }) => {
-  if (logo) {
-    return (
-      <img
-        className="chat-model-provider-logo"
-        src={logo}
-        alt=""
-        aria-hidden="true"
-      />
-    );
-  }
+const providerName = (entry: RegistryProvider) => entry.name ?? entry.label;
 
-  return (
-    <span className="chat-model-provider-logo chat-model-provider-fallback" aria-hidden="true">
-      {name.slice(0, 1)}
-    </span>
-  );
+/** 1000000 → "1M", 400000 → "400K", 131072 → "131K". */
+export const formatContextWindow = (tokens: number) => {
+  if (tokens >= 1_000_000) {
+    // One decimal, dropping ".0": 1048576 → "1M", 1500000 → "1.5M".
+    return `${Math.round(tokens / 100_000) / 10}M`;
+  }
+  return `${Math.round(tokens / 1000)}K`;
 };
 
+const secondaryLine = (item: RegistryModel) =>
+  item.contextWindow ? `${formatContextWindow(item.contextWindow)} context window` : item.description;
+
+type Row = { entry: RegistryProvider; item: RegistryModel; key: string };
+
+const BadgeFor = ({ entry }: { entry: RegistryProvider }) =>
+  entry.logo ? (
+    <img className="chat-provider-logo" src={entry.logo} alt="" aria-hidden="true" />
+  ) : (
+    <ProviderLogo provider={entry.id} />
+  );
+
+/**
+ * Model picker: a popover with search, provider filter chips and a list grouped by
+ * provider. Arrow keys move the highlight, Enter picks, Escape closes.
+ */
 export const ChatSelect = () => {
   const { provider, model, registry, setProvider, getThinkingLevel, setThinkingLevel } = useModel();
   const { isSending } = useMessages();
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const listId = useId();
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [chips, setChips] = useState<string[]>([]);
+  const [active, setActive] = useState(0);
   const [thinkingOpen, setThinkingOpen] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const rootRef = useRef<HTMLElement | null>(null);
-  const menu = useDropdownPresence(menuOpen, rootRef);
-  const selectedValue = `${provider}::${model}`;
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  // Stays mounted through the close tween and adds the .is-open hook.
+  const menu = useDropdownPresence(open, portalContainer);
+
   const selectedProvider = registry.providers.find((entry) => entry.id === provider);
   const selectedModel = selectedProvider?.models.find((entry) => entry.id === model);
-  const providerName = selectedProvider?.name ?? selectedProvider?.label ?? provider;
   const modelLabel = selectedModel?.label ?? (model || "Loading models…");
-  const filteredProviders = useMemo(() => {
+
+  const rows = useMemo<Row[]>(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return registry.providers;
     return registry.providers
-      .map((entry) => ({
-        ...entry,
-        models: entry.models.filter(
-          (item) =>
-            item.label.toLowerCase().includes(q) ||
-            item.id.toLowerCase().includes(q) ||
-            (item.description && item.description.toLowerCase().includes(q)) ||
-            entry.label.toLowerCase().includes(q),
-        ),
-      }))
-      .filter((entry) => entry.models.length > 0);
-  }, [registry.providers, query]);
+      .filter((entry) => chips.length === 0 || chips.includes(entry.id))
+      .flatMap((entry) =>
+        entry.models
+          .filter(
+            (item) =>
+              !q ||
+              item.label.toLowerCase().includes(q) ||
+              item.id.toLowerCase().includes(q) ||
+              providerName(entry).toLowerCase().includes(q) ||
+              entry.id.toLowerCase().includes(q),
+          )
+          .map((item) => ({ entry, item, key: `${entry.id}::${item.id}` })),
+      );
+  }, [registry.providers, query, chips]);
+
+  const groups = useMemo(() => {
+    const out: { entry: RegistryProvider; rows: { row: Row; index: number }[] }[] = [];
+    rows.forEach((row, index) => {
+      const last = out.at(-1);
+      if (last && last.entry.id === row.entry.id) last.rows.push({ row, index });
+      else out.push({ entry: row.entry, rows: [{ row, index }] });
+    });
+    return out;
+  }, [rows]);
+
   const setRootElement = useCallback((node: HTMLDivElement | null) => {
     const found = node?.closest(".chat-root");
-    rootRef.current = found instanceof HTMLElement ? found : null;
     setPortalContainer(found instanceof HTMLElement ? found : null);
   }, []);
 
+  const highlight = (index: number) => {
+    setActive(index);
+    listRef.current
+      ?.querySelector(`[data-index="${index}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  };
+  const pick = (row: Row | undefined) => {
+    if (!row) return;
+    setProvider(row.entry.id, row.item.id);
+    setOpen(false);
+  };
+  const onOpenChange = (next: boolean) => {
+    setOpen(next);
+    setThinkingOpen(null);
+    if (next) {
+      setQuery("");
+      setChips([]);
+      const current = rows.findIndex((row) => row.entry.id === provider && row.item.id === model);
+      setActive(Math.max(0, current));
+    }
+  };
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!rows.length) return;
+      const step = event.key === "ArrowDown" ? 1 : -1;
+      highlight((active + step + rows.length) % rows.length);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      pick(rows[active]);
+    }
+  };
+  const toggleChip = (id: string) => {
+    setChips((current) => (current.includes(id) ? current.filter((chip) => chip !== id) : [...current, id]));
+    setActive(0);
+  };
+
   return (
     <div ref={setRootElement}>
-      <Select
-        open={menuOpen || menu.mounted}
-        onOpenChange={setMenuOpen}
-        value={selectedValue}
-        onValueChange={(value) => {
-          const separator = value.indexOf("::");
-          if (separator <= 0) {
-            return;
-          }
-
-          const nextProvider = value.slice(0, separator);
-          const nextModel = value.slice(separator + 2);
-          const match = registry.providers.find((entry) => entry.id === nextProvider);
-          if (!match || !nextModel) {
-            return;
-          }
-
-          setProvider(match.id, nextModel);
-        }}
-        disabled={isSending}
-      >
-        <SelectTrigger className="chat-model-trigger">
-          <span className="chat-model-selected">
-            {selectedModel ? (
-              <ProviderBadge logo={selectedProvider?.logo} name={providerName} />
+      <Popover.Root open={open || menu.mounted} onOpenChange={onOpenChange}>
+        <Popover.Trigger asChild>
+          <button
+            type="button"
+            className="chat-model-trigger"
+            disabled={isSending}
+            aria-haspopup="listbox"
+            data-state={open ? "open" : "closed"}
+          >
+            <span className="chat-model-selected">
+              {selectedProvider && selectedModel ? <BadgeFor entry={selectedProvider} /> : null}
+              <span>{modelLabel}</span>
+            </span>
+            <ChevronDown aria-hidden="true" />
+          </button>
+        </Popover.Trigger>
+        <Popover.Portal container={portalContainer}>
+          <Popover.Content
+            align="start"
+            side="top"
+            sideOffset={6}
+            collisionPadding={12}
+            // The composer treats select-content as inside it, so it stays expanded.
+            data-slot="select-content"
+            className={cn("chat-model-content chat-model-picker", motion.dropdown, menu.className)}
+            onOpenAutoFocus={(event) => {
+              event.preventDefault();
+              event.currentTarget instanceof HTMLElement &&
+                event.currentTarget.querySelector<HTMLInputElement>("input")?.focus();
+            }}
+          >
+            <label className="chat-model-search">
+              <Search className="chat-model-search-icon" aria-hidden="true" />
+              <input
+                className="chat-model-search-input"
+                placeholder="Search models…"
+                aria-label="Search models"
+                role="combobox"
+                aria-expanded="true"
+                aria-controls={listId}
+                aria-activedescendant={rows[active] ? `${listId}-${active}` : undefined}
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setActive(0);
+                }}
+                onKeyDown={onKeyDown}
+              />
+            </label>
+            {registry.providers.length > 1 ? (
+              <div className="chat-model-chips" role="group" aria-label="Filter by provider">
+                {registry.providers.map((entry) => (
+                  <button
+                    key={entry.id}
+                    type="button"
+                    className="chat-model-chip"
+                    aria-pressed={chips.includes(entry.id)}
+                    onClick={() => toggleChip(entry.id)}
+                  >
+                    {providerName(entry)}
+                  </button>
+                ))}
+              </div>
             ) : null}
-            <span>{modelLabel}</span>
-          </span>
-        </SelectTrigger>
-        <SelectContent
-          align="start"
-          position="popper"
-          sideOffset={6}
-          collisionPadding={12}
-          className={cn("chat-model-content", motion.dropdown, menu.className)}
-          data-origin={SELECT_ORIGIN}
-          portalContainer={portalContainer}
-          onCloseAutoFocus={(event) => {
-            event.preventDefault();
-            setQuery("");
-            setThinkingOpen(null);
-          }}
-          onPointerDownOutside={() => setThinkingOpen(null)}
-        >
-          <div className="chat-model-search">
-            <input
-              autoFocus
-              placeholder="Search models"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => event.stopPropagation()}
-              className="chat-model-search-input"
-            />
-          </div>
-          <div className="chat-model-list">
-            {filteredProviders.length === 0 ? (
-              <div className="chat-model-empty">No models found</div>
-            ) : (
-              filteredProviders.map((entry) => {
-                const providerName = entry.name ?? entry.label;
-                const hideLabel = filteredProviders.length === 1;
-
-                return (
-                  <Fragment key={entry.id}>
-                    <SelectGroup className="chat-model-group">
-                      {hideLabel ? null : (
-                        <SelectLabel className="chat-model-label">
-                          <ProviderBadge logo={entry.logo} name={providerName} />
-                          <span>{providerName}</span>
-                        </SelectLabel>
-                      )}
-                      {entry.models.map((item) => {
-                        const key = `${entry.id}::${item.id}`;
-                        const levels = item.thinkingLevels;
-                        const defaultThinking =
-                          levels && levels.length > 0
-                            ? (levels.includes("medium") ? "medium" : levels[0])
-                            : undefined;
-                        const thinking = defaultThinking && levels ? { levels } : undefined;
-                        const activeThinking = defaultThinking
-                          ? (getThinkingLevel(entry.id, item.id) ?? defaultThinking)
-                          : undefined;
-                        const isOpen = thinkingOpen === key;
-
-                        return (
-                          <ModelRow
-                            key={key}
-                            itemKey={key}
-                            item={item}
-                            thinking={thinking}
-                            activeThinking={activeThinking}
-                            isOpen={isOpen}
-                            onToggleThinking={() => setThinkingOpen(isOpen ? null : key)}
-                            onPickThinking={(level) => {
-                              setThinkingLevel(entry.id, item.id, level);
-                              setThinkingOpen(null);
-                            }}
-                          />
-                        );
-                      })}
-                    </SelectGroup>
-                  </Fragment>
-                );
-              })
-            )}
-          </div>
-        </SelectContent>
-      </Select>
+            <div className="chat-model-list" id={listId} role="listbox" aria-label="Models" ref={listRef}>
+              {rows.length === 0 ? (
+                <div className="chat-model-empty">No models found</div>
+              ) : (
+                groups.map((group) => (
+                  <div className="chat-model-group" role="group" aria-label={providerName(group.entry)} key={group.entry.id}>
+                    <div className="chat-model-label" aria-hidden="true">
+                      {providerName(group.entry)}
+                    </div>
+                    {group.rows.map(({ row, index }) => {
+                      const levels = row.item.thinkingLevels;
+                      const fallback = levels?.length ? (levels.includes("medium") ? "medium" : levels[0]) : undefined;
+                      const level = fallback ? (getThinkingLevel(row.entry.id, row.item.id) ?? fallback) : undefined;
+                      return (
+                        <ModelRow
+                          key={row.key}
+                          id={`${listId}-${index}`}
+                          index={index}
+                          row={row}
+                          selected={row.entry.id === provider && row.item.id === model}
+                          highlighted={index === active}
+                          levels={levels}
+                          level={level}
+                          thinkingOpen={thinkingOpen === row.key}
+                          onHover={() => setActive(index)}
+                          onPick={() => pick(row)}
+                          onToggleThinking={() => setThinkingOpen(thinkingOpen === row.key ? null : row.key)}
+                          onPickThinking={(next) => {
+                            setThinkingLevel(row.entry.id, row.item.id, next);
+                            setThinkingOpen(null);
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                ))
+              )}
+            </div>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
     </div>
   );
 };
 
 const ModelRow = ({
-  itemKey,
-  item,
-  thinking,
-  activeThinking,
-  isOpen,
+  id,
+  index,
+  row,
+  selected,
+  highlighted,
+  levels,
+  level,
+  thinkingOpen,
+  onHover,
+  onPick,
   onToggleThinking,
   onPickThinking,
 }: {
-  itemKey: string;
-  item: { id: string; label: string; description?: string };
-  thinking?: { levels: string[] };
-  activeThinking?: string;
-  isOpen: boolean;
+  id: string;
+  index: number;
+  row: Row;
+  selected: boolean;
+  highlighted: boolean;
+  levels?: string[];
+  level?: string;
+  thinkingOpen: boolean;
+  onHover: () => void;
+  onPick: () => void;
   onToggleThinking: () => void;
   onPickThinking: (level: string) => void;
 }) => {
-  const menu = useDropdownPresence(isOpen);
-
+  const menu = useDropdownPresence(thinkingOpen);
+  const secondary = secondaryLine(row.item);
   return (
-    <div className="chat-model-row">
-      <SelectItem value={itemKey} className="chat-model-item">
-        <span className="chat-model-item-label">{item.label}</span>
-        {item.description ? (
-          <span className="chat-model-item-hint">{item.description}</span>
-        ) : thinking && activeThinking ? (
-          <span className="chat-model-item-hint">{activeThinking}</span>
-        ) : null}
-      </SelectItem>
-      {thinking ? (
+    <div
+      id={id}
+      role="option"
+      aria-selected={selected}
+      data-index={index}
+      data-highlighted={highlighted ? "true" : undefined}
+      className="chat-model-row chat-model-item"
+      onMouseMove={onHover}
+      onClick={onPick}
+    >
+      <BadgeFor entry={row.entry} />
+      <span className="chat-model-item-text">
+        <span className="chat-model-item-label">{row.item.label}</span>
+        {secondary ? <span className="chat-model-item-hint">{secondary}</span> : null}
+      </span>
+      {levels?.length && level ? (
         <>
           <button
             type="button"
-            aria-label="Thinking settings"
+            aria-label={`Thinking: ${level}`}
             className="chat-model-thinking-trigger"
-            data-open={isOpen ? "true" : "false"}
-            onPointerDown={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-            }}
+            data-open={thinkingOpen ? "true" : "false"}
             onClick={(event) => {
-              event.preventDefault();
               event.stopPropagation();
               onToggleThinking();
             }}
@@ -238,32 +300,25 @@ const ModelRow = ({
             <div
               className={cn("chat-model-thinking-menu", motion.dropdown, menu.className)}
               data-origin={THINKING_ORIGIN}
-              onPointerDown={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}
             >
-              {thinking.levels.map((level) => {
-                const isActive = level === activeThinking;
-                return (
-                  <button
-                    key={level}
-                    type="button"
-                    className="chat-model-thinking-option"
-                    data-active={isActive ? "true" : "false"}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      onPickThinking(level);
-                    }}
-                  >
-                    <span>{level}</span>
-                    {isActive ? <Check className="chat-model-thinking-check" /> : null}
-                  </button>
-                );
-              })}
+              {levels.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className="chat-model-thinking-option"
+                  data-active={option === level ? "true" : "false"}
+                  onClick={() => onPickThinking(option)}
+                >
+                  <span>{option}</span>
+                  {option === level ? <Check className="chat-model-thinking-check" /> : null}
+                </button>
+              ))}
             </div>
           ) : null}
         </>
       ) : null}
+      {selected ? <Check className="chat-model-check" aria-hidden="true" /> : <span className="chat-model-check" />}
     </div>
   );
 };

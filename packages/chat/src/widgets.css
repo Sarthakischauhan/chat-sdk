@@ -807,3 +807,53 @@
 .chat-tool-widget .chat-widget-more { padding-inline: var(--chat-tool-inset); }
 .chat-subagent-state,
 .chat-subagent-step-meta { font-variant-numeric: tabular-nums; }
+
+/* Direction B: an ask_user call as one prose row, "Asked <question> → <answer>". */
+.chat-asked {
+  --chat-tool-inset: 0.75rem;
+  margin-block: 0.25rem;
+  /* Flat like the other Direction B rows: no card border or fill. */
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0.25rem var(--chat-tool-inset);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+.chat-asked-row {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.chat-asked-verb {
+  color: var(--chat-fg-muted, #737373);
+}
+.chat-asked-question {
+  color: var(--chat-fg, #171717);
+}
+.chat-asked-answer {
+  font-family: var(--chat-font-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+  color: var(--chat-fg, #171717);
+  white-space: normal;
+}
+.chat-asked-status {
+  font-size: 0.6875rem;
+  color: var(--chat-danger, #b42318);
+}
+.chat-asked-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--chat-font-mono, ui-monospace, monospace);
+  font-size: 0.6875rem;
+  color: var(--chat-fg-subtle, #a3a3a3);
+  text-transform: lowercase;
+}
+.chat-asked-error {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--chat-danger, #b42318);
+}

@@ -7,7 +7,7 @@ const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "http:
 for (const key of ["window", "document", "HTMLElement", "Node", "MutationObserver"]) globalThis[key] = dom.window[key];
 Object.defineProperty(globalThis, "navigator", { value: dom.window.navigator, configurable: true });
 const { render, fireEvent, screen, cleanup, waitFor } = await import("@testing-library/react");
-const { TerminalWidget, ApprovalWidget, PatchWidget, ReadFileWidget, SearchWidget, SubagentWidget, computeToolWidget, formatStatus } = await import("../dist/widgets.mjs");
+const { AskedWidget, TerminalWidget, ApprovalWidget, PatchWidget, ReadFileWidget, SearchWidget, SubagentWidget, computeToolWidget, formatStatus } = await import("../dist/widgets.mjs");
 const { WidgetProvider, WidgetRenderer } = await import("../dist/index.mjs");
 afterEach(cleanup);
 
@@ -118,4 +118,32 @@ test("tool output carries protocol 3 facts through to widget props", () => {
     { stream: "stdout", text: "ok\n" },
     { stream: "stderr", text: "boom\n" },
   ]);
+});
+
+const askInput = { question: "Bypass the hook and push?", choices: ["Bypass the hook and push", "Stop without pushing"], default: "Bypass the hook and push", activity: { verb: "Asking" } };
+test("a settled ask_user call becomes an Asked row with the answer inline", () => {
+  const widget = computeToolWidget({ type: "tool", toolCallId: "a1", toolName: "ask_user", state: "output-available", input: askInput, output: { output: "Bypass the hook and push", durationMs: 9100 } });
+  assert.equal(widget.name, "asked");
+  assert.equal(widget.props.answer, "Bypass the hook and push");
+  assert.equal(widget.interactive, false);
+  const html = renderToStaticMarkup(createElement(WidgetProvider, {}, createElement(WidgetRenderer, { part: widget })));
+  assert.match(html, /Asked/);
+  assert.match(html, /Bypass the hook and push\?/);
+  assert.match(html, /→ /);
+  assert.doesNotMatch(html, /Stop without pushing/);
+  assert.doesNotMatch(html, /activity|"question"|Input|Output/);
+});
+test("a plain string result is the answer too", () => {
+  const widget = computeToolWidget({ type: "tool", toolCallId: "a1", toolName: "ask_user", state: "output-available", input: askInput, output: "Stop without pushing" });
+  assert.equal(widget.props.answer, "Stop without pushing");
+});
+test("an open ask_user call lists its choices and no answer", () => {
+  const widget = computeToolWidget({ type: "tool", toolCallId: "a2", toolName: "ask_user", state: "input-available", input: askInput });
+  const html = renderToStaticMarkup(createElement(AskedWidget, widget.props));
+  assert.match(html, /Asking/);
+  assert.match(html, /Stop without pushing/);
+  assert.doesNotMatch(html, /→/);
+});
+test("ask_user without a question keeps the raw tool view", () => {
+  assert.equal(computeToolWidget({ type: "tool", toolCallId: "a3", toolName: "ask_user", state: "output-available", input: {}, output: "x" }), null);
 });

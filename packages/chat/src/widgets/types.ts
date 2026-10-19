@@ -90,6 +90,15 @@ export type QuestionOption = {
   recommended?: boolean;
 };
 export type QuestionAnswer = { values: string[]; text?: string };
+/** A settled or open `ask_user` call. Choices render only while it is open. */
+export type AskedWidgetProps = {
+  question: string;
+  answer?: string;
+  choices?: string[];
+  state?: WidgetState;
+  error?: string;
+  className?: string;
+};
 export type QuestionWidgetProps = {
   prompt: string;
   description?: string;

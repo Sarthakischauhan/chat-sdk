@@ -157,6 +157,7 @@ test("question presents native input semantics and disables without handler", ()
     "approval",
     "artifact",
     "artifacts",
+    "asked",
     "patch",
     "question",
     "read-file",
