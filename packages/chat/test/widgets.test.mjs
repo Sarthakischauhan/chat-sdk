@@ -22,7 +22,7 @@ const tool = (toolName, input, output, state = "output-available") => ({
 });
 test("known tools merge input context with outputs and preserve error state", () => {
   const read = computeToolWidget(
-    tool("read_file", { path: "src/a.ts", startLine: 9 }, "hello"),
+    tool("read_file", { path: "src/a.ts", startLine: 9 }, { content: "hello" }),
   );
   assert.equal(read.props.path, "src/a.ts");
   assert.equal(read.props.content, "hello");
@@ -39,6 +39,16 @@ test("known tools merge input context with outputs and preserve error state", ()
     null,
   );
   assert.equal(computeToolWidget(tool("unknown", {}, {})), null);
+});
+test("read-file content comes only from output.content", () => {
+  // A plain string or `text` is not the read-file contract; with no content
+  // a finished read keeps the raw tool view.
+  assert.equal(computeToolWidget(tool("read_file", { path: "a" }, "hello")), null);
+  assert.equal(computeToolWidget(tool("read_file", { path: "a" }, { text: "hello" })), null);
+  assert.equal(
+    computeToolWidget(tool("read_file", { path: "a" }, { content: "hello", text: "other" })).props.content,
+    "hello",
+  );
 });
 test("search normalizes file and web results, skips malformed entries", () => {
   const result = computeToolWidget(

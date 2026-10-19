@@ -79,7 +79,7 @@ Known tool parts are also mapped automatically:
 
 | View | Tool names | Recognized payload |
 | --- | --- | --- |
-| Read file | `read`, `read_file`, `readFile`, `read-file` | Input `path`/`file`/`filename`/`file_path`; output string or `content`/`text`; optional `startLine`/`start_line`/`offset` |
+| Read file | `read`, `read_file`, `readFile`, `read-file` | Input `path`/`file`/`filename`/`file_path`; output `content`; optional `startLine`/`start_line`/`offset` |
 | Patch | `patch`, `apply_patch`, `edit`, `edit_file` | Unified/apply-patch text in `diff`/`patch`, or `before`/`after`, `old_string`/`new_string`, `oldText`/`newText` |
 | Search | `search`, `grep`, `file_search`, `web_search` | `query`/`pattern`/`search`; output array or `results`/`matches`; result path/file/url, optional line, text/snippet/content, title |
 | Question | `question`, `ask_question` | Input `prompt`/`question`, `options`, optional `description`, `multiple`, `allowCustom` |

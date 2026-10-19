@@ -136,7 +136,8 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
     props = {
       ...common,
       path,
-      content: string(output.content, output.text, part.output),
+      // The host passes the file text as `content`; nothing else is read.
+      content: string(output.content),
       startLine: number(values.startLine, values.start_line, values.offset),
       language: string(values.language),
     };
