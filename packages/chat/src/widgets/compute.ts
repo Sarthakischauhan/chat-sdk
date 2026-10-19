@@ -33,6 +33,8 @@ const runFacts = (output: Record<string, unknown>) => {
           matches: intOrNull(summary.matches),
           added: intOrNull(summary.added),
           removed: intOrNull(summary.removed),
+          // Newer harnesses add start_line; older summaries keep the four counts.
+          ...(summary.start_line === undefined ? {} : { startLine: intOrNull(summary.start_line) }),
         }
       : undefined,
     startedAt: string(output.startedAt),
@@ -131,6 +133,8 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
   } else if (name === "patch") {
     const before = string(values.before, values.old_string, values.oldText);
     const after = string(values.after, values.new_string, values.newText);
+    // Where the edit sits in the file: an explicit prop, else the harness summary.
+    const startLine = number(values.startLine, values.start_line, common.summary?.startLine);
     const diff =
       string(
         output.diff,
@@ -145,6 +149,7 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
             before,
             after,
             string(values.path, values.file_path, "file"),
+            startLine,
           )
         : undefined);
     if (
@@ -156,6 +161,7 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
       ...common,
       path: string(values.path, values.file, values.file_path),
       diff,
+      ...(startLine === undefined ? {} : { startLine }),
     };
   } else if (name === "search") {
     const query = string(values.query, values.pattern, values.search);
@@ -296,11 +302,16 @@ export function safeResultUrl(url?: string): string | undefined {
   }
 }
 
-/** Compute a unified replacement hunk with three context lines. Common edges stay out of the diff. */
+/**
+ * Compute a unified replacement hunk with three context lines. Common edges stay out of the diff.
+ * `startLine` is the file line of the first `before` line (a patch's match), so hunk headers and
+ * the gutter use file line numbers rather than snippet-relative ones.
+ */
 export function computeTextDiff(
   before: string,
   after: string,
   path = "file",
+  startLine = 1,
 ): string {
   if (before === after) return "";
   const split = (text: string) =>
@@ -337,6 +348,7 @@ export function computeTextDiff(
   const oldCount = oldEnd + tail - start,
     newCount = newEnd + tail - start;
   const label = path.replace(/[\r\n]/g, "");
+  const offset = Number.isInteger(startLine) && startLine > 1 ? startLine - 1 : 0;
   const body = [
     ...oldLines.slice(start, prefix).map((line) => " " + line),
     ...oldLines
@@ -360,7 +372,8 @@ export function computeTextDiff(
   return [
     `--- a/${label}`,
     `+++ b/${label}`,
-    `@@ -${oldCount ? start + 1 : start},${oldCount} +${newCount ? start + 1 : start},${newCount} @@`,
+    // A zero-length side names the line before the change, per unified diff.
+    `@@ -${(oldCount ? start + 1 : start) + offset},${oldCount} +${(newCount ? start + 1 : start) + offset},${newCount} @@`,
     ...body,
   ].join("\n");
 }

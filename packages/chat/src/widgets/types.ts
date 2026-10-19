@@ -6,6 +6,8 @@ export type ToolSummary = {
   matches?: number | null;
   added?: number | null;
   removed?: number | null;
+  /** 1-based file line where a patch's old_str matched (`summary.start_line`). */
+  startLine?: number | null;
 };
 /** Timing and exit metadata from tool_execution_started/completed. All optional for old sessions. */
 export type ToolRunInfo = {
@@ -68,6 +70,8 @@ export type PatchWidgetProps = ToolWidgetProps & {
   diff?: string;
   before?: string;
   after?: string;
+  /** File line of the first `before` line, so a before/after diff shows file line numbers. Default 1. */
+  startLine?: number;
   maxLines?: number;
 };
 export type SearchResult = {

@@ -166,3 +166,58 @@ test("question presents native input semantics and disables without handler", ()
     "terminal",
   ]);
 });
+
+// Patch line numbers: a before/after edit is numbered from where it sits in the file.
+const gutter = (diff) =>
+  computeDiff(diff).lines.filter((line) => line.kind !== "header").map((line) => [line.kind, line.oldLine, line.newLine]);
+test("text diffs use file line numbers from startLine (summary.start_line)", () => {
+  const diff = computeTextDiff("a\nb\nc\n", "a\nB\nc\n", "f.py", 42);
+  assert.match(diff, /@@ -42,3 \+42,3 @@/);
+  assert.deepEqual(gutter(diff), [
+    ["context", 42, 42],
+    ["remove", 43, undefined],
+    ["add", undefined, 43],
+    ["context", 44, 44],
+  ]);
+  // Default and invalid starts keep the snippet-relative numbering.
+  assert.match(computeTextDiff("a\n", "b\n"), /@@ -1,1 \+1,1 @@/);
+  assert.match(computeTextDiff("a\n", "b\n", "f", 0), /@@ -1,1 \+1,1 @@/);
+});
+test("insert at top and delete at end headers", () => {
+  // Insert above the first line of the file.
+  const top = computeTextDiff("first\n", "new\nfirst\n", "f", 1);
+  assert.match(top, /@@ -1,1 \+1,2 @@/);
+  assert.deepEqual(gutter(top), [
+    ["add", undefined, 1],
+    ["context", 1, 2],
+  ]);
+  // Delete the last two lines of a 20-line file (match at line 19).
+  const end = computeTextDiff("y\nz\n", "", "f", 19);
+  assert.match(end, /@@ -19,2 \+18,0 @@/);
+  assert.deepEqual(gutter(end).map((row) => row[1]), [19, 20]);
+});
+test("multi-hunk diffs number each hunk from its own header", () => {
+  const diff = "@@ -10,2 +10,2 @@\n a\n-b\n+B\n@@ -40,2 +40,3 @@\n c\n+new\n d\n";
+  assert.deepEqual(gutter(diff), [
+    ["context", 10, 10],
+    ["remove", 11, undefined],
+    ["add", undefined, 11],
+    ["context", 40, 40],
+    ["add", undefined, 41],
+    ["context", 41, 42],
+  ]);
+});
+test("patch widgets take the start line from the protocol summary", () => {
+  const part = tool(
+    "patch",
+    { path: "f.py", before: "x = 1\n", after: "x = 2\n" },
+    { output: "patched f.py at line 120 (1 replacement(s), +0 bytes)", summary: { added: 1, removed: 1, start_line: 120 } },
+  );
+  const widget = computeToolWidget(part);
+  assert.equal(widget.props.startLine, 120);
+  assert.equal(widget.props.summary.startLine, 120);
+  assert.match(widget.props.diff, /@@ -120,1 \+120,1 @@/);
+  const html = renderToStaticMarkup(createElement(prebuiltWidgets.patch.component, widget.props));
+  assert.match(html, />120</);
+  assert.doesNotMatch(html, /chat-line-number"[^>]*>1</);
+});
