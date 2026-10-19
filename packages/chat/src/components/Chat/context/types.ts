@@ -16,6 +16,8 @@ export type RegistryModel = {
   id: string;
   label: string;
   description?: string;
+  /** Context window in tokens (Symphony: model/list `context_limit`). Omit when unknown. */
+  contextWindow?: number;
   thinkingLevels?: string[];
 };
 
@@ -48,6 +50,13 @@ const isRegistryModel = (value: unknown): value is RegistryModel => {
   }
 
   if (value.description !== undefined && typeof value.description !== "string") {
+    return false;
+  }
+
+  if (
+    value.contextWindow !== undefined &&
+    (typeof value.contextWindow !== "number" || !Number.isFinite(value.contextWindow) || value.contextWindow <= 0)
+  ) {
     return false;
   }
 
