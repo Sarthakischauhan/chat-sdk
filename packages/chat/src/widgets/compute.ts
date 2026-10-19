@@ -13,6 +13,34 @@ const number = (...values: unknown[]) =>
     (value): value is number =>
       typeof value === "number" && Number.isFinite(value),
   );
+const intOrNull = (value: unknown) =>
+  value === null ? null : number(value);
+/** Protocol 3 facts a host attaches to the tool output. Missing keys stay unset. */
+const runFacts = (output: Record<string, unknown>) => {
+  const summary = record(output.summary);
+  const chunks = Array.isArray(output.chunks)
+    ? output.chunks.flatMap((item) => {
+        const chunk = record(item);
+        return typeof chunk.text === "string"
+          ? [{ stream: chunk.stream === "stderr" ? "stderr" : "stdout", text: chunk.text }]
+          : [];
+      })
+    : undefined;
+  return {
+    summary: Object.keys(summary).length
+      ? {
+          lines: intOrNull(summary.lines),
+          matches: intOrNull(summary.matches),
+          added: intOrNull(summary.added),
+          removed: intOrNull(summary.removed),
+        }
+      : undefined,
+    startedAt: string(output.startedAt),
+    durationMs: intOrNull(output.durationMs),
+    exitCode: intOrNull(output.exitCode),
+    ...(chunks ? { chunks } : {}),
+  };
+};
 const aliases: Record<string, string> = {
   read: "read-file",
   read_file: "read-file",
@@ -76,7 +104,11 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
   const input = record(part.input),
     output = record(part.output);
   const values = { ...input, ...output };
-  const common = { state: computeToolState(part), error: part.errorText };
+  const common = {
+    state: computeToolState(part),
+    error: part.errorText,
+    ...runFacts(output),
+  };
   let props: Record<string, unknown>;
   if (name === "read-file") {
     const path = string(
@@ -104,8 +136,8 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
         output.patch,
         input.diff,
         input.patch,
-        part.input,
-        part.output,
+        typeof part.input === "string" ? part.input : undefined,
+        typeof part.output === "string" ? part.output : undefined,
       ) ??
       (before !== undefined && after !== undefined
         ? computeTextDiff(
@@ -145,7 +177,11 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
     props = {
       ...common,
       command,
-      output: string(output.output, output.stdout, part.output),
+      output: string(
+        output.output,
+        output.stdout,
+        typeof part.output === "string" ? part.output : undefined,
+      ),
     };
   } else {
     if (

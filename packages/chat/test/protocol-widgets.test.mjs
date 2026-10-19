@@ -91,3 +91,31 @@ test("bash tool parts fall back to the terminal widget", () => {
   assert.equal(widget.props.output, "a");
   assert.equal(widget.props.exitCode, undefined);
 });
+
+test("tool output carries protocol 3 facts through to widget props", () => {
+  const summary = { lines: null, matches: null, added: 7, removed: null };
+  const patch = computeToolWidget({
+    type: "tool", toolName: "patch", toolCallId: "p1", state: "output-available",
+    input: { path: "a.ts", before: "a", after: "b" },
+    output: { message: "patched", summary, durationMs: 12, startedAt: "2026-10-18T10:00:00Z" },
+  });
+  assert.equal(patch.name, "patch");
+  assert.equal(patch.props.durationMs, 12);
+  assert.equal(patch.props.startedAt, "2026-10-18T10:00:00Z");
+  assert.deepEqual(patch.props.summary, summary);
+  assert.equal(patch.props.exitCode, undefined);
+  const terminal = computeToolWidget({
+    type: "tool", toolName: "bash", toolCallId: "b2", state: "output-error", errorText: "boom",
+    input: { command: "npm test" },
+    output: {
+      output: "boom", exitCode: 1, durationMs: 1400,
+      chunks: [{ stream: "stdout", text: "ok\n" }, { stream: "stderr", text: "boom\n" }, { text: 1 }],
+    },
+  });
+  assert.equal(terminal.props.exitCode, 1);
+  assert.equal(terminal.props.output, "boom");
+  assert.deepEqual(terminal.props.chunks, [
+    { stream: "stdout", text: "ok\n" },
+    { stream: "stderr", text: "boom\n" },
+  ]);
+});
