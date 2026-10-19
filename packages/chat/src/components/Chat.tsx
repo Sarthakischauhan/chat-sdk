@@ -34,7 +34,12 @@ type ChatProps = {
   showModelSelector?: boolean;
   collapsedVariant?: ComposerCollapsedVariant;
   defaultExpanded?: boolean;
+  placeholder?: string;
+  inputLabel?: string;
+  showAttachments?: boolean;
 };
+
+type ComposerOptions = Pick<ChatProps, "placeholder" | "inputLabel" | "showAttachments">;
 
 function ChatShell({
   className,
@@ -44,7 +49,9 @@ function ChatShell({
   showModelSelector = true,
   collapsedVariant = "pill",
   defaultExpanded = false,
+  composer,
 }: {
+  composer?: ComposerOptions;
   className?: string;
   style?: CSSProperties;
   widgets?: ChatWidgetInput;
@@ -140,6 +147,7 @@ function ChatShell({
             showModelSelector={showModelSelector}
             collapsedVariant={collapsedVariant}
             defaultExpanded={defaultExpanded}
+            {...composer}
           />
         </div>
       </div>
@@ -162,6 +170,9 @@ export function Chat({
   showModelSelector = true,
   collapsedVariant = "pill",
   defaultExpanded = false,
+  placeholder,
+  inputLabel,
+  showAttachments,
 }: ChatProps) {
   return (
     <ThemeProvider
@@ -183,6 +194,7 @@ export function Chat({
           showModelSelector={showModelSelector}
           collapsedVariant={collapsedVariant}
           defaultExpanded={defaultExpanded}
+          composer={{ placeholder, inputLabel, showAttachments }}
         />
       </ChatContextProvider>
     </ThemeProvider>

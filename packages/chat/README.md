@@ -39,6 +39,18 @@ import "@sarchauhan/chat/styles.css";
 <Chat adapter={adapter} />;
 ```
 
+## Composer and theming
+
+`Chat` and `ChatComposer` accept `placeholder`, `inputLabel` (the input's accessible name; defaults to the placeholder), and `showAttachments` (default `true`; set `false` for text-only backends). `ChatComposer` can be mounted on its own inside `ChatContextProvider` when the host renders the transcript itself.
+
+```tsx
+<ChatContextProvider adapter={adapter} defaultThreadId={threadId}>
+  <ChatComposer placeholder="Describe a task…" inputLabel="Task" showAttachments={false} />
+</ChatContextProvider>
+```
+
+All chrome reads `--chat-*` tokens from `.chat-root`, including widget font weights (`--chat-weight-medium`, `--chat-weight-semibold`) and the send button (`--chat-primary`, `--chat-primary-fg`). Override them on `.chat-root[data-theme="…"]` to restyle the package without overriding selectors.
+
 ## Prebuilt components
 
 ```tsx

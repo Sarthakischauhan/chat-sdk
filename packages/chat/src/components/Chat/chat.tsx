@@ -25,8 +25,17 @@ export const ChatComposer = ({
   showModelSelector = true,
   collapsedVariant = "pill",
   defaultExpanded = false,
+  placeholder,
+  inputLabel,
+  showAttachments = true,
 }: {
   showModelSelector?: boolean;
+  /** Placeholder for the message input. */
+  placeholder?: string;
+  /** Accessible name for the message input. Defaults to the placeholder. */
+  inputLabel?: string;
+  /** Hide the attach button and attachment list for text-only backends. */
+  showAttachments?: boolean;
   /** Resting shape when the composer is empty and blurred. Default is the wide pill. */
   collapsedVariant?: ComposerCollapsedVariant;
   /** Open on the large composer. Used so a story can show the model picker without a click. */
@@ -92,12 +101,12 @@ export const ChatComposer = ({
       {expanded || collapsedVariant !== "circle" ? null : (
         <MessageCircle className="chat-composer-collapsed-icon" size={18} aria-hidden="true" />
       )}
-      <ChatAttachments />
+      {showAttachments ? <ChatAttachments /> : null}
       <ChatReferences />
-      <ChatInput expanded={expanded} />
+      <ChatInput expanded={expanded} placeholder={placeholder} label={inputLabel} />
       <div className="chat-composer-row">
         <div className="chat-composer-tools">
-          <ChatAttachButton />
+          {showAttachments ? <ChatAttachButton /> : null}
           {showModelSelector && expanded && collapsedVariant === "circle" ? <ChatSelect /> : null}
         </div>
         <ChatSend />
