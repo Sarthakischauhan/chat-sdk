@@ -1,4 +1,5 @@
 export { Chat } from "./components/Chat";
+export { useStickToBottom, type StickToBottom, type StickToBottomOptions } from "./lib/use-stick-to-bottom";
 export { ChatComposer, type ComposerCollapsedVariant } from "./components/Chat/chat";
 export {
   ChatContextProvider,

@@ -155,6 +155,7 @@
 
 .agent-tool-state {
   margin-left: auto;
+  font-variant-numeric: tabular-nums;
   color: var(--chat-fg-muted);
   font-size: var(--chat-text-sm);
   font-weight: var(--chat-weight-medium);

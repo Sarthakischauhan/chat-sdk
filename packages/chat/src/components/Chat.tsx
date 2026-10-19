@@ -9,6 +9,7 @@ import { ThemeToggle } from "../theme/theme.toggle";
 import { ChatComposer, type ComposerCollapsedVariant } from "./Chat/chat";
 import { ChatContextProvider, useMessages } from "./Chat/chat.context";
 import { useThread } from "./Chat/context";
+import { useStickToBottom } from "../lib/use-stick-to-bottom";
 import { Message } from "./Message/message";
 import {
   createWidgetRegistry,
@@ -60,42 +61,18 @@ function ChatShell({
   collapsedVariant?: ComposerCollapsedVariant;
   defaultExpanded?: boolean;
 }) {
-  const { sendMessage, isSending, messages, status } = useMessages();
+  const { sendMessage, isSending, status } = useMessages();
   const { createThread } = useThread();
   const { resolvedTheme } = useTheme();
   const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
   const messagesRef = useRef<HTMLDivElement>(null);
 
+  const { scrollToBottom } = useStickToBottom(messagesRef);
+
+  // Sending a message always jumps to the latest turn; streaming follows only while near the bottom.
   useLayoutEffect(() => {
-    const container = messagesRef.current;
-    if (!container) {
-      return;
-    }
-
-    container.scrollTop = container.scrollHeight;
-  }, [messages, status]);
-
-  useLayoutEffect(() => {
-    const container = messagesRef.current;
-    if (!container || (status !== "submitted" && status !== "streaming")) {
-      return;
-    }
-
-    const scrollToEnd = () => {
-      container.scrollTop = container.scrollHeight;
-    };
-
-    const observer = new ResizeObserver(scrollToEnd);
-    observer.observe(container);
-    const inner = container.firstElementChild;
-    if (inner) {
-      observer.observe(inner);
-    }
-
-    scrollToEnd();
-
-    return () => observer.disconnect();
-  }, [status]);
+    if (status === "submitted") scrollToBottom();
+  }, [status, scrollToBottom]);
 
   const respondToWidget = useCallback(
     async (response: WidgetResponse) => {

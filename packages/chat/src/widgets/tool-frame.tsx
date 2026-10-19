@@ -1,6 +1,8 @@
 "use client";
+import { useRef } from "react";
 import type { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
+import { useAutoDisclosure } from "./disclosure";
 import { formatDuration, formatStatus, useElapsed } from "./format";
 import type { ToolWidgetProps } from "./types";
 
@@ -28,7 +30,7 @@ export function ToolFrame({
   activeLabel?: string;
   title: string;
   meta?: ReactNode;
-  /** Open the body when complete. Running, failed and approval rows always start open. */
+  /** Start open when the row mounts already complete (e.g. history). Live rows still close when they finish. */
   defaultOpen?: boolean;
   /** Render children below the error (e.g. terminal output of a failed command). */
   showBodyOnError?: boolean;
@@ -38,13 +40,22 @@ export function ToolFrame({
   const elapsed = useElapsed(startedAt, state === "running");
   const status = formatStatus(state, { exitCode }, elapsed);
   const duration = state !== "running" && typeof durationMs === "number" ? formatDuration(durationMs) : undefined;
+  // Open while running/failed/awaiting approval; closes itself when it completes unless the user toggled it.
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const { defaultOpen: startOpen, onToggle, onSummaryClick } = useAutoDisclosure(
+    detailsRef,
+    state !== "complete",
+    state !== "complete" || defaultOpen === true,
+  );
   return (
     <details
+      ref={detailsRef}
       className={`chat-prebuilt chat-tool-widget ${className}`}
       data-state={state}
-      open={state !== "complete" || defaultOpen === true}
+      open={startOpen}
+      onToggle={onToggle}
     >
-      <summary>
+      <summary onClick={onSummaryClick}>
         {state === "approval" ? (
           <>
             <span className="chat-tool-widget-allow">Allow</span>
