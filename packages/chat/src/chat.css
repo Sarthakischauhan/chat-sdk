@@ -672,6 +672,7 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
 
 .chat-message-user-inner {
   display: flex;
+  min-width: 0;
   max-width: min(85%, 36rem);
   flex-direction: column;
   align-items: flex-end;
@@ -683,11 +684,31 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
 }
 
 .chat-message-bubble {
+  box-sizing: border-box;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   border-radius: var(--chat-radius-lg);
   background: var(--chat-user-bg);
   color: var(--chat-user-fg);
   padding: var(--chat-space-2_5) var(--chat-space-4);
+  /* Pasted logs carry long paths, test ids and ===== rules with no spaces. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Code keeps its lines and scrolls sideways inside the bubble instead of wrapping. */
+.chat-message-bubble pre,
+.chat-message-bubble .code-markdown {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.chat-message-bubble pre,
+.chat-message-bubble .code-markdown .cm-line,
+.chat-message-bubble .code-markdown .cm-line-content {
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .chat-message-user-inner.is-editing .chat-message-bubble {
