@@ -36,7 +36,13 @@ export const ThinkingBlock = ({ isComplete, elapsedMs, children }: ThinkingBlock
         <Sparkles className="md-thinking-sparkle" aria-hidden="true" />
         <TextSwap
           className="md-thinking-label"
-          text={isComplete ? `Thought for ${formatElapsedWords(elapsed)}` : "Thinking"}
+          text={
+            !isComplete
+              ? "Thinking"
+              : elapsed >= 1000
+                ? `Thought for ${formatElapsedWords(elapsed)}`
+                : "Thought"
+          }
         />
         {isComplete && <ChevronDown className="md-thinking-chevron" aria-hidden="true" />}
       </summary>
