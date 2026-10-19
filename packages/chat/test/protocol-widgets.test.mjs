@@ -70,18 +70,10 @@ test("registered approval responds through the widget answer path", async () => 
   assert.equal(responses[0].label, "Deny");
 });
 
-test("subagent renders nested steps under the Delegated row", () => {
-  const html = renderToStaticMarkup(createElement(SubagentWidget, {
-    subagent: { id: "c1", title: "Audit", state: "running" },
-    steps: [
-      { id: "s1", label: "Read", target: "tests/test_session.py", state: "complete" },
-      { id: "s2", label: "Running", target: "pytest -k reconnect", state: "running" },
-    ],
-  }));
+test("subagent widgets take no steps prop", () => {
+  const html = renderToStaticMarkup(createElement(SubagentWidget, { subagent: { id: "c1", title: "Audit", state: "running" } }));
   assert.match(html, /Delegated/);
-  assert.match(html, /chat-subagent-steps/);
-  assert.match(html, /tests\/test_session\.py/);
-  assert.match(html, /data-state="running"/);
+  assert.doesNotMatch(html, /chat-subagent-steps/);
 });
 
 test("bash tool parts fall back to the terminal widget", () => {
@@ -90,6 +82,17 @@ test("bash tool parts fall back to the terminal widget", () => {
   assert.equal(widget.props.command, "ls");
   assert.equal(widget.props.output, "a");
   assert.equal(widget.props.exitCode, undefined);
+});
+test("terminal reads only bash, input.command and output.output", () => {
+  const part = (toolName, input, output) =>
+    computeToolWidget({ type: "tool", toolName, toolCallId: "b9", state: "output-available", input, output });
+  // Other harnesses' tool names are not guessed at.
+  assert.equal(part("shell", { command: "ls" }, "a"), null);
+  assert.equal(part("run_command", { command: "ls" }, "a"), null);
+  // Nor are other argument or output names.
+  assert.equal(part("bash", { cmd: "ls" }, "a"), null);
+  assert.equal(part("bash", "ls", "a"), null);
+  assert.equal(part("bash", { command: "ls" }, { stdout: "a" }).props.output, undefined);
 });
 
 test("tool output carries protocol 3 facts through to widget props", () => {
@@ -122,7 +125,7 @@ test("tool output carries protocol 3 facts through to widget props", () => {
 
 const askInput = { question: "Bypass the hook and push?", choices: ["Bypass the hook and push", "Stop without pushing"], default: "Bypass the hook and push", activity: { verb: "Asking" } };
 test("a settled ask_user call becomes an Asked row with the answer inline", () => {
-  const widget = computeToolWidget({ type: "tool", toolCallId: "a1", toolName: "ask_user", state: "output-available", input: askInput, output: { output: "Bypass the hook and push", durationMs: 9100 } });
+  const widget = computeToolWidget({ type: "tool", toolCallId: "a1", toolName: "ask_user", state: "output-available", input: askInput, output: { answer: "Bypass the hook and push", durationMs: 9100 } });
   assert.equal(widget.name, "asked");
   assert.equal(widget.props.answer, "Bypass the hook and push");
   assert.equal(widget.interactive, false);
@@ -133,13 +136,13 @@ test("a settled ask_user call becomes an Asked row with the answer inline", () =
   assert.doesNotMatch(html, /Stop without pushing/);
   assert.doesNotMatch(html, /activity|"question"|Input|Output/);
 });
-test("ask_user reads only input.question and output.output", () => {
+test("ask_user reads only input.question and the host's explicit output.answer", () => {
   const settled = (input, output) =>
     computeToolWidget({ type: "tool", toolCallId: "a1", toolName: "ask_user", state: "output-available", input, output });
-  assert.deepEqual(parseAskUser({ question: "Push?", choices: ["Yes", 3] }, { output: "Yes" }), { question: "Push?", choices: ["Yes"], answer: "Yes" });
+  assert.deepEqual(parseAskUser({ question: "Push?", choices: ["Yes", 3] }, { answer: "Yes" }), { question: "Push?", choices: ["Yes"], answer: "Yes" });
   // Other field names are not guessed at.
-  assert.equal(settled({ prompt: "Push?" }, { output: "Yes" }), null);
-  for (const output of [{ answer: "Yes" }, { result: "Yes" }, "Yes"]) {
+  assert.equal(settled({ prompt: "Push?" }, { answer: "Yes" }), null);
+  for (const output of [{ output: "Yes" }, { result: "Yes" }, "Yes"]) {
     const widget = settled(askInput, output);
     assert.equal(widget.name, "asked");
     assert.equal(widget.props.answer, undefined);

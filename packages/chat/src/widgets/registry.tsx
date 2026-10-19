@@ -16,7 +16,6 @@ import { TerminalWidget } from "./terminal";
 import { ApprovalWidget } from "./approval";
 import type {
   QuestionOption,
-  SubagentStep,
   TerminalChunk,
   ToolSummary,
   ToolWidgetProps,
@@ -36,6 +35,7 @@ const summaryOf = (value: unknown): ToolSummary | undefined =>
         matches: intOrNull(value.matches),
         added: intOrNull(value.added),
         removed: intOrNull(value.removed),
+        ...(value.startLine === undefined ? {} : { startLine: intOrNull(value.startLine) }),
       }
     : undefined;
 const chunksOf = (value: unknown): TerminalChunk[] =>
@@ -43,27 +43,6 @@ const chunksOf = (value: unknown): TerminalChunk[] =>
     ? value.flatMap((item) =>
         isRecord(item) && typeof item.text === "string"
           ? [{ stream: item.stream === "stderr" ? "stderr" as const : "stdout" as const, text: item.text }]
-          : [],
-      )
-    : [];
-const stepsOf = (value: unknown): SubagentStep[] =>
-  Array.isArray(value)
-    ? value.flatMap((item) =>
-        isRecord(item) && typeof item.id === "string" && typeof item.label === "string"
-          ? [
-              {
-                id: item.id,
-                label: item.label,
-                target: typeof item.target === "string" ? item.target : undefined,
-                meta: typeof item.meta === "string" ? item.meta : undefined,
-                state:
-                  item.state === "running" || item.state === "error"
-                    ? item.state
-                    : ("complete" as const),
-                startedAt: typeof item.startedAt === "string" ? item.startedAt : undefined,
-                durationMs: intOrNull(item.durationMs),
-              },
-            ]
           : [],
       )
     : [];
@@ -100,6 +79,7 @@ function Patch(props: WidgetComponentProps) {
       diff={typeof props.diff === "string" ? props.diff : undefined}
       before={typeof props.before === "string" ? props.before : undefined}
       after={typeof props.after === "string" ? props.after : undefined}
+      startLine={num(props.startLine)}
     />
   );
 }
@@ -211,7 +191,7 @@ function Artifacts(props: WidgetComponentProps) {
 }
 function Subagent(props: WidgetComponentProps) {
   const subagent = parseSubagent(props.subagent ?? props);
-  return subagent ? <SubagentWidget subagent={subagent} steps={stepsOf(props.steps)} /> : <p className="chat-widget-empty">Agent details are unavailable.</p>;
+  return subagent ? <SubagentWidget subagent={subagent} /> : <p className="chat-widget-empty">Agent details are unavailable.</p>;
 }
 /** Defaults are always available; a host registry can override any name. */
 export const prebuiltWidgets: ChatWidgetRegistry = {

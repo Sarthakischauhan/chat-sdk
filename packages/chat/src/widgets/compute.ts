@@ -33,7 +33,7 @@ const runFacts = (output: Record<string, unknown>) => {
           matches: intOrNull(summary.matches),
           added: intOrNull(summary.added),
           removed: intOrNull(summary.removed),
-          // Newer harnesses add start_line; older summaries keep the four counts.
+          // Patch summaries add start_line; other tools' summaries carry only the counts.
           ...(summary.start_line === undefined ? {} : { startLine: intOrNull(summary.start_line) }),
         }
       : undefined,
@@ -43,7 +43,10 @@ const runFacts = (output: Record<string, unknown>) => {
     ...(chunks ? { chunks } : {}),
   };
 };
-/** Symphony's ask_user call: `input.question` (+ `choices`) and the answer in `output.output`. */
+/**
+ * An ask_user call: `input.question` (+ `choices`) from the call's arguments, and the
+ * answer the host passes explicitly as `output.answer`.
+ */
 export type AskUserCall = { question: string; choices: string[]; answer?: string };
 export function parseAskUser(input: unknown, output: unknown): AskUserCall | null {
   const args = record(input);
@@ -51,7 +54,7 @@ export function parseAskUser(input: unknown, output: unknown): AskUserCall | nul
   const choices = Array.isArray(args.choices)
     ? args.choices.filter((choice): choice is string => typeof choice === "string")
     : [];
-  const answer = record(output).output;
+  const answer = record(output).answer;
   return { question: args.question, choices, ...(typeof answer === "string" ? { answer } : {}) };
 }
 const aliases: Record<string, string> = {
@@ -71,8 +74,6 @@ const aliases: Record<string, string> = {
   ask_question: "question",
   ask_user: "asked",
   bash: "terminal",
-  shell: "terminal",
-  run_command: "terminal",
 };
 export function computeToolState(part: AgentToolPart): WidgetState {
   if (part.state === "output-error") return "error";
@@ -144,8 +145,8 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
   } else if (name === "patch") {
     const before = string(values.before, values.old_string, values.oldText);
     const after = string(values.after, values.new_string, values.newText);
-    // Where the edit sits in the file: an explicit prop, else the harness summary.
-    const startLine = number(values.startLine, values.start_line, common.summary?.startLine);
+    // Where the edit sits in the file, from the harness summary (`summary.start_line`).
+    const startLine = number(common.summary?.startLine);
     const diff =
       string(
         output.diff,
@@ -190,14 +191,13 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
       total: number(output.total, output.totalCount),
     };
   } else if (name === "terminal") {
-    const command = string(input.command, input.cmd, part.input);
+    const command = string(input.command);
     if (command === undefined) return null;
     props = {
       ...common,
       command,
       output: string(
         output.output,
-        output.stdout,
         typeof part.output === "string" ? part.output : undefined,
       ),
     };

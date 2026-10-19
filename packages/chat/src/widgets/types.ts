@@ -47,17 +47,6 @@ export type ApprovalWidgetProps = {
   onAnswer?: (choice: string) => void | Promise<void>;
   className?: string;
 };
-export type SubagentStepState = "running" | "complete" | "error";
-/** One step of a child agent, linked to its parent call by `parent_call_id`. */
-export type SubagentStep = {
-  id: string;
-  label: string;
-  target?: string;
-  meta?: string;
-  state?: SubagentStepState;
-  startedAt?: string;
-  durationMs?: number | null;
-};
 export type ReadFileWidgetProps = ToolWidgetProps & {
   path: string;
   content?: string;

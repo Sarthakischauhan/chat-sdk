@@ -4,11 +4,9 @@ import {
   PatchWidget,
   ReadFileWidget,
   SearchWidget,
-  SubagentWidget,
   TerminalWidget,
 } from "@sarchauhan/chat";
-import type { SubagentStep, TerminalChunk } from "@sarchauhan/chat";
-import type { AgentSubagent } from "@sarchauhan/protocol";
+import type { TerminalChunk } from "@sarchauhan/chat";
 
 const meta = { title: "Chat/Protocol widgets", parameters: { hideComposer: true } } satisfies Meta;
 export default meta;
@@ -30,12 +28,6 @@ const diff = [
   "+  if (cursor) es.url += `?after=${cursor}`;",
   "   es.onmessage = (e) => apply(e);",
 ].join("\n");
-const agent: AgentSubagent = { id: "child-1", title: "Audit reconnect tests", state: "running" };
-const steps: SubagentStep[] = [
-  { id: "s1", label: "Searched for", target: "reconnect in tests/", meta: "6 matches" },
-  { id: "s2", label: "Read", target: "tests/test_session.py", durationMs: 40 },
-  { id: "s3", label: "Running", target: "pytest -k reconnect", state: "running", startedAt: ago(4_000) },
-];
 
 export const TerminalRunning: Story = {
   render: () => <TerminalWidget command="npm run build" state="running" startedAt={ago(12_000)} chunks={[{ stream: "stdout", text: "vite v6 building for production...\n" }]} />,
@@ -76,15 +68,6 @@ export const Approval: Story = {
 };
 export const ApprovalWithoutMetadata: Story = {
   render: () => <ApprovalWidget question="Run `rm -rf dist`?" choices={["Deny", "Allow once"]} onAnswer={async () => undefined} />,
-};
-export const DelegatedSteps: Story = { render: () => <SubagentWidget subagent={agent} steps={steps} /> };
-export const DelegatedStepsDone: Story = {
-  render: () => (
-    <SubagentWidget
-      subagent={{ ...agent, state: "completed", summary: "3 reconnect tests pass." }}
-      steps={[...steps.slice(0, 2), { id: "s3", label: "Ran", target: "pytest -k reconnect", durationMs: 4_200 }]}
-    />
-  ),
 };
 export const SpecSequence: Story = {
   render: () => (

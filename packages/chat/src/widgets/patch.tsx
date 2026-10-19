@@ -8,19 +8,18 @@ export function PatchWidget({
   diff: rawDiff,
   before,
   after,
-  startLine,
+  startLine = 1,
   maxLines = 100,
   summary,
   ...props
 }: PatchWidgetProps) {
-  const firstLine = startLine ?? summary?.startLine ?? 1;
   const diff = useMemo(
     () =>
       rawDiff ??
       (before !== undefined && after !== undefined
-        ? computeTextDiff(before, after, path, firstLine)
+        ? computeTextDiff(before, after, path, startLine)
         : ""),
-    [rawDiff, before, after, path, firstLine],
+    [rawDiff, before, after, path, startLine],
   );
   const [expanded, setExpanded] = useState(false);
   const { lines, additions: derivedAdded, deletions: derivedRemoved } = useMemo(

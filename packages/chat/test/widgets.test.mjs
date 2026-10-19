@@ -221,3 +221,18 @@ test("patch widgets take the start line from the protocol summary", () => {
   assert.match(html, />120</);
   assert.doesNotMatch(html, /chat-line-number"[^>]*>1</);
 });
+test("the registry Patch forwards startLine and summary.start_line", () => {
+  // No precomputed diff: the widget builds it from before/after and startLine.
+  const html = renderToStaticMarkup(
+    createElement(prebuiltWidgets.patch.component, { before: "x = 1\n", after: "x = 2\n", startLine: 120, summary: { startLine: 120 } }),
+  );
+  assert.match(html, />120</);
+  assert.doesNotMatch(html, /chat-line-number"[^>]*>1</);
+});
+test("patch start lines come only from summary.start_line", () => {
+  const widget = computeToolWidget(
+    tool("patch", { path: "f.py", before: "x = 1\n", after: "x = 2\n", startLine: 7, start_line: 7 }, { start_line: 7, message: "patched" }),
+  );
+  assert.equal(widget.props.startLine, undefined);
+  assert.match(widget.props.diff, /@@ -1,1 \+1,1 @@/);
+});

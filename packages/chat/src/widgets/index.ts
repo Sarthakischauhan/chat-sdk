@@ -34,8 +34,6 @@ export type {
   TerminalChunk,
   TerminalStream,
   ApprovalWidgetProps,
-  SubagentStep,
-  SubagentStepState,
   WidgetState,
 } from "./types";
 
