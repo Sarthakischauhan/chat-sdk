@@ -9,6 +9,7 @@ import { SubagentWidget } from "./subagent";
 import { normalizeSearchResults } from "./compute";
 import { PatchWidget } from "./patch";
 import { QuestionWidget } from "./question";
+import { AskedWidget } from "./asked";
 import { ReadFileWidget } from "./read-file";
 import { SearchWidget } from "./search";
 import { TerminalWidget } from "./terminal";
@@ -155,6 +156,21 @@ function Question(props: WidgetComponentProps) {
     />
   );
 }
+function Asked(props: WidgetComponentProps) {
+  const choices = Array.isArray(props.choices)
+    ? props.choices.filter((choice): choice is string => typeof choice === "string")
+    : [];
+  const { state, error } = common(props);
+  return (
+    <AskedWidget
+      question={str(props.question, "Question")}
+      answer={typeof props.answer === "string" ? props.answer : undefined}
+      choices={choices}
+      state={state}
+      error={error}
+    />
+  );
+}
 function Terminal(props: WidgetComponentProps) {
   return (
     <TerminalWidget
@@ -206,6 +222,7 @@ export const prebuiltWidgets: ChatWidgetRegistry = {
   patch: { name: "patch", component: Patch, shell: false },
   search: { name: "search", component: Search, shell: false },
   question: { name: "question", component: Question, shell: false },
+  asked: { name: "asked", component: Asked, shell: false },
   terminal: { name: "terminal", component: Terminal, shell: false },
   approval: { name: "approval", component: Approval, shell: false },
 };

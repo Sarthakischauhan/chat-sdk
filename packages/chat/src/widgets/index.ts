@@ -2,6 +2,7 @@ export { ReadFileWidget } from "./read-file";
 export { PatchWidget } from "./patch";
 export { SearchWidget } from "./search";
 export { QuestionWidget } from "./question";
+export { AskedWidget } from "./asked";
 export { TerminalWidget } from "./terminal";
 export { ApprovalWidget } from "./approval";
 export { formatDuration, formatStatus, formatSummary } from "./format";
@@ -21,6 +22,7 @@ export type {
   SearchWidgetProps,
   SearchResult,
   QuestionWidgetProps,
+  AskedWidgetProps,
   QuestionOption,
   QuestionAnswer,
   ToolWidgetProps,

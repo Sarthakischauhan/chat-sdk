@@ -56,6 +56,7 @@ const aliases: Record<string, string> = {
   web_search: "search",
   question: "question",
   ask_question: "question",
+  ask_user: "asked",
   bash: "terminal",
   shell: "terminal",
   run_command: "terminal",
@@ -183,6 +184,20 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
         typeof part.output === "string" ? part.output : undefined,
       ),
     };
+  } else if (name === "asked") {
+    // Keyed on the question payload; anything else keeps the raw tool view.
+    const question = string(input.question, input.prompt);
+    if (!question) return null;
+    const answer = string(
+      output.output,
+      output.answer,
+      output.result,
+      typeof part.output === "string" ? part.output : undefined,
+    );
+    const choices = Array.isArray(input.choices)
+      ? input.choices.filter((choice): choice is string => typeof choice === "string")
+      : [];
+    props = { state: common.state, error: part.errorText, question, answer, choices };
   } else {
     if (
       ["output-error", "output-denied", "approval-requested"].includes(
