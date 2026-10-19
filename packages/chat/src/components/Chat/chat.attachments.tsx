@@ -6,6 +6,26 @@ import { useComposer } from "./context";
 
 const isImageMediaType = (mediaType: string) => mediaType.startsWith("image/");
 
+/** Whether a file matches an `<input accept>` list such as "image/*" or ".png,image/jpeg". */
+export const acceptsFile = (file: File, accept?: string) => {
+  if (!accept) {
+    return true;
+  }
+  const type = file.type.toLowerCase();
+  const name = file.name.toLowerCase();
+  return accept
+    .split(",")
+    .map((token) => token.trim().toLowerCase())
+    .filter(Boolean)
+    .some((token) =>
+      token.startsWith(".")
+        ? name.endsWith(token)
+        : token.endsWith("/*")
+          ? type.startsWith(token.slice(0, -1))
+          : type === token,
+    );
+};
+
 export const ChatAttachments = () => {
   const { attachments, removeAttachment } = useComposer();
 
@@ -46,7 +66,7 @@ export const ChatAttachments = () => {
   );
 };
 
-export const ChatAttachButton = () => {
+export const ChatAttachButton = ({ accept }: { accept?: string } = {}) => {
   const { disabled, addFiles } = useComposer();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -65,13 +85,14 @@ export const ChatAttachButton = () => {
         ref={inputRef}
         className="chat-attach-input"
         type="file"
+        accept={accept}
         multiple
         tabIndex={-1}
         aria-hidden="true"
         onChange={(event) => {
           const files = event.currentTarget.files;
           if (files && files.length > 0) {
-            void addFiles(files);
+            void addFiles(Array.from(files).filter((file) => acceptsFile(file, accept)));
           }
           event.currentTarget.value = "";
         }}

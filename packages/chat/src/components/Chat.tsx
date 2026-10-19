@@ -38,9 +38,11 @@ type ChatProps = {
   placeholder?: string;
   inputLabel?: string;
   showAttachments?: boolean;
+  /** File types the composer attaches, e.g. "image/*". Default: any file. */
+  attachmentAccept?: string;
 };
 
-type ComposerOptions = Pick<ChatProps, "placeholder" | "inputLabel" | "showAttachments">;
+type ComposerOptions = Pick<ChatProps, "placeholder" | "inputLabel" | "showAttachments" | "attachmentAccept">;
 
 function ChatShell({
   className,
@@ -154,6 +156,7 @@ export function Chat({
   placeholder,
   inputLabel,
   showAttachments,
+  attachmentAccept,
 }: ChatProps) {
   return (
     <ThemeProvider
@@ -175,7 +178,7 @@ export function Chat({
           showModelSelector={showModelSelector}
           collapsedVariant={collapsedVariant}
           defaultExpanded={defaultExpanded}
-          composer={{ placeholder, inputLabel, showAttachments }}
+          composer={{ placeholder, inputLabel, showAttachments, attachmentAccept }}
         />
       </ChatContextProvider>
     </ThemeProvider>
