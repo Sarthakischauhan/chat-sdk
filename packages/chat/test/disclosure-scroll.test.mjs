@@ -71,9 +71,9 @@ function fakeLayout(element, { clientHeight = 200 } = {}) {
   });
 }
 let box;
-function Scroller({ items }) {
+function Scroller({ items, resetKey }) {
   const ref = useRef(null);
-  useStickToBottom(ref);
+  useStickToBottom(ref, { resetKey });
   return createElement("div", { ref: (node) => { if (node && node !== box) { fakeLayout(node); box = node; } ref.current = node; } },
     ...Array.from({ length: items }, (_, index) => createElement("p", { key: index }, `line ${index}`)));
 }
@@ -103,4 +103,31 @@ test("the browser's mount-time toggle event does not count as a user toggle", as
   element.dispatchEvent(new window.Event("toggle")); // Chrome fires this for an initially open <details>.
   view.rerender(row("complete"));
   await waitFor(() => assert.equal(element.open, false));
+});
+
+test("changing resetKey re-sticks and jumps to the bottom after the user scrolled up", async () => {
+  const view = render(createElement(Scroller, { items: 6, resetKey: "thread-a" }));
+  await act(async () => { box.scrollTop = 0; fireEvent.scroll(box); });
+  // Same key: streaming keeps the view where the user left it.
+  view.rerender(createElement(Scroller, { items: 7, resetKey: "thread-a" }));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(box.scrollTop, 0);
+  // Thread switch: jump to the latest message, and keep following.
+  view.rerender(createElement(Scroller, { items: 10, resetKey: "thread-b" }));
+  assert.equal(box.scrollTop, 1000 - 200);
+  view.rerender(createElement(Scroller, { items: 12, resetKey: "thread-b" }));
+  await waitFor(() => assert.equal(box.scrollTop, 1200 - 200));
+});
+
+test("the initial history load (empty -> non-empty) scrolls to the bottom", async () => {
+  const key = (id, count) => `${id}:${count > 0 ? "loaded" : "empty"}`;
+  const view = render(createElement(Scroller, { items: 6, resetKey: key("t1", 6) }));
+  await act(async () => { box.scrollTop = 0; fireEvent.scroll(box); });
+  // History reloads for the same session: messages clear, then arrive.
+  view.rerender(createElement(Scroller, { items: 0, resetKey: key("t1", 0) }));
+  await act(async () => { box.scrollTop = 0; fireEvent.scroll(box); });
+  await act(async () => { Object.defineProperty(box, "scrollHeight", { configurable: true, get: () => 600 }); box.scrollTop = 0; fireEvent.scroll(box); });
+  Object.defineProperty(box, "scrollHeight", { configurable: true, get: () => box.children.length * 100 });
+  view.rerender(createElement(Scroller, { items: 9, resetKey: key("t1", 9) }));
+  assert.equal(box.scrollTop, 900 - 200);
 });

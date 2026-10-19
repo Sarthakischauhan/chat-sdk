@@ -5,6 +5,12 @@ import type { RefObject } from "react";
 export type StickToBottomOptions = {
   /** Distance from the bottom, in px, that still counts as "at the bottom". Default 48. */
   threshold?: number;
+  /**
+   * Re-stick and jump to the bottom whenever this value changes, even if the user had
+   * scrolled up. Pass the thread/session id; to also cover the initial history load,
+   * fold in whether content exists, e.g. `${threadId}:${messages.length > 0}`.
+   */
+  resetKey?: string | number | null;
 };
 export type StickToBottom = {
   /** True while the user is within `threshold` of the bottom. */
@@ -19,7 +25,7 @@ export type StickToBottom = {
  */
 export function useStickToBottom<T extends HTMLElement>(
   ref: RefObject<T | null>,
-  { threshold = 48 }: StickToBottomOptions = {},
+  { threshold = 48, resetKey }: StickToBottomOptions = {},
 ): StickToBottom {
   const stuck = useRef(true);
 
@@ -29,6 +35,11 @@ export function useStickToBottom<T extends HTMLElement>(
     stuck.current = true;
     element.scrollTop = element.scrollHeight;
   }, [ref]);
+
+  // A new thread/session (or the first history load) always starts at the latest message.
+  useLayoutEffect(() => {
+    scrollToBottom();
+  }, [resetKey, scrollToBottom]);
 
   useLayoutEffect(() => {
     const element = ref.current;

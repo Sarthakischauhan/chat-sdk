@@ -61,13 +61,17 @@ function ChatShell({
   collapsedVariant?: ComposerCollapsedVariant;
   defaultExpanded?: boolean;
 }) {
-  const { sendMessage, isSending, status } = useMessages();
-  const { createThread } = useThread();
+  const { sendMessage, isSending, status, messages } = useMessages();
+  const { createThread, activeThreadId } = useThread();
   const { resolvedTheme } = useTheme();
   const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
   const messagesRef = useRef<HTMLDivElement>(null);
 
-  const { scrollToBottom } = useStickToBottom(messagesRef);
+  // Switching threads or the first history load (empty -> non-empty) re-sticks to the bottom.
+  const hasMessages = messages.length > 0;
+  const { scrollToBottom } = useStickToBottom(messagesRef, {
+    resetKey: `${activeThreadId ?? ""}:${hasMessages ? "loaded" : "empty"}`,
+  });
 
   // Sending a message always jumps to the latest turn; streaming follows only while near the bottom.
   useLayoutEffect(() => {
