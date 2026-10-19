@@ -7,7 +7,7 @@ const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "http:
 for (const key of ["window", "document", "HTMLElement", "Node", "MutationObserver"]) globalThis[key] = dom.window[key];
 Object.defineProperty(globalThis, "navigator", { value: dom.window.navigator, configurable: true });
 const { render, fireEvent, screen, cleanup, waitFor } = await import("@testing-library/react");
-const { AskedWidget, TerminalWidget, ApprovalWidget, PatchWidget, ReadFileWidget, SearchWidget, SubagentWidget, computeToolWidget, formatStatus } = await import("../dist/widgets.mjs");
+const { AskedWidget, TerminalWidget, ApprovalWidget, PatchWidget, ReadFileWidget, SearchWidget, SubagentWidget, computeToolWidget, formatStatus, parseAskUser } = await import("../dist/widgets.mjs");
 const { WidgetProvider, WidgetRenderer } = await import("../dist/index.mjs");
 afterEach(cleanup);
 
@@ -133,9 +133,17 @@ test("a settled ask_user call becomes an Asked row with the answer inline", () =
   assert.doesNotMatch(html, /Stop without pushing/);
   assert.doesNotMatch(html, /activity|"question"|Input|Output/);
 });
-test("a plain string result is the answer too", () => {
-  const widget = computeToolWidget({ type: "tool", toolCallId: "a1", toolName: "ask_user", state: "output-available", input: askInput, output: "Stop without pushing" });
-  assert.equal(widget.props.answer, "Stop without pushing");
+test("ask_user reads only input.question and output.output", () => {
+  const settled = (input, output) =>
+    computeToolWidget({ type: "tool", toolCallId: "a1", toolName: "ask_user", state: "output-available", input, output });
+  assert.deepEqual(parseAskUser({ question: "Push?", choices: ["Yes", 3] }, { output: "Yes" }), { question: "Push?", choices: ["Yes"], answer: "Yes" });
+  // Other field names are not guessed at.
+  assert.equal(settled({ prompt: "Push?" }, { output: "Yes" }), null);
+  for (const output of [{ answer: "Yes" }, { result: "Yes" }, "Yes"]) {
+    const widget = settled(askInput, output);
+    assert.equal(widget.name, "asked");
+    assert.equal(widget.props.answer, undefined);
+  }
 });
 test("an open ask_user call lists its choices and no answer", () => {
   const widget = computeToolWidget({ type: "tool", toolCallId: "a2", toolName: "ask_user", state: "input-available", input: askInput });

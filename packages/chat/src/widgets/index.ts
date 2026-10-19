@@ -9,12 +9,14 @@ export { formatDuration, formatStatus, formatSummary } from "./format";
 export { prebuiltWidgets } from "./registry";
 export {
   computeToolWidget,
+  parseAskUser,
   computeToolState,
   computeDiff,
   computeTextDiff,
   normalizeSearchResults,
   safeResultUrl,
   type DiffLine,
+  type AskUserCall,
 } from "./compute";
 export type {
   ReadFileWidgetProps,

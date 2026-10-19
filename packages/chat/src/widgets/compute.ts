@@ -43,6 +43,17 @@ const runFacts = (output: Record<string, unknown>) => {
     ...(chunks ? { chunks } : {}),
   };
 };
+/** Symphony's ask_user call: `input.question` (+ `choices`) and the answer in `output.output`. */
+export type AskUserCall = { question: string; choices: string[]; answer?: string };
+export function parseAskUser(input: unknown, output: unknown): AskUserCall | null {
+  const args = record(input);
+  if (typeof args.question !== "string" || !args.question) return null;
+  const choices = Array.isArray(args.choices)
+    ? args.choices.filter((choice): choice is string => typeof choice === "string")
+    : [];
+  const answer = record(output).output;
+  return { question: args.question, choices, ...(typeof answer === "string" ? { answer } : {}) };
+}
 const aliases: Record<string, string> = {
   read: "read-file",
   read_file: "read-file",
@@ -191,18 +202,10 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
       ),
     };
   } else if (name === "asked") {
-    // Keyed on the question payload; anything else keeps the raw tool view.
-    const question = string(input.question, input.prompt);
-    if (!question) return null;
-    const answer = string(
-      output.output,
-      output.answer,
-      output.result,
-      typeof part.output === "string" ? part.output : undefined,
-    );
-    const choices = Array.isArray(input.choices)
-      ? input.choices.filter((choice): choice is string => typeof choice === "string")
-      : [];
+    // Symphony's ask_user payload only; anything else keeps the raw tool view.
+    const asked = parseAskUser(part.input, part.output);
+    if (!asked) return null;
+    const { question, answer, choices } = asked;
     props = { state: common.state, error: part.errorText, question, answer, choices };
   } else {
     if (
