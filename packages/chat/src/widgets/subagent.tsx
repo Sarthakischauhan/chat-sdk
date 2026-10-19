@@ -17,10 +17,10 @@ export function SubagentWidget({ subagent, className = "" }: SubagentWidgetProps
   const canInspect = depth < 3;
   const transcript = messages.filter((message) => message.role !== "system");
   return <section className={"chat-prebuilt chat-subagent " + className} data-state={state} aria-label={"Subagent: " + title}>
-    <div className="chat-subagent-heading"><span className="chat-subagent-icon"><Icon size={18} aria-hidden="true" /></span>
-      <div><strong>{title}</strong><span className="chat-subagent-state" role="status">{labels[state]}</span></div>
+    <div className="chat-subagent-heading"><span className="chat-subagent-icon"><Icon size={12} aria-hidden="true" /></span>
+      <div><span className="chat-subagent-verb">Delegated</span><strong>{title}</strong><span className="chat-subagent-state" role="status">· {labels[state].toLowerCase()}</span></div>
       {canInspect ? <ResponsiveDetail title={title} description={task || "Subagent activity in this conversation"}
-        trigger={<button className="chat-subagent-inspect" type="button" aria-label={"View activity for " + title}>View activity<ArrowUpRight size={14} aria-hidden="true" /></button>}>
+        trigger={<button className="chat-subagent-inspect" type="button" aria-label={"View activity for " + title}>View activity<ArrowUpRight size={12} aria-hidden="true" /></button>}>
         <Depth.Provider value={depth + 1}>
           <div className="chat-subagent-overview"><span className="chat-subagent-state">{labels[state]}</span>
             {progress !== undefined ? <span>{Math.round(progress * 100)}%</span> : null}</div>

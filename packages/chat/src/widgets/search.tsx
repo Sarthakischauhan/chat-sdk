@@ -16,9 +16,10 @@ export function SearchWidget({
   return (
     <ToolFrame
       {...props}
-      label="Search"
+      label="Searched for"
+      activeLabel="Searching for"
       title={query}
-      meta={`${count} ${count === 1 ? "result" : "results"}`}
+      meta={`${count} ${count === 1 ? "match" : "matches"}`}
     >
       {!results.length ? (
         <p className="chat-widget-empty">

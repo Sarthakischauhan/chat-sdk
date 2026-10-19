@@ -28,7 +28,9 @@ export function PatchWidget({
   return (
     <ToolFrame
       {...props}
-      label="Patch"
+      label="Edited"
+      activeLabel="Editing"
+      defaultOpen
       title={path}
       meta={
         <>

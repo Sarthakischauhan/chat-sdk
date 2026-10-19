@@ -17,7 +17,8 @@ export function ReadFileWidget({
   return (
     <ToolFrame
       {...props}
-      label="Read file"
+      label="Read"
+      activeLabel="Reading"
       title={path}
       meta={lines.length ? `${lines.length} lines` : language}
     >
