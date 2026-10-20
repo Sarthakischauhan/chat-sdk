@@ -1,6 +1,6 @@
 {
   "name": "@sarchauhan/chat",
-  "version": "0.1.0",
+  "version": "0.0.3",
   "private": false,
   "description": "Embeddable React chat UI, streaming runtime, and prebuilt agent widgets.",
   "license": "MIT",
@@ -52,9 +52,9 @@
   "dependencies": {
     "@fontsource/geist-mono": "^5.2.6",
     "@fontsource/geist-sans": "^5.2.6",
-    "@sarchauhan/adapter": "0.0.1",
+    "@sarchauhan/adapter": "0.0.3",
     "@sarchauhan/code-markdown": "^0.0.3",
-    "@sarchauhan/protocol": "0.0.1",
+    "@sarchauhan/protocol": "0.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.11.0",
