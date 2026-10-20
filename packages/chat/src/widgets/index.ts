@@ -2,15 +2,21 @@ export { ReadFileWidget } from "./read-file";
 export { PatchWidget } from "./patch";
 export { SearchWidget } from "./search";
 export { QuestionWidget } from "./question";
+export { AskedWidget } from "./asked";
+export { TerminalWidget } from "./terminal";
+export { ApprovalWidget } from "./approval";
+export { formatDuration, formatStatus, formatSummary } from "./format";
 export { prebuiltWidgets } from "./registry";
 export {
   computeToolWidget,
+  parseAskUser,
   computeToolState,
   computeDiff,
   computeTextDiff,
   normalizeSearchResults,
   safeResultUrl,
   type DiffLine,
+  type AskUserCall,
 } from "./compute";
 export type {
   ReadFileWidgetProps,
@@ -18,9 +24,16 @@ export type {
   SearchWidgetProps,
   SearchResult,
   QuestionWidgetProps,
+  AskedWidgetProps,
   QuestionOption,
   QuestionAnswer,
   ToolWidgetProps,
+  ToolSummary,
+  ToolRunInfo,
+  TerminalWidgetProps,
+  TerminalChunk,
+  TerminalStream,
+  ApprovalWidgetProps,
   WidgetState,
 } from "./types";
 

@@ -9,6 +9,7 @@ import { ThemeToggle } from "../theme/theme.toggle";
 import { ChatComposer, type ComposerCollapsedVariant } from "./Chat/chat";
 import { ChatContextProvider, useMessages } from "./Chat/chat.context";
 import { useThread } from "./Chat/context";
+import { useStickToBottom } from "../lib/use-stick-to-bottom";
 import { Message } from "./Message/message";
 import {
   createWidgetRegistry,
@@ -34,7 +35,14 @@ type ChatProps = {
   showModelSelector?: boolean;
   collapsedVariant?: ComposerCollapsedVariant;
   defaultExpanded?: boolean;
+  placeholder?: string;
+  inputLabel?: string;
+  showAttachments?: boolean;
+  /** File types the composer attaches, e.g. "image/*". Default: any file. */
+  attachmentAccept?: string;
 };
+
+type ComposerOptions = Pick<ChatProps, "placeholder" | "inputLabel" | "showAttachments" | "attachmentAccept">;
 
 function ChatShell({
   className,
@@ -44,7 +52,9 @@ function ChatShell({
   showModelSelector = true,
   collapsedVariant = "pill",
   defaultExpanded = false,
+  composer,
 }: {
+  composer?: ComposerOptions;
   className?: string;
   style?: CSSProperties;
   widgets?: ChatWidgetInput;
@@ -53,42 +63,22 @@ function ChatShell({
   collapsedVariant?: ComposerCollapsedVariant;
   defaultExpanded?: boolean;
 }) {
-  const { sendMessage, isSending, messages, status } = useMessages();
-  const { createThread } = useThread();
+  const { sendMessage, isSending, status, messages } = useMessages();
+  const { createThread, activeThreadId } = useThread();
   const { resolvedTheme } = useTheme();
   const registry = useMemo(() => createWidgetRegistry(widgets), [widgets]);
   const messagesRef = useRef<HTMLDivElement>(null);
 
+  // Switching threads or the first history load (empty -> non-empty) re-sticks to the bottom.
+  const hasMessages = messages.length > 0;
+  const { scrollToBottom } = useStickToBottom(messagesRef, {
+    resetKey: `${activeThreadId ?? ""}:${hasMessages ? "loaded" : "empty"}`,
+  });
+
+  // Sending a message always jumps to the latest turn; streaming follows only while near the bottom.
   useLayoutEffect(() => {
-    const container = messagesRef.current;
-    if (!container) {
-      return;
-    }
-
-    container.scrollTop = container.scrollHeight;
-  }, [messages, status]);
-
-  useLayoutEffect(() => {
-    const container = messagesRef.current;
-    if (!container || (status !== "submitted" && status !== "streaming")) {
-      return;
-    }
-
-    const scrollToEnd = () => {
-      container.scrollTop = container.scrollHeight;
-    };
-
-    const observer = new ResizeObserver(scrollToEnd);
-    observer.observe(container);
-    const inner = container.firstElementChild;
-    if (inner) {
-      observer.observe(inner);
-    }
-
-    scrollToEnd();
-
-    return () => observer.disconnect();
-  }, [status]);
+    if (status === "submitted") scrollToBottom();
+  }, [status, scrollToBottom]);
 
   const respondToWidget = useCallback(
     async (response: WidgetResponse) => {
@@ -140,6 +130,7 @@ function ChatShell({
             showModelSelector={showModelSelector}
             collapsedVariant={collapsedVariant}
             defaultExpanded={defaultExpanded}
+            {...composer}
           />
         </div>
       </div>
@@ -162,6 +153,10 @@ export function Chat({
   showModelSelector = true,
   collapsedVariant = "pill",
   defaultExpanded = false,
+  placeholder,
+  inputLabel,
+  showAttachments,
+  attachmentAccept,
 }: ChatProps) {
   return (
     <ThemeProvider
@@ -183,6 +178,7 @@ export function Chat({
           showModelSelector={showModelSelector}
           collapsedVariant={collapsedVariant}
           defaultExpanded={defaultExpanded}
+          composer={{ placeholder, inputLabel, showAttachments, attachmentAccept }}
         />
       </ChatContextProvider>
     </ThemeProvider>

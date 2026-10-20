@@ -13,6 +13,50 @@ const number = (...values: unknown[]) =>
     (value): value is number =>
       typeof value === "number" && Number.isFinite(value),
   );
+const intOrNull = (value: unknown) =>
+  value === null ? null : number(value);
+/** Protocol 3 facts a host attaches to the tool output. Missing keys stay unset. */
+const runFacts = (output: Record<string, unknown>) => {
+  const summary = record(output.summary);
+  const chunks = Array.isArray(output.chunks)
+    ? output.chunks.flatMap((item) => {
+        const chunk = record(item);
+        return typeof chunk.text === "string"
+          ? [{ stream: chunk.stream === "stderr" ? "stderr" : "stdout", text: chunk.text }]
+          : [];
+      })
+    : undefined;
+  return {
+    summary: Object.keys(summary).length
+      ? {
+          lines: intOrNull(summary.lines),
+          matches: intOrNull(summary.matches),
+          added: intOrNull(summary.added),
+          removed: intOrNull(summary.removed),
+          // Patch summaries add start_line; other tools' summaries carry only the counts.
+          ...(summary.start_line === undefined ? {} : { startLine: intOrNull(summary.start_line) }),
+        }
+      : undefined,
+    startedAt: string(output.startedAt),
+    durationMs: intOrNull(output.durationMs),
+    exitCode: intOrNull(output.exitCode),
+    ...(chunks ? { chunks } : {}),
+  };
+};
+/**
+ * An ask_user call: `input.question` (+ `choices`) from the call's arguments, and the
+ * answer the host passes explicitly as `output.answer`.
+ */
+export type AskUserCall = { question: string; choices: string[]; answer?: string };
+export function parseAskUser(input: unknown, output: unknown): AskUserCall | null {
+  const args = record(input);
+  if (typeof args.question !== "string" || !args.question) return null;
+  const choices = Array.isArray(args.choices)
+    ? args.choices.filter((choice): choice is string => typeof choice === "string")
+    : [];
+  const answer = record(output).answer;
+  return { question: args.question, choices, ...(typeof answer === "string" ? { answer } : {}) };
+}
 const aliases: Record<string, string> = {
   read: "read-file",
   read_file: "read-file",
@@ -28,6 +72,8 @@ const aliases: Record<string, string> = {
   web_search: "search",
   question: "question",
   ask_question: "question",
+  ask_user: "asked",
+  bash: "terminal",
 };
 export function computeToolState(part: AgentToolPart): WidgetState {
   if (part.state === "output-error") return "error";
@@ -73,7 +119,11 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
   const input = record(part.input),
     output = record(part.output);
   const values = { ...input, ...output };
-  const common = { state: computeToolState(part), error: part.errorText };
+  const common = {
+    state: computeToolState(part),
+    error: part.errorText,
+    ...runFacts(output),
+  };
   let props: Record<string, unknown>;
   if (name === "read-file") {
     const path = string(
@@ -86,7 +136,8 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
     props = {
       ...common,
       path,
-      content: string(output.content, output.text, part.output),
+      // The host passes the file text as `content`; nothing else is read.
+      content: string(output.content),
       startLine: number(values.startLine, values.start_line, values.offset),
       language: string(values.language),
     };
@@ -95,20 +146,23 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
   } else if (name === "patch") {
     const before = string(values.before, values.old_string, values.oldText);
     const after = string(values.after, values.new_string, values.newText);
+    // Where the edit sits in the file, from the harness summary (`summary.start_line`).
+    const startLine = number(common.summary?.startLine);
     const diff =
       string(
         output.diff,
         output.patch,
         input.diff,
         input.patch,
-        part.input,
-        part.output,
+        typeof part.input === "string" ? part.input : undefined,
+        typeof part.output === "string" ? part.output : undefined,
       ) ??
       (before !== undefined && after !== undefined
         ? computeTextDiff(
             before,
             after,
             string(values.path, values.file_path, "file"),
+            startLine,
           )
         : undefined);
     if (
@@ -120,6 +174,7 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
       ...common,
       path: string(values.path, values.file, values.file_path),
       diff,
+      ...(startLine === undefined ? {} : { startLine }),
     };
   } else if (name === "search") {
     const query = string(values.query, values.pattern, values.search);
@@ -136,6 +191,23 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
       results: normalizeSearchResults(results),
       total: number(output.total, output.totalCount),
     };
+  } else if (name === "terminal") {
+    const command = string(input.command);
+    if (command === undefined) return null;
+    props = {
+      ...common,
+      command,
+      output: string(
+        output.output,
+        typeof part.output === "string" ? part.output : undefined,
+      ),
+    };
+  } else if (name === "asked") {
+    // Symphony's ask_user payload only; anything else keeps the raw tool view.
+    const asked = parseAskUser(part.input, part.output);
+    if (!asked) return null;
+    const { question, answer, choices } = asked;
+    props = { state: common.state, error: part.errorText, question, answer, choices };
   } else {
     if (
       ["output-error", "output-denied", "approval-requested"].includes(
@@ -234,11 +306,16 @@ export function safeResultUrl(url?: string): string | undefined {
   }
 }
 
-/** Compute a unified replacement hunk with three context lines. Common edges stay out of the diff. */
+/**
+ * Compute a unified replacement hunk with three context lines. Common edges stay out of the diff.
+ * `startLine` is the file line of the first `before` line (a patch's match), so hunk headers and
+ * the gutter use file line numbers rather than snippet-relative ones.
+ */
 export function computeTextDiff(
   before: string,
   after: string,
   path = "file",
+  startLine = 1,
 ): string {
   if (before === after) return "";
   const split = (text: string) =>
@@ -275,6 +352,7 @@ export function computeTextDiff(
   const oldCount = oldEnd + tail - start,
     newCount = newEnd + tail - start;
   const label = path.replace(/[\r\n]/g, "");
+  const offset = Number.isInteger(startLine) && startLine > 1 ? startLine - 1 : 0;
   const body = [
     ...oldLines.slice(start, prefix).map((line) => " " + line),
     ...oldLines
@@ -298,7 +376,8 @@ export function computeTextDiff(
   return [
     `--- a/${label}`,
     `+++ b/${label}`,
-    `@@ -${oldCount ? start + 1 : start},${oldCount} +${newCount ? start + 1 : start},${newCount} @@`,
+    // A zero-length side names the line before the change, per unified diff.
+    `@@ -${(oldCount ? start + 1 : start) + offset},${oldCount} +${(newCount ? start + 1 : start) + offset},${newCount} @@`,
     ...body,
   ].join("\n");
 }

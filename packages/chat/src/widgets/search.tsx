@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { safeResultUrl } from "./compute";
+import { Search } from "lucide-react";
 import { ToolFrame } from "./tool-frame";
 import type { SearchWidgetProps } from "./types";
 export function SearchWidget({
@@ -8,17 +9,20 @@ export function SearchWidget({
   results = [],
   total,
   maxResults = 5,
+  summary,
   ...props
 }: SearchWidgetProps) {
   const [expanded, setExpanded] = useState(false);
   const limit = Math.max(1, maxResults);
-  const count = Math.max(results.length, total ?? 0);
+  const count = typeof summary?.matches === "number" ? summary.matches : Math.max(results.length, total ?? 0);
   return (
     <ToolFrame
       {...props}
-      label="Search"
+      icon={Search}
+      label="Searched for"
+      activeLabel="Searching for"
       title={query}
-      meta={`${count} ${count === 1 ? "result" : "results"}`}
+      meta={`${count} ${count === 1 ? "match" : "matches"}`}
     >
       {!results.length ? (
         <p className="chat-widget-empty">

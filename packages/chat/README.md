@@ -39,6 +39,18 @@ import "@sarchauhan/chat/styles.css";
 <Chat adapter={adapter} />;
 ```
 
+## Composer and theming
+
+`Chat` and `ChatComposer` accept `placeholder`, `inputLabel` (the input's accessible name; defaults to the placeholder), and `showAttachments` (default `true`; set `false` for text-only backends). `ChatComposer` can be mounted on its own inside `ChatContextProvider` when the host renders the transcript itself.
+
+```tsx
+<ChatContextProvider adapter={adapter} defaultThreadId={threadId}>
+  <ChatComposer placeholder="Describe a task…" inputLabel="Task" showAttachments={false} />
+</ChatContextProvider>
+```
+
+All chrome reads `--chat-*` tokens from `.chat-root`, including widget font weights (`--chat-weight-medium`, `--chat-weight-semibold`) and the send button (`--chat-primary`, `--chat-primary-fg`). Override them on `.chat-root[data-theme="…"]` to restyle the package without overriding selectors.
+
 ## Prebuilt components
 
 ```tsx
@@ -67,7 +79,7 @@ Known tool parts are also mapped automatically:
 
 | View | Tool names | Recognized payload |
 | --- | --- | --- |
-| Read file | `read`, `read_file`, `readFile`, `read-file` | Input `path`/`file`/`filename`/`file_path`; output string or `content`/`text`; optional `startLine`/`start_line`/`offset` |
+| Read file | `read`, `read_file`, `readFile`, `read-file` | Input `path`/`file`/`filename`/`file_path`; output `content`; optional `startLine`/`start_line`/`offset` |
 | Patch | `patch`, `apply_patch`, `edit`, `edit_file` | Unified/apply-patch text in `diff`/`patch`, or `before`/`after`, `old_string`/`new_string`, `oldText`/`newText` |
 | Search | `search`, `grep`, `file_search`, `web_search` | `query`/`pattern`/`search`; output array or `results`/`matches`; result path/file/url, optional line, text/snippet/content, title |
 | Question | `question`, `ask_question` | Input `prompt`/`question`, `options`, optional `description`, `multiple`, `allowCustom` |

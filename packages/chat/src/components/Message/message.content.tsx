@@ -1,5 +1,6 @@
 "use client";
 
+import { useAutoDisclosure } from "../../widgets/disclosure";
 import {
   normalizeAgentParts,
   parseArtifact,
@@ -175,7 +176,6 @@ const ToolStatusIcon = ({
 };
 
 const ToolBlock = ({ part }: { part: AgentToolPart }) => {
-  const wrapRef = useRef<HTMLDetailsElement>(null);
   const isPending =
     part.state === "input-streaming" ||
     part.state === "input-available" ||
@@ -183,6 +183,8 @@ const ToolBlock = ({ part }: { part: AgentToolPart }) => {
   const isError = part.state === "output-error" || part.state === "output-denied";
   const isDone = !isPending && !isError;
   const detail = toolDetail(part);
+  const wrapRef = useRef<HTMLDetailsElement>(null);
+  const { defaultOpen, onToggle, onSummaryClick } = useAutoDisclosure(wrapRef, isPending || isError);
 
   useEffect(() => {
     if (!isError || !wrapRef.current) {
@@ -200,9 +202,10 @@ const ToolBlock = ({ part }: { part: AgentToolPart }) => {
         motion.inputWrap,
         isPending ? "agent-tool-pending" : isError ? "agent-tool-error" : "agent-tool-complete",
       )}
-      open={isPending || isError}
+      open={defaultOpen}
+      onToggle={onToggle}
     >
-      <summary className={cn(motion.input, isError && motion.isError)}>
+      <summary className={cn(motion.input, isError && motion.isError)} onClick={onSummaryClick}>
         <ChevronDown className="agent-tool-chevron" aria-hidden="true" />
         <ToolStatusIcon isPending={isPending} isDone={isDone} />
         <span className="agent-tool-name">{part.title ?? part.toolName}</span>

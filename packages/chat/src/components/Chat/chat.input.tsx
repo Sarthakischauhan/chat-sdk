@@ -6,9 +6,12 @@ import { useComposer } from "./context";
 
 export const ChatInput = ({
   placeholder = "Message...",
+  label,
   expanded = true,
 }: {
   placeholder?: string;
+  /** Accessible name for the textarea. Defaults to the placeholder. */
+  label?: string;
   expanded?: boolean;
 }) => {
   const { input, setInput, disabled, submitInput, attachments } = useComposer();
@@ -44,6 +47,7 @@ export const ChatInput = ({
           setInput(event.target.value);
         }}
         placeholder={placeholder}
+        aria-label={label ?? placeholder}
         disabled={disabled}
         rows={1}
         onKeyDown={(event) => {

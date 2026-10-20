@@ -1,6 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { computeDiff, computeTextDiff } from "./compute";
+import { FilePen } from "lucide-react";
 import { ToolFrame } from "./tool-frame";
 import type { PatchWidgetProps } from "./types";
 export function PatchWidget({
@@ -8,27 +9,34 @@ export function PatchWidget({
   diff: rawDiff,
   before,
   after,
+  startLine = 1,
   maxLines = 100,
+  summary,
   ...props
 }: PatchWidgetProps) {
   const diff = useMemo(
     () =>
       rawDiff ??
       (before !== undefined && after !== undefined
-        ? computeTextDiff(before, after, path)
+        ? computeTextDiff(before, after, path, startLine)
         : ""),
-    [rawDiff, before, after, path],
+    [rawDiff, before, after, path, startLine],
   );
   const [expanded, setExpanded] = useState(false);
-  const { lines, additions, deletions } = useMemo(
+  const { lines, additions: derivedAdded, deletions: derivedRemoved } = useMemo(
     () => computeDiff(diff),
     [diff],
   );
+  const additions = typeof summary?.added === "number" ? summary.added : derivedAdded;
+  const deletions = typeof summary?.removed === "number" ? summary.removed : derivedRemoved;
   const limit = Math.max(1, maxLines);
   return (
     <ToolFrame
       {...props}
-      label="Patch"
+      icon={FilePen}
+      label="Edited"
+      activeLabel="Editing"
+      defaultOpen
       title={path}
       meta={
         <>

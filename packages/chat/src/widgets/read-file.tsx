@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { formatSummary } from "./format";
+import { FileText } from "lucide-react";
 import { ToolFrame } from "./tool-frame";
 import type { ReadFileWidgetProps } from "./types";
 export function ReadFileWidget({
@@ -8,6 +10,7 @@ export function ReadFileWidget({
   startLine = 1,
   language,
   maxLines = 80,
+  summary,
   ...props
 }: ReadFileWidgetProps) {
   const [expanded, setExpanded] = useState(false);
@@ -17,9 +20,11 @@ export function ReadFileWidget({
   return (
     <ToolFrame
       {...props}
-      label="Read file"
+      icon={FileText}
+      label="Read"
+      activeLabel="Reading"
       title={path}
-      meta={lines.length ? `${lines.length} lines` : language}
+      meta={formatSummary(summary, "lines") ?? (lines.length ? `${lines.length} lines` : language)}
     >
       {content === undefined ? (
         <p className="chat-widget-empty">
