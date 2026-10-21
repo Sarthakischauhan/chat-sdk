@@ -17,7 +17,7 @@
     "@prisma/client": "6.19.3",
     "@electric-sql/pglite": "^0.4.5",
     "lucide-react": "^1.11.0",
-    "@sarchauhan/chat": "0.1.0",
+    "@sarchauhan/chat": "0.0.2",
     "@sarchauhan/adapter": "0.0.1",
     "@sarchauhan/protocol": "0.0.1",
     "ai": "^6.0.88"
