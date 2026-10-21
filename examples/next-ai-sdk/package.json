@@ -19,7 +19,7 @@
     "lucide-react": "^1.11.0",
     "@sarchauhan/chat": "0.0.2",
     "@sarchauhan/adapter": "0.0.1",
-    "@sarchauhan/protocol": "0.0.1",
+    "@sarchauhan/protocol": "0.0.3",
     "@ai-sdk/anthropic": "^3.0.44",
     "@ai-sdk/google": "^3.0.29",
     "@ai-sdk/openai": "^3.0.29",
