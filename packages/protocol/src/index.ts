@@ -89,3 +89,15 @@ export {
 
 export { createArtifactData, createSubagentData, parseArtifact, parseSubagent } from "./activity";
 export type { AgentArtifact, AgentSubagent, AgentSubagentState } from "./activity";
+
+export { ARTIFACT_KINDS, ARTIFACTS_CAPABILITY, isArtifactKind, parseArtifactManifest } from "./artifacts";
+export type {
+  ArtifactEvent,
+  ArtifactEventPayload,
+  ArtifactGetReply,
+  ArtifactKind,
+  ArtifactManifest,
+  ArtifactsGetRequest,
+  ArtifactsListReply,
+  ArtifactsListRequest,
+} from "./artifacts";
