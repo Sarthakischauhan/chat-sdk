@@ -96,3 +96,28 @@ const [part] = normalizeAgentParts([
 ]);
 // part.type === "widget"
 ```
+
+## Symphony artifacts
+
+Types for the session artifacts of Symphony's stdio protocol 4 (the
+`artifacts` capability). The fields are the wire's snake_case names.
+
+- `ArtifactKind`: `"html" | "csv" | "json" | "image"` (`ARTIFACT_KINDS`,
+  `isArtifactKind`)
+- `ArtifactManifest`: `id`, `kind`, `title`, `created_at`, `updated_at`,
+  `version`, `tool_call_id`, `source`, `entry`, `mime`, `sha256`, `size`
+- `ArtifactEvent`: the `artifact/created` and `artifact/updated` events; the
+  payload is the manifest plus `path`, the entry's absolute path on the host
+- `ArtifactsListRequest` / `ArtifactsListReply` (`artifacts/list` →
+  `artifacts`) and `ArtifactsGetRequest` / `ArtifactGetReply`
+  (`artifacts/get` → `artifact` with `path` and `files`)
+- `parseArtifactManifest(value)`: a typed manifest, or `null`
+
+```ts
+import { parseArtifactManifest } from "@sarchauhan/protocol";
+
+if (frame.event === "artifact/created") {
+  const artifact = parseArtifactManifest(frame.payload);
+  if (artifact) show(artifact.title, artifact.kind);
+}
+```
