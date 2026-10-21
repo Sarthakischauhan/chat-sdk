@@ -106,17 +106,17 @@ Types for the session artifacts of Symphony's stdio protocol 4 (the
   `isArtifactKind`)
 - `ArtifactManifest`: `id`, `kind`, `title`, `created_at`, `updated_at`,
   `version`, `tool_call_id`, `source`, `entry`, `mime`, `sha256`, `size`
-- `ArtifactEvent`: the `artifact/created` and `artifact/updated` events; the
+- `ArtifactEvent`: the `artifact_created` and `artifact_updated` events; the
   payload is the manifest plus `path`, the entry's absolute path on the host
-- `ArtifactsListRequest` / `ArtifactsListReply` (`artifacts/list` →
+- `ArtifactsListRequest` / `ArtifactsListReply` (`artifacts_list` →
   `artifacts`) and `ArtifactsGetRequest` / `ArtifactGetReply`
-  (`artifacts/get` → `artifact` with `path` and `files`)
+  (`artifacts_get` → `artifact` with `path` and `files`)
 - `parseArtifactManifest(value)`: a typed manifest, or `null`
 
 ```ts
 import { parseArtifactManifest } from "@sarchauhan/protocol";
 
-if (frame.event === "artifact/created") {
+if (frame.event === "artifact_created") {
   const artifact = parseArtifactManifest(frame.payload);
   if (artifact) show(artifact.title, artifact.kind);
 }

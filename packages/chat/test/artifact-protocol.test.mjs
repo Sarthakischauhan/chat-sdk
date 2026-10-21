@@ -26,3 +26,13 @@ test("manifests from Symphony frames parse; malformed ones do not", () => {
   assert.equal(parseArtifactManifest(missing), null);
   assert.equal(parseArtifactManifest(null), null);
 });
+
+test("frame names are snake_case", () => {
+  /** @type {import("@sarchauhan/protocol").ArtifactEvent["event"][]} */
+  const events = ["artifact_created", "artifact_updated"];
+  /** @type {import("@sarchauhan/protocol").ArtifactsListRequest["type"]} */
+  const list = "artifacts_list";
+  /** @type {import("@sarchauhan/protocol").ArtifactsGetRequest["type"]} */
+  const get = "artifacts_get";
+  for (const name of [...events, list, get]) assert.match(name, /^[a-z]+(_[a-z]+)*$/);
+});

@@ -31,25 +31,25 @@ export type ArtifactManifest = {
   size: number;
 };
 
-/** Payload of the artifact/created and artifact/updated events. */
+/** Payload of the artifact_created and artifact_updated events. */
 export type ArtifactEventPayload = ArtifactManifest & {
   /** Absolute path of the entry file on the host. */
   path: string;
 };
 export type ArtifactEvent = {
   type: "event";
-  event: "artifact/created" | "artifact/updated";
+  event: "artifact_created" | "artifact_updated";
   payload: ArtifactEventPayload;
 };
 
 export type ArtifactsListRequest = {
-  type: "artifacts/list";
+  type: "artifacts_list";
   request_id: string;
   /** Defaults to the worker's own session. */
   session_id?: string;
 };
 export type ArtifactsGetRequest = {
-  type: "artifacts/get";
+  type: "artifacts_get";
   request_id: string;
   session_id?: string;
   artifact_id: string;
