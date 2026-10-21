@@ -23,6 +23,7 @@ jobs:
       - run: npm run build -w @sarchauhan/storybook
       - run: npx eslint packages/chat/src/widgets packages/protocol/src/activity.ts
       - run: npm pack -w @sarchauhan/chat --dry-run --ignore-scripts
+      - run: node packages/chat/test/package-smoke.mjs
       - name: Install browser test runtime
         run: |
           npm install --no-save --package-lock=false --ignore-scripts playwright@1.55.1

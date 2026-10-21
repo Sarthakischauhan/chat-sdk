@@ -94,6 +94,30 @@ Public helpers: `computeToolWidget`, `computeToolState`, `computeDiff`, `compute
 
 `npm run build` emits ESM, CommonJS, TypeScript declarations, source maps, and CSS assets. Both JS entry points preserve `"use client"` for React Server Component consumers. React/React DOM are peers; the package does not depend on Next.js or the AI SDK.
 
+### Preparing the 0.0.2 release
+
+The chat package is versioned independently of the private workspace root. For this release, `@sarchauhan/chat` is `0.0.2`, its protocol dependency is `0.0.3`, and its adapter dependency remains at `0.0.1`.
+
+From the repository root, verify the release before publishing:
+
+```sh
+npm ci
+npm test
+npm run typecheck
+npm pack -w @sarchauhan/chat --dry-run
+node packages/chat/test/package-smoke.mjs
+```
+
+Confirm that the package preview includes both JS entry points, TypeScript declarations, CSS assets, the README, and the changelog. The package smoke check installs the protocol and chat tarballs outside the workspace with the published adapter, then checks ESM, CommonJS, rendering, and protocol helpers. Workspace builds alone do not validate this dependency boundary.
+
+Publish protocol **before** chat: published protocol `0.0.1` and `0.0.2` lack the required helpers. An authenticated maintainer can publish explicitly after the checks pass:
+
+```sh
+npm publish -w @sarchauhan/protocol --access public
+npm view @sarchauhan/protocol@0.0.3 version
+npm publish -w @sarchauhan/chat --access public
+```
+
 ## Created files and images
 
 Existing protocol `file` parts now render as artifact cards with image thumbnails, preview, open, and download actions. No changes to existing file event producers are needed.

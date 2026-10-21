@@ -1,6 +1,6 @@
 {
   "name": "@sarchauhan/protocol",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "private": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -16,7 +16,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup"
+    "build": "tsup",
+    "prepack": "npm run build"
   },
   "devDependencies": {
     "tsup": "^8.5.0",
