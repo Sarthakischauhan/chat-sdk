@@ -24,14 +24,20 @@ test("web tools normalize sources and retain unknown output in the raw view", ()
   assert.equal(normalizeWebSearchResults([{ path: "src/index.ts" }, { url: "file:///etc/passwd" }]).length, 0);
   assert.equal(computeToolWidget({ ...tool("output-available", { results: [] }), toolName: "grep", input: { query: "runtime" } }).name, "search");
 });
-test("source cards use safe links and plain snippets without remote images", () => {
+test("source rows show only favicon and title, with safe links and icon fallback", () => {
   const { container } = render(createElement(WebSearchWidget, { query: "runtime", defaultOpen: true, results: [...results, { url: "javascript:alert(1)", title: "Unsafe" }, { url: "https://example.com/plain", snippet: "<script>alert(1)</script>" }] }));
   assert.equal(screen.getAllByRole("link").length, 3);
   const link = screen.getByRole("link", { name: /Node docs/ });
   assert.equal(link.getAttribute("href"), results[0].url);
   assert.equal(link.getAttribute("rel"), "noopener noreferrer");
-  assert.equal(container.querySelectorAll("script, img").length, 0);
-  assert.ok(screen.getByText("<script>alert(1)</script>"));
+  assert.equal(container.querySelectorAll("script").length, 0);
+  assert.equal(screen.queryByText("Runtime reference"), null);
+  const icon = link.querySelector("img");
+  assert.equal(icon.getAttribute("src"), "https://nodejs.org/favicon.ico");
+  assert.equal(icon.getAttribute("referrerpolicy"), "no-referrer");
+  fireEvent.error(icon);
+  assert.equal(link.querySelector("img"), null);
+  assert.ok(link.querySelector("svg"));
 });
 test("more sources can expand and collapse", () => {
   render(createElement(WebSearchWidget, { query: "runtime", defaultOpen: true, results, maxResults: 1 }));

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Add web search source cards and automatic web-search tool rendering, with safe links, source expansion, shared tool states, and Storybook examples.
+- Add compact web search source rows and automatic web-search tool rendering, with safe links, source expansion, shared tool states, and Storybook examples.
 
 ## 0.0.2
 

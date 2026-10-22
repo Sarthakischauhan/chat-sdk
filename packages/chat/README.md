@@ -168,7 +168,7 @@ Use `SubagentWidget` directly for custom layouts, or let `Chat`/`MessageContent`
 
 ### Web search sources
 
-`WebSearchWidget` follows the shared tool row and theme. Expand a completed row to inspect sources; running and failed searches open automatically. It loads no remote favicons or page previews.
+`WebSearchWidget` follows the shared tool row and theme. Expand a completed row to inspect sources; running and failed searches open automatically. Each result is a compact site-icon and page-title link. Favicons load lazily from the source origin with no referrer; unavailable icons fall back to a globe.
 
 ```tsx
 import { WebSearchWidget } from "@sarchauhan/chat/widgets";
@@ -181,6 +181,6 @@ import "@sarchauhan/chat/styles.css";
 />
 ```
 
-Props include `query`, `results` (`url`, optional `title` and `snippet`), `total`, `maxResults` (default 5), `defaultOpen`, and shared tool state/error/timing props. Only HTTP(S) source URLs become links. Snippets are plain text. The host supplies search results; this component does not perform searches.
+Props include `query`, `results` (`url`, optional `title` and `snippet`), `total`, `maxResults` (default 5), `defaultOpen`, and shared tool state/error/timing props. Only HTTP(S) source URLs become links. Snippets remain accepted in result data but are not displayed. The host supplies search results; this component does not perform searches.
 
 `MessageContent` maps `web_search`, `search_web`, and `web-search` tools to the `web-search` widget. Inputs accept `query`, `search`, or `q`; outputs accept a `results` or `sources` array (or a direct array). Each result accepts `url`/`link`/`href` and `snippet`/`text`/`content`/`description`. Unrecognized output keeps the raw tool view. File search and grep keep using `SearchWidget`. Explicit widget parts use `name: "web-search"`.
