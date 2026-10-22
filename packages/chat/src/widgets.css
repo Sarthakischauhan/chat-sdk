@@ -905,3 +905,14 @@
   font-size: 0.75rem;
   color: var(--chat-danger, #b42318);
 }
+
+/* Web sources stay as compact icon-and-title rows beneath the tool summary. */
+.chat-web-search-results { display: grid; gap: var(--chat-space-1); list-style: none; padding: 0; margin: 0; min-width: 0; }
+.chat-web-search-results li { min-width: 0; }
+.chat-web-search-source { display: flex; align-items: center; gap: var(--chat-space-2); padding: var(--chat-space-1) 0; color: var(--chat-fg-muted); text-decoration: none; min-width: 0; font-size: var(--chat-fs-13); line-height: var(--chat-leading-normal); }
+.chat-web-search-source:hover { color: var(--chat-fg); }
+.chat-web-search-source:hover .chat-web-search-title { text-decoration: underline; text-underline-offset: 3px; }
+.chat-web-search-source:focus-visible { outline: 2px solid var(--chat-fg-muted); outline-offset: 2px; border-radius: var(--chat-radius-sm); }
+.chat-web-search-icon { display: grid; place-items: center; width: 14px; height: 14px; flex: 0 0 14px; }
+.chat-web-search-icon img { width: 14px; height: 14px; object-fit: contain; }
+.chat-web-search-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

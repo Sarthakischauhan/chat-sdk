@@ -11,16 +11,16 @@
     "@sarchauhan/chat": "0.0.2"
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "10.5.8",
-    "@storybook/addon-docs": "10.5.8",
-    "@storybook/react": "10.5.8",
-    "@storybook/react-vite": "10.5.8",
+    "@storybook/addon-a11y": "10.6.3",
+    "@storybook/addon-docs": "10.6.3",
+    "@storybook/react": "10.6.3",
+    "@storybook/react-vite": "10.6.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.2.0",
     "react": "^19",
     "react-dom": "^19",
-    "storybook": "10.5.8",
+    "storybook": "10.6.3",
     "typescript": "^5",
     "vite": "^7.3.6"
   }
