@@ -1,6 +1,6 @@
 import { parseArtifact } from "@sarchauhan/protocol";
 import type { AgentToolPart, AgentWidgetPart } from "@sarchauhan/protocol";
-import type { SearchResult, WidgetState } from "./types";
+import type { SearchResult, WebSearchResult, WidgetState } from "./types";
 
 const record = (value: unknown): Record<string, unknown> =>
   value !== null && typeof value === "object" && !Array.isArray(value)
@@ -69,7 +69,9 @@ const aliases: Record<string, string> = {
   search: "search",
   grep: "search",
   file_search: "search",
-  web_search: "search",
+  web_search: "web-search",
+  "web-search": "web-search",
+  search_web: "web-search",
   question: "question",
   ask_question: "question",
   ask_user: "asked",
@@ -98,6 +100,15 @@ export function normalizeSearchResults(value: unknown): SearchResult[] {
         url: string(result.url),
       },
     ];
+  });
+}
+/** Normalize common web-search payloads without treating workspace paths as URLs. */
+export function normalizeWebSearchResults(value: unknown): WebSearchResult[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap(item => {
+    const result = record(item);
+    const url = safeResultUrl(string(result.url, result.link, result.href));
+    return url ? [{ url, title: string(result.title), snippet: string(result.snippet, result.text, result.content, result.description) }] : [];
   });
 }
 /** Convert known tool payloads; unknown or incomplete formats retain the raw tool view. */
@@ -176,6 +187,12 @@ export function computeToolWidget(part: AgentToolPart): AgentWidgetPart | null {
       diff,
       ...(startLine === undefined ? {} : { startLine }),
     };
+  } else if (name === "web-search") {
+    const query = string(values.query, values.search, values.q);
+    if (query === undefined) return null;
+    const results = output.results ?? output.sources ?? (Array.isArray(part.output) ? part.output : undefined);
+    if (part.state === "output-available" && !Array.isArray(results)) return null;
+    props = { ...common, query, results: normalizeWebSearchResults(results), total: number(output.total, output.totalCount) };
   } else if (name === "search") {
     const query = string(values.query, values.pattern, values.search);
     if (query === undefined) return null;
