@@ -1,9 +1,17 @@
 "use client";
 import { useState } from "react";
-import { Globe, ArrowUpRight } from "lucide-react";
+import { Globe } from "lucide-react";
 import { safeResultUrl } from "./compute";
 import { ToolFrame } from "./tool-frame";
 import type { WebSearchWidgetProps } from "./types";
+
+function SiteIcon({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false);
+  return <span className="chat-web-search-icon" aria-hidden="true">
+    {failed ? <Globe size={14} /> : <img src={new URL("/favicon.ico", url).href} alt="" width={14} height={14}
+      loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)} />}
+  </span>;
+}
 
 /** Web sources use the same disclosure, status, and theme as other tool rows. */
 export function WebSearchWidget({ query, results = [], total, maxResults = 5, defaultOpen, ...props }: WebSearchWidgetProps) {
@@ -19,9 +27,8 @@ export function WebSearchWidget({ query, results = [], total, maxResults = 5, de
     {sources.length ? <ol className="chat-web-search-results" aria-label="Web search sources">
       {(expanded ? sources : sources.slice(0, limit)).map((source, index) => <li key={`${source.href}-${index}`}>
         <a className="chat-web-search-source" href={source.href} target="_blank" rel="noopener noreferrer">
-          <span className="chat-web-search-domain"><Globe size={12} aria-hidden="true" />{source.domain}</span>
-          <span className="chat-web-search-title">{source.title || source.domain}<ArrowUpRight size={13} aria-hidden="true" /></span>
-          {source.snippet ? <span className="chat-web-search-snippet">{source.snippet}</span> : null}
+          <SiteIcon key={source.href} url={source.href} />
+          <span className="chat-web-search-title" title={source.title || source.domain}>{source.title || source.domain}</span>
           <span className="chat-sr-only">Opens in a new tab</span>
         </a>
       </li>)}

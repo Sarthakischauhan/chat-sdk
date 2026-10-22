@@ -906,13 +906,13 @@
   color: var(--chat-danger, #b42318);
 }
 
-/* Web search sources: quiet, full-width cards with no remote favicon requests. */
-.chat-web-search-results { display: grid; gap: var(--chat-space-2); list-style: none; padding: 0; margin: 0; min-width: 0; }
+/* Web sources stay as compact icon-and-title rows beneath the tool summary. */
+.chat-web-search-results { display: grid; gap: var(--chat-space-1); list-style: none; padding: 0; margin: 0; min-width: 0; }
 .chat-web-search-results li { min-width: 0; }
-.chat-web-search-source { display: flex; flex-direction: column; gap: var(--chat-space-1_5); padding: var(--chat-space-3); border: 1px solid var(--chat-border); border-radius: var(--chat-radius-md); color: var(--chat-fg); text-decoration: none; overflow-wrap: anywhere; }
-.chat-web-search-source:hover { background: var(--chat-control-bg); border-color: var(--chat-border-strong); }
-.chat-web-search-source:focus-visible { outline: 2px solid var(--chat-fg-muted); outline-offset: 2px; }
-.chat-web-search-domain { display: flex; align-items: center; gap: var(--chat-space-1_5); color: var(--chat-fg-subtle); font-size: var(--chat-fs-11); }
-.chat-web-search-domain svg, .chat-web-search-title svg { flex-shrink: 0; }
-.chat-web-search-title { display: flex; align-items: baseline; justify-content: space-between; gap: var(--chat-space-2); font-weight: var(--chat-weight-medium); font-size: var(--chat-fs-13); }
-.chat-web-search-snippet { color: var(--chat-fg-muted); font-size: var(--chat-fs-12); line-height: var(--chat-leading-relaxed); }
+.chat-web-search-source { display: flex; align-items: center; gap: var(--chat-space-2); padding: var(--chat-space-1) 0; color: var(--chat-fg-muted); text-decoration: none; min-width: 0; font-size: var(--chat-fs-13); line-height: var(--chat-leading-normal); }
+.chat-web-search-source:hover { color: var(--chat-fg); }
+.chat-web-search-source:hover .chat-web-search-title { text-decoration: underline; text-underline-offset: 3px; }
+.chat-web-search-source:focus-visible { outline: 2px solid var(--chat-fg-muted); outline-offset: 2px; border-radius: var(--chat-radius-sm); }
+.chat-web-search-icon { display: grid; place-items: center; width: 14px; height: 14px; flex: 0 0 14px; }
+.chat-web-search-icon img { width: 14px; height: 14px; object-fit: contain; }
+.chat-web-search-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
