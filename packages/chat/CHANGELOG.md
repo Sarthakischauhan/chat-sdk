@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add web search source cards and automatic web-search tool rendering, with safe links, source expansion, shared tool states, and Storybook examples.
+
 ## 0.0.2
 
 - Add Symphony protocol 3 tool widget support, including `ask_user` question and answer rendering.
