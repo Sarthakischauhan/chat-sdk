@@ -37,3 +37,45 @@
   width: min(100%, var(--chat-column));
   margin: 0 auto;
 }
+
+.storybook-orb-stage {
+  width: 520px;
+  height: 420px;
+}
+
+.storybook-orb-plain {
+  margin: var(--chat-space-6);
+  color: var(--chat-fg-muted);
+}
+
+.storybook-orb-busy {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: var(--chat-space-4);
+  list-style: none;
+  overflow: hidden;
+  font-family: var(--chat-font-mono);
+  font-size: var(--chat-text-xs);
+  line-height: 1.7;
+  color: var(--chat-fg-muted);
+  background: var(--chat-bg);
+}
+
+.storybook-orb-busy li {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr) 3.5rem;
+  gap: var(--chat-space-2);
+}
+
+.storybook-orb-busy li span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.storybook-orb-busy li span:last-child {
+  text-align: right;
+  color: var(--chat-fg-subtle);
+}
