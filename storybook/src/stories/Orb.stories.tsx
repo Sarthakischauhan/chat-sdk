@@ -56,7 +56,7 @@ const useStreamingReasoning = (interval: number) => {
 
 const busyRows = Array.from({ length: 24 }, (_, index) => ({
   tool: ["read_file", "run_tests", "grep", "apply_patch"][index % 4],
-  detail: `packages/chat/src/components/Chat/chat.${["tsx", "css", "input.tsx", "select.tsx"][index % 4]}`,
+  detail: `src/components/Chat/chat.${["tsx", "css", "input.tsx", "select.tsx"][index % 4]}`,
   meta: `${(index * 37) % 210}ms`,
 }));
 

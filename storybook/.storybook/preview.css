@@ -64,8 +64,15 @@
 
 .storybook-orb-busy li {
   display: grid;
-  grid-template-columns: 6rem 1fr 3.5rem;
+  grid-template-columns: 6rem minmax(0, 1fr) 3.5rem;
   gap: var(--chat-space-2);
+}
+
+.storybook-orb-busy li span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .storybook-orb-busy li span:last-child {
