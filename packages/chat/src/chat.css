@@ -1021,19 +1021,17 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
   }
 }
 
-/* Orb reasoning popover (circle composer, state="thinking"). Osmo glass: no borders. */
+/* Orb reasoning popover (circle composer, state="thinking"). */
 .chat-root,
 .chat-root[data-theme="light"] {
-  --chat-orb-pop-bg: rgba(255, 255, 255, 0.78);
-  --chat-orb-pop-bg-solid: rgba(255, 255, 255, 0.92);
+  --chat-orb-pop-bg: rgba(255, 255, 255, 0.82);
+  --chat-orb-pop-bg-solid: rgba(255, 255, 255, 0.94);
   --chat-orb-pop-fg-newest: rgba(0, 0, 0, 0.88);
   --chat-orb-pop-fg-older: rgba(0, 0, 0, 0.56);
   --chat-orb-pop-caret: rgba(0, 0, 0, 0.56);
-  --chat-orb-pop-blur: blur(16px) saturate(1.2);
-  --chat-orb-pop-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --chat-orb-pop-blur: blur(20px) saturate(1.2);
   --chat-orb-pop-width: min(360px, 100vw - 32px);
   --chat-orb-pop-max-height: 120px;
-  --chat-orb-pop-gap: 8px;
   --chat-orb-pop-padding: 10px 12px;
   --chat-orb-pop-enter: 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
   --chat-orb-pop-exit: 120ms ease-in;
@@ -1041,8 +1039,8 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
 }
 
 .chat-root[data-theme="dark"] {
-  --chat-orb-pop-bg: rgba(10, 10, 10, 0.72);
-  --chat-orb-pop-bg-solid: rgba(10, 10, 10, 0.92);
+  --chat-orb-pop-bg: rgba(10, 10, 10, 0.80);
+  --chat-orb-pop-bg-solid: rgba(10, 10, 10, 0.94);
   --chat-orb-pop-fg-newest: rgba(255, 255, 255, 0.88);
   --chat-orb-pop-fg-older: rgba(255, 255, 255, 0.56);
   --chat-orb-pop-caret: rgba(255, 255, 255, 0.56);
@@ -1050,8 +1048,8 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
 
 @media (prefers-color-scheme: dark) {
   .chat-root[data-theme="system"] {
-    --chat-orb-pop-bg: rgba(10, 10, 10, 0.72);
-    --chat-orb-pop-bg-solid: rgba(10, 10, 10, 0.92);
+    --chat-orb-pop-bg: rgba(10, 10, 10, 0.80);
+    --chat-orb-pop-bg-solid: rgba(10, 10, 10, 0.94);
     --chat-orb-pop-fg-newest: rgba(255, 255, 255, 0.88);
     --chat-orb-pop-fg-older: rgba(255, 255, 255, 0.56);
     --chat-orb-pop-caret: rgba(255, 255, 255, 0.56);
@@ -1062,10 +1060,9 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
   position: relative;
 }
 
+/* Portalled to .chat-root and placed with fixed coordinates by the component. */
 .chat-orb-reasoning {
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + var(--chat-orb-pop-gap));
+  position: fixed;
   z-index: 20;
   width: var(--chat-orb-pop-width);
   box-sizing: border-box;
@@ -1074,7 +1071,7 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
   outline: 0;
   border-radius: var(--chat-radius);
   background: var(--chat-orb-pop-bg-solid);
-  box-shadow: var(--chat-orb-pop-shadow);
+  box-shadow: none;
   transform-origin: bottom center;
   transform: translateX(-50%) translateY(4px) scale(0.98);
   opacity: 0;
@@ -1093,8 +1090,6 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
 }
 
 .chat-orb-reasoning[data-side="bottom"] {
-  bottom: auto;
-  top: calc(100% + var(--chat-orb-pop-gap));
   transform-origin: top center;
 }
 

@@ -1,9 +1,22 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 /** Activity state of the orb composer. `"thinking"` enables the live reasoning popover. */
 export type ComposerOrbState = "idle" | "thinking";
+
+/** One streamed piece of reasoning. `id` must be stable per chunk (e.g. a token or delta id). */
+export type ReasoningChunk = {
+  id: string;
+  text: string;
+};
+
+/** Ordered reasoning stream: append chunks as they arrive; `state` carries the status. */
+export type ComposerReasoning = readonly ReasoningChunk[];
+
+/** Concatenate a reasoning stream into display text. */
+export const reasoningText = (chunks: ComposerReasoning) => chunks.map((chunk) => chunk.text).join("");
 
 /** Timing contract for the orb reasoning popover, in milliseconds. */
 export const orbReasoningTiming = {
@@ -18,7 +31,9 @@ export const orbReasoningTiming = {
   exitReduced: 80,
 } as const;
 
-type Phase = "closed" | "open" | "closing";
+type Phase = "closed" | "entering" | "open" | "closing";
+
+const GAP = 8;
 
 const reducedMotion = () =>
   typeof window !== "undefined" &&
@@ -48,22 +63,28 @@ export const announceableReasoning = (text: string, done: boolean) => {
  */
 export function OrbReasoning({
   state,
-  reasoning,
+  reasoning: chunks,
   children,
 }: {
   state: ComposerOrbState;
-  reasoning: string;
+  reasoning: ComposerReasoning;
   children: ReactNode;
 }) {
-  const active = state === "thinking" && reasoning.trim().length > 0;
+  const text = reasoningText(chunks);
+  const active = state === "thinking" && text.trim().length > 0;
   const [hovered, setHovered] = useState(false);
   const [keyboardFocus, setKeyboardFocus] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [held, setHeld] = useState(false);
   const [prevActive, setPrevActive] = useState(active);
-  const [shown, setShown] = useState(active ? reasoning : "");
+  const [shown, setShown] = useState(active ? text : "");
   const [phase, setPhase] = useState<Phase>("closed");
-  const anchorRef = useRef<HTMLDivElement>(null);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const [host, setHost] = useState<Element | null>(null);
+  const setAnchor = useCallback((node: HTMLDivElement | null) => {
+    anchorRef.current = node;
+    setHost(node ? (node.closest(".chat-root") ?? node.ownerDocument.body) : null);
+  }, []);
   const popoverRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
@@ -75,15 +96,15 @@ export function OrbReasoning({
     setPrevActive(active);
     setHeld(!active);
   }
-  if (active && shown !== reasoning) {
-    setShown(reasoning);
+  if (active && shown !== text) {
+    setShown(text);
   }
 
   const engaged = (hovered || keyboardFocus) && !dismissed;
   const open = engaged && (active || held);
-  if (open && phase !== "open") {
-    setPhase("open");
-  } else if (!open && phase === "open") {
+  if (open && (phase === "closed" || phase === "closing")) {
+    setPhase("entering");
+  } else if (!open && (phase === "open" || phase === "entering")) {
     setPhase("closing");
   }
 
@@ -115,17 +136,48 @@ export function OrbReasoning({
     }
   }, [shown, phase]);
 
-  // Flip below the orb when there is no room above it.
-  useLayoutEffect(() => {
-    if (phase !== "open" || !anchorRef.current) {
+  // The popover is portalled to the chat root (out of the composer's stacking
+  // context, so backdrop-filter samples the content behind it) and positioned
+  // fixed against the orb. It flips below when there is no room above.
+  const place = useCallback(() => {
+    const anchor = anchorRef.current;
+    const node = popoverRef.current;
+    if (!anchor || !node) {
       return;
     }
-    const top = anchorRef.current.getBoundingClientRect().top;
-    const height = popoverRef.current?.offsetHeight ?? 0;
-    if (popoverRef.current) {
-      popoverRef.current.dataset.side = top - height - 8 < 0 && height > 0 ? "bottom" : "top";
+    const rect = anchor.getBoundingClientRect();
+    const below = rect.top - node.offsetHeight - GAP < 0 && node.offsetHeight > 0;
+    node.dataset.side = below ? "bottom" : "top";
+    node.style.left = `${rect.left + rect.width / 2}px`;
+    node.style.top = below ? `${rect.bottom + GAP}px` : "";
+    node.style.bottom = below ? "" : `${window.innerHeight - rect.top + GAP}px`;
+  }, []);
+
+  useLayoutEffect(() => {
+    if (phase === "closed") {
+      return;
     }
-  }, [phase]);
+    place();
+    if (phase !== "entering") {
+      return;
+    }
+    // Flush the resting style so the enter transition plays, then open.
+    void popoverRef.current?.offsetHeight;
+    const timer = window.setTimeout(() => setPhase((current) => (current === "entering" ? "open" : current)), 0);
+    return () => window.clearTimeout(timer);
+  }, [phase, place]);
+
+  useEffect(() => {
+    if (phase === "closed") {
+      return;
+    }
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [phase, place]);
 
   const scheduleHover = useCallback((next: boolean) => {
     window.clearTimeout(hoverTimer.current);
@@ -145,9 +197,27 @@ export function OrbReasoning({
   const newest = lastBreak >= 0 ? shown.slice(lastBreak + 1) : shown;
   const announcement = announceableReasoning(shown, !active);
 
+  const popover = (
+    <div
+      ref={popoverRef}
+      className="chat-orb-reasoning"
+      data-state={phase}
+      data-held={held ? "true" : "false"}
+    >
+      <div ref={scrollRef} className="chat-orb-reasoning-text" aria-hidden="true">
+        {older ? <span className="chat-orb-reasoning-older">{older}</span> : null}
+        <span className="chat-orb-reasoning-newest">{newest}</span>
+        {active ? <span className="chat-orb-reasoning-caret" /> : null}
+      </div>
+      <div role="status" aria-live="polite" className="chat-orb-reasoning-sr">
+        {announcement}
+      </div>
+    </div>
+  );
+
   return (
     <div
-      ref={anchorRef}
+      ref={setAnchor}
       className="chat-orb-anchor"
       data-orb-state={state}
       onPointerEnter={() => scheduleHover(true)}
@@ -176,23 +246,7 @@ export function OrbReasoning({
         }
       }}
     >
-      {phase === "closed" ? null : (
-        <div
-          ref={popoverRef}
-          className="chat-orb-reasoning"
-          data-state={phase}
-          data-held={held ? "true" : "false"}
-        >
-          <div ref={scrollRef} className="chat-orb-reasoning-text" aria-hidden="true">
-            {older ? <span className="chat-orb-reasoning-older">{older}</span> : null}
-            <span className="chat-orb-reasoning-newest">{newest}</span>
-            {active ? <span className="chat-orb-reasoning-caret" /> : null}
-          </div>
-          <div role="status" aria-live="polite" className="chat-orb-reasoning-sr">
-            {announcement}
-          </div>
-        </div>
-      )}
+      {phase === "closed" || !host ? null : createPortal(popover, host)}
       {children}
     </div>
   );

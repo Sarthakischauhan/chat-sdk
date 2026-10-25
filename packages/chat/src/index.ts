@@ -4,7 +4,10 @@ export { ChatComposer, type ComposerCollapsedVariant } from "./components/Chat/c
 export {
   announceableReasoning,
   orbReasoningTiming,
+  reasoningText,
   type ComposerOrbState,
+  type ComposerReasoning,
+  type ReasoningChunk,
 } from "./components/Chat/chat.orb-reasoning";
 export { ChatSelect, formatContextWindow } from "./components/Chat/chat.select";
 export { ProviderLogo, hasProviderLogo } from "./components/Chat/provider-logo";

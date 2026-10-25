@@ -39,21 +39,36 @@
 }
 
 .storybook-orb-stage {
-  position: relative;
   width: 520px;
   height: 420px;
+}
+
+.storybook-orb-plain {
+  margin: var(--chat-space-6);
+  color: var(--chat-fg-muted);
 }
 
 .storybook-orb-busy {
   position: absolute;
   inset: 0;
   margin: 0;
+  padding: var(--chat-space-4);
+  list-style: none;
   overflow: hidden;
-  font: 13px/1.5 ui-monospace, monospace;
-  color: #3b82f6;
-  pointer-events: none;
+  font-family: var(--chat-font-mono);
+  font-size: var(--chat-text-xs);
+  line-height: 1.7;
+  color: var(--chat-fg-muted);
+  background: var(--chat-bg);
 }
 
-.storybook-orb-stage[data-busy="true"] .storybook-orb-chat {
-  background: transparent;
+.storybook-orb-busy li {
+  display: grid;
+  grid-template-columns: 6rem 1fr 3.5rem;
+  gap: var(--chat-space-2);
+}
+
+.storybook-orb-busy li span:last-child {
+  text-align: right;
+  color: var(--chat-fg-subtle);
 }

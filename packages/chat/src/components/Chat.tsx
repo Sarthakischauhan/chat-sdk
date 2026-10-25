@@ -7,7 +7,7 @@ import type { ChatAdapter } from "../types";
 import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context";
 import { ThemeToggle } from "../theme/theme.toggle";
 import { ChatComposer, type ComposerCollapsedVariant } from "./Chat/chat";
-import type { ComposerOrbState } from "./Chat/chat.orb-reasoning";
+import type { ComposerOrbState, ComposerReasoning } from "./Chat/chat.orb-reasoning";
 import { ChatContextProvider, useMessages } from "./Chat/chat.context";
 import { useThread } from "./Chat/context";
 import { useStickToBottom } from "../lib/use-stick-to-bottom";
@@ -43,8 +43,8 @@ type ChatProps = {
   attachmentAccept?: string;
   /** Orb activity for the circle composer; `"thinking"` enables the reasoning popover. */
   state?: ComposerOrbState;
-  /** Live reasoning text shown above the thinking orb. */
-  reasoning?: string;
+  /** Live reasoning stream shown above the thinking orb. */
+  reasoning?: ComposerReasoning;
 };
 
 type ComposerOptions = Pick<ChatProps, "placeholder" | "inputLabel" | "showAttachments" | "attachmentAccept" | "state" | "reasoning">;

@@ -9,7 +9,7 @@ import { ChatInput } from "./chat.input";
 import { ChatReferences } from "./chat.references";
 import { ChatSend } from "./chat.send";
 import { ChatSelect } from "./chat.select";
-import { OrbReasoning, type ComposerOrbState } from "./chat.orb-reasoning";
+import { OrbReasoning, type ComposerOrbState, type ComposerReasoning } from "./chat.orb-reasoning";
 import { useComposer, useMessages } from "./context";
 
 const focusStaysInComposer = (shell: HTMLElement, node: Node | null) => {
@@ -19,6 +19,8 @@ const focusStaysInComposer = (shell: HTMLElement, node: Node | null) => {
 
   return node instanceof Element && node.closest("[data-slot='select-content']") !== null;
 };
+
+const noReasoning: ComposerReasoning = [];
 
 export type ComposerCollapsedVariant = "pill" | "circle";
 
@@ -31,7 +33,7 @@ export const ChatComposer = ({
   showAttachments = true,
   attachmentAccept,
   state = "idle",
-  reasoning = "",
+  reasoning = noReasoning,
 }: {
   showModelSelector?: boolean;
   /** Placeholder for the message input. */
@@ -54,8 +56,8 @@ export const ChatComposer = ({
    * `reasoning` popover above the orb on hover or keyboard focus.
    */
   state?: ComposerOrbState;
-  /** Live reasoning text. Pass the accumulated string and update it as tokens arrive. */
-  reasoning?: string;
+  /** Live reasoning stream. Append `{ id, text }` chunks as tokens arrive. */
+  reasoning?: ComposerReasoning;
 }) => {
   const { status } = useMessages();
   const { input, attachments, references, addFiles, disabled } = useComposer();
