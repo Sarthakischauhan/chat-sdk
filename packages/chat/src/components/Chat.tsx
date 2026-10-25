@@ -7,6 +7,7 @@ import type { ChatAdapter } from "../types";
 import { ThemeProvider, useTheme, type ChatTheme } from "../theme/theme.context";
 import { ThemeToggle } from "../theme/theme.toggle";
 import { ChatComposer, type ComposerCollapsedVariant } from "./Chat/chat";
+import type { ComposerOrbState } from "./Chat/chat.orb-reasoning";
 import { ChatContextProvider, useMessages } from "./Chat/chat.context";
 import { useThread } from "./Chat/context";
 import { useStickToBottom } from "../lib/use-stick-to-bottom";
@@ -40,9 +41,13 @@ type ChatProps = {
   showAttachments?: boolean;
   /** File types the composer attaches, e.g. "image/*". Default: any file. */
   attachmentAccept?: string;
+  /** Orb activity for the circle composer; `"thinking"` enables the reasoning popover. */
+  state?: ComposerOrbState;
+  /** Live reasoning text shown above the thinking orb. */
+  reasoning?: string;
 };
 
-type ComposerOptions = Pick<ChatProps, "placeholder" | "inputLabel" | "showAttachments" | "attachmentAccept">;
+type ComposerOptions = Pick<ChatProps, "placeholder" | "inputLabel" | "showAttachments" | "attachmentAccept" | "state" | "reasoning">;
 
 function ChatShell({
   className,
@@ -157,6 +162,8 @@ export function Chat({
   inputLabel,
   showAttachments,
   attachmentAccept,
+  state,
+  reasoning,
 }: ChatProps) {
   return (
     <ThemeProvider
@@ -178,7 +185,7 @@ export function Chat({
           showModelSelector={showModelSelector}
           collapsedVariant={collapsedVariant}
           defaultExpanded={defaultExpanded}
-          composer={{ placeholder, inputLabel, showAttachments, attachmentAccept }}
+          composer={{ placeholder, inputLabel, showAttachments, attachmentAccept, state, reasoning }}
         />
       </ChatContextProvider>
     </ThemeProvider>

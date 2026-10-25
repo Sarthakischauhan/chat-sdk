@@ -9,6 +9,7 @@ import { ChatInput } from "./chat.input";
 import { ChatReferences } from "./chat.references";
 import { ChatSend } from "./chat.send";
 import { ChatSelect } from "./chat.select";
+import { OrbReasoning, type ComposerOrbState } from "./chat.orb-reasoning";
 import { useComposer, useMessages } from "./context";
 
 const focusStaysInComposer = (shell: HTMLElement, node: Node | null) => {
@@ -29,6 +30,8 @@ export const ChatComposer = ({
   inputLabel,
   showAttachments = true,
   attachmentAccept,
+  state = "idle",
+  reasoning = "",
 }: {
   showModelSelector?: boolean;
   /** Placeholder for the message input. */
@@ -46,6 +49,13 @@ export const ChatComposer = ({
   collapsedVariant?: ComposerCollapsedVariant;
   /** Open on the large composer. Used so a story can show the model picker without a click. */
   defaultExpanded?: boolean;
+  /**
+   * Orb activity. With `collapsedVariant="circle"`, `"thinking"` shows the live
+   * `reasoning` popover above the orb on hover or keyboard focus.
+   */
+  state?: ComposerOrbState;
+  /** Live reasoning text. Pass the accumulated string and update it as tokens arrive. */
+  reasoning?: string;
 }) => {
   const { status } = useMessages();
   const { input, attachments, references, addFiles, disabled } = useComposer();
@@ -93,12 +103,13 @@ export const ChatComposer = ({
     return () => document.removeEventListener("focusin", onFocusIn, true);
   }, [focused]);
 
-  return (
+  const shell = (
     <div
       ref={shellRef}
       className={cn("chat-composer-shell", motion.inputWrap, motion.input)}
       data-expanded={expanded ? "true" : "false"}
       data-collapsed={collapsedVariant}
+      data-orb-state={collapsedVariant === "circle" ? state : undefined}
       onPaste={(event) => {
         if (takeFiles(event.clipboardData.files)) {
           event.preventDefault();
@@ -146,5 +157,13 @@ export const ChatComposer = ({
         <ChatSend />
       </div>
     </div>
+  );
+
+  return collapsedVariant === "circle" ? (
+    <OrbReasoning state={state} reasoning={reasoning}>
+      {shell}
+    </OrbReasoning>
+  ) : (
+    shell
   );
 };
