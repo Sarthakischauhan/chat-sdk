@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Render tools without a prebuilt widget (`GenericToolWidget`) as the same inline row as the prebuilt tools. The expanded body shows only the result, or the error once, instead of the call's input and output as JSON.
+- `ToolFrame` leaves out the body and chevron when a row has nothing to expand.
+
 ## 0.0.2
 
 - Add Symphony protocol 3 tool widget support, including `ask_user` question and answer rendering.
