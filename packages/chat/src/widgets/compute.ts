@@ -16,7 +16,7 @@ const number = (...values: unknown[]) =>
 const intOrNull = (value: unknown) =>
   value === null ? null : number(value);
 /** Protocol 3 facts a host attaches to the tool output. Missing keys stay unset. */
-const runFacts = (output: Record<string, unknown>) => {
+export const runFacts = (output: Record<string, unknown>) => {
   const summary = record(output.summary);
   const chunks = Array.isArray(output.chunks)
     ? output.chunks.flatMap((item) => {

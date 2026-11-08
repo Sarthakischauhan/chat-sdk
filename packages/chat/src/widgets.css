@@ -710,6 +710,15 @@
 .chat-tool-widget .chat-widget-empty {
   color: var(--chat-fg-muted, #737373);
 }
+/* Generic tool rows: the result only, as plain mono text. */
+.chat-tool-result {
+  margin: 0;
+  padding: 0.5rem var(--chat-tool-pad);
+  font: var(--chat-weight-regular, 400) var(--chat-fs-12, 0.75rem) / 1.5 var(--chat-font-mono, monospace);
+  color: var(--chat-fg-muted, #737373);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 .chat-subagent {
   padding: 0.25rem var(--chat-tool-inset);
 }

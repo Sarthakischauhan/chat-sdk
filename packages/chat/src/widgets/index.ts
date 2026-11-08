@@ -5,6 +5,7 @@ export { QuestionWidget } from "./question";
 export { AskedWidget } from "./asked";
 export { TerminalWidget } from "./terminal";
 export { ApprovalWidget } from "./approval";
+export { GenericToolWidget, toolLabel, toolResultText } from "./generic-tool";
 export { formatDuration, formatStatus, formatSummary } from "./format";
 export { prebuiltWidgets } from "./registry";
 export {
