@@ -916,3 +916,13 @@
 .chat-web-search-icon { display: grid; place-items: center; width: 14px; height: 14px; flex: 0 0 14px; }
 .chat-web-search-icon img { width: 14px; height: 14px; object-fit: contain; }
 .chat-web-search-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Generic tool rows show result only. */
+.chat-tool-result {
+  margin: 0;
+  padding: 0.5rem var(--chat-tool-pad);
+  font: var(--chat-weight-regular, 400) var(--chat-fs-12, 0.75rem) / 1.5 var(--chat-font-mono, monospace);
+  color: var(--chat-fg-muted, #737373);
+  white-space: pre-wrap;
+  word-break: break-word;
+}

@@ -1,6 +1,14 @@
 export { Chat } from "./components/Chat";
 export { useStickToBottom, type StickToBottom, type StickToBottomOptions } from "./lib/use-stick-to-bottom";
 export { ChatComposer, type ComposerCollapsedVariant } from "./components/Chat/chat";
+export {
+  announceableReasoning,
+  orbReasoningTiming,
+  reasoningText,
+  type ComposerOrbState,
+  type ComposerReasoning,
+  type ReasoningChunk,
+} from "./components/Chat/chat.orb-reasoning";
 export { ChatSelect, formatContextWindow } from "./components/Chat/chat.select";
 export { ProviderLogo, hasProviderLogo } from "./components/Chat/provider-logo";
 export { acceptsFile } from "./components/Chat/chat.attachments";

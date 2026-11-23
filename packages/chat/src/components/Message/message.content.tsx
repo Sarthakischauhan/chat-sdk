@@ -1,6 +1,5 @@
 "use client";
 
-import { useAutoDisclosure } from "../../widgets/disclosure";
 import {
   normalizeAgentParts,
   parseArtifact,
@@ -15,21 +14,12 @@ import {
   type AgentWidgetPart,
   type AgentWidgetProps,
 } from "@sarchauhan/protocol";
-import { ChevronDown } from "lucide-react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { splitThinkingSegments } from "../../lib/message/segment";
 import { parseUserReferenceMessage } from "../../lib/message/user";
 import { cn } from "../../lib/utils";
-import {
-  TextSwap,
-  calibrateCheckPath,
-  motion,
-  triggerErrorShake,
-  type IconSwapState,
-  type SuccessCheckState,
-} from "../../motion";
 import { ArtifactWidget } from "../../widgets/artifact";
 import { computeToolWidget } from "../../widgets/compute";
+import { GenericToolWidget } from "../../widgets/generic-tool";
 import { prebuiltWidgets } from "../../widgets/registry";
 import { useWidgets } from "../Widget/widget.context";
 import { TextSkeleton } from "./message.skeleton";
@@ -57,39 +47,6 @@ const formatJson = (value: unknown) => {
   }
 };
 
-const toolDetail = (part: AgentToolPart) => {
-  const source = part.output ?? part.input;
-
-  if (!isPropsRecord(source)) {
-    return null;
-  }
-
-  const value = source.path ?? source.file ?? source.filename ?? source.query ?? source.command ?? source.url;
-
-  return typeof value === "string" && value.trim() ? value : null;
-};
-
-const toolStateLabel = (state: AgentToolPart["state"]) => {
-  switch (state) {
-    case "input-streaming":
-      return "Preparing";
-    case "input-available":
-      return "Ready";
-    case "approval-requested":
-      return "Needs approval";
-    case "approval-responded":
-      return "Approval sent";
-    case "output-available":
-      return "Done";
-    case "output-error":
-      return "Error";
-    case "output-denied":
-      return "Denied";
-    default:
-      return state;
-  }
-};
-
 const ReasoningBlock = ({ part }: { part: AgentReasoningPart }) => {
   const isComplete = part.state !== "streaming";
 
@@ -101,138 +58,6 @@ const ReasoningBlock = ({ part }: { part: AgentReasoningPart }) => {
         </div>
       )}
     </ThinkingBlock>
-  );
-};
-
-const ToolStatusIcon = ({
-  isPending,
-  isDone,
-}: {
-  isPending: boolean;
-  isDone: boolean;
-}) => {
-  const pathRef = useRef<SVGPathElement>(null);
-  const [sawPending, setSawPending] = useState(isPending);
-  const iconState: IconSwapState = isPending ? "a" : "b";
-  const playCheck = Boolean(sawPending && isDone);
-  const checkState: SuccessCheckState = playCheck ? "in" : "out";
-
-  if (isPending && !sawPending) {
-    setSawPending(true);
-  }
-
-  useLayoutEffect(() => {
-    if (pathRef.current) {
-      calibrateCheckPath(pathRef.current);
-    }
-  }, [playCheck]);
-
-  return (
-    <span className="agent-tool-dot" aria-hidden="true">
-      <span className={motion.iconSwap} data-state={iconState}>
-        <span className={motion.icon} data-icon="a">
-          <span className="agent-tool-spinner" />
-        </span>
-        <span className={motion.icon} data-icon="b">
-          {isDone ? (
-            playCheck ? (
-              <span className={motion.successCheck} data-state={checkState}>
-                <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
-                  <path
-                    ref={pathRef}
-                    d="M2.5 6.5 5 9l4.5-6"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            ) : (
-              <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
-                <path
-                  d="M2.5 6.5 5 9l4.5-6"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )
-          ) : (
-            <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
-              <path
-                d="M3.2 3.2 8.8 8.8M8.8 3.2 3.2 8.8"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </svg>
-          )}
-        </span>
-      </span>
-    </span>
-  );
-};
-
-const ToolBlock = ({ part }: { part: AgentToolPart }) => {
-  const isPending =
-    part.state === "input-streaming" ||
-    part.state === "input-available" ||
-    part.state === "approval-requested";
-  const isError = part.state === "output-error" || part.state === "output-denied";
-  const isDone = !isPending && !isError;
-  const detail = toolDetail(part);
-  const wrapRef = useRef<HTMLDetailsElement>(null);
-  const { defaultOpen, onToggle, onSummaryClick } = useAutoDisclosure(wrapRef, isPending || isError);
-
-  useEffect(() => {
-    if (!isError || !wrapRef.current) {
-      return;
-    }
-
-    triggerErrorShake(wrapRef.current, { revert: false });
-  }, [isError]);
-
-  return (
-    <details
-      ref={wrapRef}
-      className={cn(
-        "agent-tool",
-        motion.inputWrap,
-        isPending ? "agent-tool-pending" : isError ? "agent-tool-error" : "agent-tool-complete",
-      )}
-      open={defaultOpen}
-      onToggle={onToggle}
-    >
-      <summary className={cn(motion.input, isError && motion.isError)} onClick={onSummaryClick}>
-        <ChevronDown className="agent-tool-chevron" aria-hidden="true" />
-        <ToolStatusIcon isPending={isPending} isDone={isDone} />
-        <span className="agent-tool-name">{part.title ?? part.toolName}</span>
-        {detail ? <span className="agent-tool-chip">{detail}</span> : null}
-        <TextSwap className="agent-tool-state" text={toolStateLabel(part.state)} />
-      </summary>
-      <div className="agent-tool-body">
-        {part.input !== undefined && (
-          <div className="agent-tool-section">
-            <div className="agent-tool-section-label">Input</div>
-            <pre className="agent-tool-code">{formatJson(part.input)}</pre>
-          </div>
-        )}
-        {part.output !== undefined && (
-          <div className="agent-tool-section">
-            <div className="agent-tool-section-label">Output</div>
-            <pre className="agent-tool-code">{formatJson(part.output)}</pre>
-          </div>
-        )}
-        {part.errorText && (
-          <div className="agent-tool-section">
-            <div className="agent-tool-section-label">Error</div>
-            <pre className="agent-tool-code agent-tool-error">{part.errorText}</pre>
-          </div>
-        )}
-      </div>
-    </details>
   );
 };
 
@@ -388,7 +213,12 @@ const PartView = ({ part, index, isUser }: { part: AgentPart; index: number; isU
     case "reasoning":
       return isUser ? null : <ReasoningBlock key={`reasoning-${index}`} part={part} />;
     case "tool":
-      return isUser ? null : <ToolBlock key={`tool-${part.toolCallId || index}`} part={part} />;
+      // Any tool without a prebuilt widget: the same row, with only its result as the body.
+      return isUser ? null : (
+        <div key={`tool-${part.toolCallId || index}`} className="chat-widget">
+          <GenericToolWidget part={part} />
+        </div>
+      );
     case "source-url":
       return <SourceUrlBlock key={`source-url-${part.sourceId || index}`} part={part} />;
     case "source-document":
