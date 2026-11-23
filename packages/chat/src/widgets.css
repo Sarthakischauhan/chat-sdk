@@ -956,3 +956,45 @@
 .chat-subagent-trigger:hover .chat-subagent-open, .chat-subagent-trigger:focus-visible .chat-subagent-open { opacity: 1; }
 @media (hover: none) { .chat-subagent-open { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .chat-subagent-open { transition: none; } }
+
+/* Flat activity inspector: no tinted overlay, nested cards or activity bubbles. */
+.chat-detail-overlay { background: transparent; }
+.chat-root.chat-detail-panel {
+  background: var(--chat-bg, #fff);
+  box-shadow: 0 12px 44px rgb(0 0 0 / 0.12);
+  border-color: var(--chat-border, #e5e5e5);
+  overflow: hidden;
+}
+.chat-root.chat-detail-panel .chat-detail-body {
+  display: block;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+.chat-root.chat-detail-panel .chat-detail-header {
+  background: transparent;
+  padding: 0.875rem 1rem;
+}
+.chat-root.chat-detail-panel .chat-detail-title { font-size: var(--chat-fs-13, 0.8125rem); }
+.chat-root.chat-detail-panel .chat-detail-description { font-size: var(--chat-fs-11, 0.6875rem); }
+.chat-root.chat-detail-panel .chat-detail-body { padding: 0.25rem 1rem 1rem; }
+.chat-subagent-activity { display: flex; flex-direction: column; gap: 0; width: 100%; min-width: 0; }
+.chat-subagent-activity .chat-subagent-overview {
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--chat-border, #e5e5e5);
+  color: var(--chat-fg-muted, #737373);
+}
+.chat-subagent-entry { min-width: 0; padding: 0.875rem 0; border-bottom: 1px solid var(--chat-border, #e5e5e5); }
+.chat-subagent-entry:last-child { border-bottom: 0; }
+.chat-subagent-entry .chat-message-content { padding: 0; background: transparent; }
+.chat-subagent-entry .chat-prebuilt:not(.chat-tool-widget, .chat-subagent) {
+  background: transparent; border-color: var(--chat-border, #e5e5e5);
+}
+.chat-subagent-role { margin: 0 0 0.375rem; color: var(--chat-fg-subtle, #a3a3a3); }
+.chat-subagent-activity .chat-subagent-task,
+.chat-subagent-activity .chat-subagent-summary { margin: 0; padding: 0; color: var(--chat-fg, #171717); }
+.chat-subagent-activity .chat-widget-error { padding: 0; }
+.chat-subagent-unavailable { margin: 0; padding: 0.875rem 0; font-size: var(--chat-fs-12, 0.75rem); color: var(--chat-fg-subtle, #a3a3a3); }
+.chat-subagent-artifacts h4 { display: none; }
+@media (max-width: 640px) {
+  .chat-root.chat-detail-panel .chat-detail-body { padding: 0.25rem 1rem 1rem; }
+}
