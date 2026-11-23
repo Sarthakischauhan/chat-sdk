@@ -15,7 +15,7 @@ const packages = workspaces.map((path) => ({
 const byName = new Map(packages.map((pkg) => [pkg.name, pkg]));
 const tag = process.env.RELEASE_TAG;
 
-if (!/^chat-(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$/.test(tag ?? "")) {
+if (!/^chat-(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(tag ?? "")) {
   throw new Error(`Expected a stable GitHub Release tag like chat-0.0.3, got ${tag ?? "(none)"}`);
 }
 
