@@ -41,6 +41,8 @@ export function ToolFrame({
   children: ReactNode;
 }) {
   const active = activeLabel ?? label;
+  // A row with nothing to expand (e.g. a generic tool with no result) has no body or chevron.
+  const hasBody = Boolean(error) || (children !== null && children !== undefined && children !== false);
   const elapsed = useElapsed(startedAt, state === "running");
   const status = formatStatus(state, { exitCode }, elapsed);
   const duration = state !== "running" && typeof durationMs === "number" ? formatDuration(durationMs) : undefined;
@@ -59,7 +61,7 @@ export function ToolFrame({
       open={startOpen}
       onToggle={onToggle}
     >
-      <summary onClick={onSummaryClick}>
+      <summary onClick={hasBody ? onSummaryClick : (event) => event.preventDefault()}>
         <span className="chat-tool-widget-glyph" aria-hidden="true">
           {state === "running" ? (
             <span className="chat-tool-spinner" />
@@ -81,9 +83,11 @@ export function ToolFrame({
             {state === "running" ? active : label}
           </span>
         )}
-        <span className="chat-tool-widget-title" title={title}>
-          {title}
-        </span>
+        {title ? (
+          <span className="chat-tool-widget-title" title={title}>
+            {title}
+          </span>
+        ) : null}
         {meta ? <span className="chat-tool-widget-meta">· {meta}</span> : null}
         {status ? (
           <span className="chat-tool-widget-status" data-tone={status.tone} role="status">
@@ -95,16 +99,18 @@ export function ToolFrame({
           </span>
         )}
         {duration ? <span className="chat-tool-widget-meta">· {duration}</span> : null}
-        <ChevronRight className="chat-tool-widget-chevron" size={12} aria-hidden="true" />
+        {hasBody ? <ChevronRight className="chat-tool-widget-chevron" size={12} aria-hidden="true" /> : null}
       </summary>
-      <div className="chat-tool-widget-body">
-        {error ? (
-          <p className="chat-widget-error" role="alert">
-            {error}
-          </p>
-        ) : null}
-        {error && !showBodyOnError ? null : children}
-      </div>
+      {hasBody ? (
+        <div className="chat-tool-widget-body">
+          {error ? (
+            <p className="chat-widget-error" role="alert">
+              {error}
+            </p>
+          ) : null}
+          {error && !showBodyOnError ? null : children}
+        </div>
+      ) : null}
     </details>
   );
 }

@@ -174,6 +174,7 @@ test("question presents native input semantics and disables without handler", ()
     "search",
     "subagent",
     "terminal",
+    "web-search",
   ]);
 });
 

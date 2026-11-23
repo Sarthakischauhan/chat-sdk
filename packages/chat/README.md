@@ -165,3 +165,22 @@ writer.write(createSubagentData({
 The event remains an existing `AgentDataEvent` (`data-subagent`); no new top-level event/part union or transport is introduced. Only `data-subagent` and `data-artifact` events with IDs replace previous snapshots within a message. Other data events retain append semantics. Each snapshot is complete: omitted fields are cleared rather than implicitly merged. Producers own event ordering and persistence; use one parent message per run or replace the prior parent message snapshot when continuing across turns. A harness that does not provide activity still produces a useful status/task card.
 
 Use `SubagentWidget` directly for custom layouts, or let `Chat`/`MessageContent` render `data-subagent` through the builtin registry. Multiple run IDs render separate cards. Inspection nesting is bounded to three levels while keeping deeper status cards visible.
+
+### Web search sources
+
+`WebSearchWidget` follows the shared tool row and theme. Expand a completed row to inspect sources; running and failed searches open automatically. Each result is a compact site-icon and page-title link. Favicons load lazily from the source origin with no referrer; unavailable icons fall back to a globe.
+
+```tsx
+import { WebSearchWidget } from "@sarchauhan/chat/widgets";
+import "@sarchauhan/chat/styles.css";
+
+<WebSearchWidget
+  query="Node.js security advisory"
+  state="complete"
+  results={[{ url: "https://nodejs.org/en/blog/vulnerability", title: "Node.js security releases", snippet: "Security advisories and release updates." }]}
+/>
+```
+
+Props include `query`, `results` (`url`, optional `title` and `snippet`), `total`, `maxResults` (default 5), `defaultOpen`, and shared tool state/error/timing props. Only HTTP(S) source URLs become links. Snippets remain accepted in result data but are not displayed. The host supplies search results; this component does not perform searches.
+
+`MessageContent` maps `web_search`, `search_web`, and `web-search` tools to the `web-search` widget. Inputs accept `query`, `search`, or `q`; outputs accept a `results` or `sources` array (or a direct array). Each result accepts `url`/`link`/`href` and `snippet`/`text`/`content`/`description`. Unrecognized output keeps the raw tool view. File search and grep keep using `SearchWidget`. Explicit widget parts use `name: "web-search"`.

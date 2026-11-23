@@ -1,10 +1,12 @@
 export { ReadFileWidget } from "./read-file";
 export { PatchWidget } from "./patch";
 export { SearchWidget } from "./search";
+export { WebSearchWidget } from "./web-search";
 export { QuestionWidget } from "./question";
 export { AskedWidget } from "./asked";
 export { TerminalWidget } from "./terminal";
 export { ApprovalWidget } from "./approval";
+export { GenericToolWidget, toolLabel, toolResultText } from "./generic-tool";
 export { formatDuration, formatStatus, formatSummary } from "./format";
 export { prebuiltWidgets } from "./registry";
 export {
@@ -14,6 +16,7 @@ export {
   computeDiff,
   computeTextDiff,
   normalizeSearchResults,
+  normalizeWebSearchResults,
   safeResultUrl,
   type DiffLine,
   type AskUserCall,
@@ -23,6 +26,8 @@ export type {
   PatchWidgetProps,
   SearchWidgetProps,
   SearchResult,
+  WebSearchResult,
+  WebSearchWidgetProps,
   QuestionWidgetProps,
   AskedWidgetProps,
   QuestionOption,

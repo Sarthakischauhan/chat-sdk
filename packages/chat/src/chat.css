@@ -1020,3 +1020,155 @@ button[data-slot="button"][data-skeleton="true"]:nth-child(2) {
     max-width: 92%;
   }
 }
+
+/* Orb reasoning popover (circle composer, state="thinking"). */
+.chat-root,
+.chat-root[data-theme="light"] {
+  --chat-orb-pop-bg: rgba(255, 255, 255, 0.82);
+  --chat-orb-pop-bg-solid: rgba(255, 255, 255, 0.94);
+  --chat-orb-pop-fg-newest: rgba(0, 0, 0, 0.88);
+  --chat-orb-pop-fg-older: rgba(0, 0, 0, 0.56);
+  --chat-orb-pop-caret: rgba(0, 0, 0, 0.56);
+  --chat-orb-pop-blur: blur(20px) saturate(1.2);
+  --chat-orb-pop-width: min(360px, 100vw - 32px);
+  --chat-orb-pop-max-height: 120px;
+  --chat-orb-pop-padding: 10px 12px;
+  --chat-orb-pop-enter: 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --chat-orb-pop-exit: 120ms ease-in;
+  --chat-orb-pop-reduced: 80ms linear;
+}
+
+.chat-root[data-theme="dark"] {
+  --chat-orb-pop-bg: rgba(10, 10, 10, 0.80);
+  --chat-orb-pop-bg-solid: rgba(10, 10, 10, 0.94);
+  --chat-orb-pop-fg-newest: rgba(255, 255, 255, 0.88);
+  --chat-orb-pop-fg-older: rgba(255, 255, 255, 0.56);
+  --chat-orb-pop-caret: rgba(255, 255, 255, 0.56);
+}
+
+@media (prefers-color-scheme: dark) {
+  .chat-root[data-theme="system"] {
+    --chat-orb-pop-bg: rgba(10, 10, 10, 0.80);
+    --chat-orb-pop-bg-solid: rgba(10, 10, 10, 0.94);
+    --chat-orb-pop-fg-newest: rgba(255, 255, 255, 0.88);
+    --chat-orb-pop-fg-older: rgba(255, 255, 255, 0.56);
+    --chat-orb-pop-caret: rgba(255, 255, 255, 0.56);
+  }
+}
+
+.chat-orb-anchor {
+  position: relative;
+}
+
+/* Portalled to .chat-root and placed with fixed coordinates by the component. */
+.chat-orb-reasoning {
+  position: fixed;
+  z-index: 20;
+  width: var(--chat-orb-pop-width);
+  box-sizing: border-box;
+  padding: var(--chat-orb-pop-padding);
+  border: 0;
+  outline: 0;
+  border-radius: var(--chat-radius);
+  background: var(--chat-orb-pop-bg-solid);
+  box-shadow: none;
+  transform-origin: bottom center;
+  transform: translateX(-50%) translateY(4px) scale(0.98);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--chat-orb-pop-enter),
+    transform var(--chat-orb-pop-enter);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .chat-orb-reasoning {
+    background: var(--chat-orb-pop-bg);
+    -webkit-backdrop-filter: var(--chat-orb-pop-blur);
+    backdrop-filter: var(--chat-orb-pop-blur);
+  }
+}
+
+.chat-orb-reasoning[data-side="bottom"] {
+  transform-origin: top center;
+}
+
+.chat-orb-reasoning[data-state="open"] {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.chat-orb-reasoning[data-state="closing"] {
+  opacity: 0;
+  transform: translateX(-50%) translateY(2px) scale(1);
+  transition:
+    opacity var(--chat-orb-pop-exit),
+    transform var(--chat-orb-pop-exit);
+}
+
+.chat-orb-reasoning-text {
+  max-height: var(--chat-orb-pop-max-height);
+  overflow: hidden;
+  font-family: var(--chat-font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 32px);
+  mask-image: linear-gradient(to bottom, transparent, #000 32px);
+}
+
+.chat-orb-reasoning-older {
+  color: var(--chat-orb-pop-fg-older);
+}
+
+.chat-orb-reasoning-newest {
+  color: var(--chat-orb-pop-fg-newest);
+}
+
+.chat-orb-reasoning-caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--chat-orb-pop-caret);
+  animation: chat-orb-caret 1s steps(1, end) infinite;
+}
+
+@keyframes chat-orb-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.chat-orb-reasoning-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-orb-reasoning,
+  .chat-orb-reasoning[data-side="bottom"],
+  .chat-orb-reasoning[data-state="open"],
+  .chat-orb-reasoning[data-state="closing"] {
+    transform: translateX(-50%);
+    transition: opacity var(--chat-orb-pop-reduced);
+  }
+
+  .chat-orb-reasoning-caret {
+    display: none;
+  }
+}

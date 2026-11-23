@@ -6,12 +6,13 @@ import type {
 import { parseArtifact, parseSubagent } from "@sarchauhan/protocol";
 import { ArtifactWidget, ArtifactsWidget } from "./artifact";
 import { SubagentWidget } from "./subagent";
-import { normalizeSearchResults } from "./compute";
+import { normalizeSearchResults, normalizeWebSearchResults } from "./compute";
 import { PatchWidget } from "./patch";
 import { QuestionWidget } from "./question";
 import { AskedWidget } from "./asked";
 import { ReadFileWidget } from "./read-file";
 import { SearchWidget } from "./search";
+import { WebSearchWidget } from "./web-search";
 import { TerminalWidget } from "./terminal";
 import { ApprovalWidget } from "./approval";
 import type {
@@ -92,6 +93,9 @@ function Search(props: WidgetComponentProps) {
       total={num(props.total)}
     />
   );
+}
+function WebSearch(props: WidgetComponentProps) {
+  return <WebSearchWidget {...common(props)} query={str(props.query)} results={normalizeWebSearchResults(props.results)} total={num(props.total)} maxResults={num(props.maxResults)} defaultOpen={props.defaultOpen === true} />;
 }
 function Question(props: WidgetComponentProps) {
   const options: QuestionOption[] = Array.isArray(props.options)
@@ -201,6 +205,7 @@ export const prebuiltWidgets: ChatWidgetRegistry = {
   "read-file": { name: "read-file", component: Read, shell: false },
   patch: { name: "patch", component: Patch, shell: false },
   search: { name: "search", component: Search, shell: false },
+  "web-search": { name: "web-search", component: WebSearch, shell: false },
   question: { name: "question", component: Question, shell: false },
   asked: { name: "asked", component: Asked, shell: false },
   terminal: { name: "terminal", component: Terminal, shell: false },

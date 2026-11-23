@@ -102,3 +102,17 @@ export type QuestionWidgetProps = {
   onSubmit?: (answer: QuestionAnswer) => void | Promise<void>;
   className?: string;
 };
+
+/** A cited web page. Only HTTP(S) URLs become links; snippets render as plain text. */
+export type WebSearchResult = {
+  url: string;
+  title?: string;
+  snippet?: string;
+};
+export type WebSearchWidgetProps = ToolWidgetProps & {
+  query: string;
+  results?: WebSearchResult[];
+  total?: number;
+  maxResults?: number;
+  defaultOpen?: boolean;
+};
