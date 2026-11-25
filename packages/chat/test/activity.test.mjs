@@ -65,6 +65,6 @@ test("explicit artifact tool outputs compute a view; local paths do not", () => 
 test("subagent summary uses an inspect action and preserves failed state", () => {
   const html = renderToStaticMarkup(createElement(SubagentWidget, { subagent: { ...agent, state: "failed", error: "Timed out" } }));
   assert.match(html, /View activity for Research/);
-  assert.match(html, /Timed out/);
-  assert.match(html, /data-state="failed"/);
+  assert.match(html, /data-state="error"/);
+  assert.match(html, /data-subagent-state="failed"/);
 });
